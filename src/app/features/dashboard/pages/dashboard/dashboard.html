@@ -1,0 +1,277 @@
+<section class="dashboard">
+  <div class="dashboard__header">
+    <div class="dashboard__titles">
+      <h2 class="dashboard__title">System Overview</h2>
+      <p class="dashboard__subtitle">
+        Real-time view of sensors, clients, tasks and critical alerts across the EMSafe network.
+      </p>
+    </div>
+
+    <div class="dashboard__actions">
+      <button class="btn btn--ghost" type="button">
+        <i class="ph ph-file-export" aria-hidden="true"></i>
+        <span>Export Report</span>
+      </button>
+
+      <button class="btn btn--primary" type="button">
+        <i class="ph ph-plus" aria-hidden="true"></i>
+        <span>New Work Order</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="dashboard__metrics">
+    <div class="metric-card">
+      <div class="metric-card__top">
+        <div class="metric-card__icon metric-card__icon--accent">
+          <i class="ph ph-cpu" aria-hidden="true"></i>
+        </div>
+        <div class="metric-card__meta">
+          <div class="metric-card__label">Total Sensors</div>
+          <div class="metric-card__value metric-card__value--accent">128</div>
+        </div>
+      </div>
+
+      <div class="metric-card__bottom">
+        <span class="chip chip--accent">
+          <i class="ph ph-wifi" aria-hidden="true"></i>
+          Active
+        </span>
+        <div class="metric-card__progress">
+          <div class="metric-card__progress-bar" style="width: 78%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-card__top">
+        <div class="metric-card__icon metric-card__icon--primary">
+          <i class="ph ph-users" aria-hidden="true"></i>
+        </div>
+        <div class="metric-card__meta">
+          <div class="metric-card__label">Active Clients</div>
+          <div class="metric-card__value metric-card__value--primary">46</div>
+        </div>
+      </div>
+
+      <div class="metric-card__bottom">
+        <span class="chip chip--success">
+          <i class="ph ph-check" aria-hidden="true"></i>
+          Healthy
+        </span>
+        <div class="metric-card__progress">
+          <div class="metric-card__progress-bar" style="width: 64%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-card__top">
+        <div class="metric-card__icon metric-card__icon--warning">
+          <i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i>
+        </div>
+        <div class="metric-card__meta">
+          <div class="metric-card__label">Pending Tasks</div>
+          <div class="metric-card__value metric-card__value--warning">12</div>
+        </div>
+      </div>
+
+      <div class="metric-card__bottom">
+        <span class="chip chip--warning">
+          <i class="ph ph-hourglass" aria-hidden="true"></i>
+          Pending
+        </span>
+        <div class="metric-card__progress">
+          <div class="metric-card__progress-bar" style="width: 28%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-card__top">
+        <div class="metric-card__icon metric-card__icon--danger">
+          <i class="ph ph-flame" aria-hidden="true"></i>
+        </div>
+        <div class="metric-card__meta">
+          <div class="metric-card__label">Critical Alerts</div>
+          <div class="metric-card__value metric-card__value--danger">3</div>
+        </div>
+      </div>
+
+      <div class="metric-card__bottom">
+        <span class="chip chip--danger">
+          <i class="ph ph-warning-circle" aria-hidden="true"></i>
+          Critical
+        </span>
+        <div class="metric-card__progress">
+          <div class="metric-card__progress-bar" style="width: 18%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard__grid">
+    <div class="panel">
+      <div class="panel__header">
+        <div class="panel__title">System Activity</div>
+        <div class="panel__hint">Last 24 hours</div>
+      </div>
+
+      <div class="panel__body">
+        <apx-chart
+          class="chart"
+          [series]="systemActivitySeries"
+          [chart]="systemActivityChart"
+          [xaxis]="systemActivityXAxis"
+          [stroke]="systemActivityStroke"
+          [colors]="systemActivityColors"
+          [grid]="systemActivityGrid"
+          [tooltip]="systemActivityTooltip"
+          type="line"
+        ></apx-chart>
+
+
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel__header">
+        <div class="panel__title">Radiation Trends</div>
+        <div class="panel__hint">Avg radiation values</div>
+      </div>
+
+      <div class="panel__body">
+        <apx-chart
+          class="chart"
+          type="bar"
+          [series]="radiationTrendsSeries"
+          [chart]="radiationTrendsChart"
+          [xaxis]="radiationTrendsXAxis"
+          [plotOptions]="radiationTrendsPlotOptions"
+          [colors]="radiationTrendsColors"
+          [grid]="radiationTrendsGrid"
+          [dataLabels]="radiationTrendsDataLabels"
+          [tooltip]="radiationTrendsTooltip"
+        ></apx-chart>
+
+
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard__lower">
+    <div class="panel panel--wide">
+      <div class="panel__header">
+        <div class="panel__title">Latest Work Orders</div>
+        <div class="panel__hint">Most recent updates</div>
+      </div>
+
+      <div class="panel__body">
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Client</th>
+                <th>Location</th>
+                <th>Date</th>
+                <th>Technician</th>
+                <th>Status</th>
+                <th class="table__actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Calibration</td>
+                <td>Greenfield Labs</td>
+                <td>Sector 7</td>
+                <td>2026-05-12</td>
+                <td>Alex Morgan</td>
+                <td>
+                  <span class="status status--completed">Completed</span>
+                </td>
+                <td class="table__actions">
+                  <button class="btn btn--small" type="button">
+                    <i class="ph ph-eye" aria-hidden="true"></i>
+                    <span>View</span>
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>Inspection</td>
+                <td>Northwind Energy</td>
+                <td>Building A</td>
+                <td>2026-05-13</td>
+                <td>Sam Rivera</td>
+                <td>
+                  <span class="status status--in-progress">In Progress</span>
+                </td>
+                <td class="table__actions">
+                  <button class="btn btn--small" type="button">
+                    <i class="ph ph-eye" aria-hidden="true"></i>
+                    <span>View</span>
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>Maintenance</td>
+                <td>Orion Facilities</td>
+                <td>Warehouse 4</td>
+                <td>2026-05-10</td>
+                <td>Chris Lee</td>
+                <td>
+                  <span class="status status--pending">Pending</span>
+                </td>
+                <td class="table__actions">
+                  <button class="btn btn--small" type="button">
+                    <i class="ph ph-eye" aria-hidden="true"></i>
+                    <span>View</span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel panel--side">
+      <div class="panel__header">
+        <div class="panel__title">System Alerts</div>
+        <div class="panel__hint">Live status</div>
+      </div>
+
+      <div class="panel__body">
+        <div class="alerts">
+          <div class="alert">
+            <div class="alert__dot alert__dot--danger"></div>
+            <div class="alert__content">
+              <div class="alert__title">Radiation spike detected</div>
+              <div class="alert__meta">Sensor A-12 · 14m ago</div>
+            </div>
+            <span class="chip chip--danger">Critical</span>
+          </div>
+
+          <div class="alert">
+            <div class="alert__dot alert__dot--warning"></div>
+            <div class="alert__content">
+              <div class="alert__title">Calibration overdue</div>
+              <div class="alert__meta">Monitor B-05 · 2h ago</div>
+            </div>
+            <span class="chip chip--warning">Pending</span>
+          </div>
+
+          <div class="alert">
+            <div class="alert__dot alert__dot--success"></div>
+            <div class="alert__content">
+              <div class="alert__title">All systems operational</div>
+              <div class="alert__meta">Network · stable</div>
+            </div>
+            <span class="chip chip--success">Healthy</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+

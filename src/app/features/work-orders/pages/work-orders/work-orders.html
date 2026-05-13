@@ -1,0 +1,133 @@
+<section class="work-orders">
+  <div class="work-orders__header">
+    <div>
+      <h2 class="work-orders__title">Work Orders</h2>
+      <p class="work-orders__description">
+        Search, filter and manage work orders across devices and clients.
+      </p>
+    </div>
+
+    <div class="work-orders__actions">
+      <button class="btn btn--primary" type="button">
+        <i class="ph ph-plus" aria-hidden="true"></i>
+        <span>Create New</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="filters__item">
+      <label class="filters__label">Search</label>
+      <div class="field">
+        <i class="ph ph-magnifying-glass field__icon" aria-hidden="true"></i>
+        <input class="field__input" type="text" placeholder="Order ID, device, technician..." />
+      </div>
+    </div>
+
+    <div class="filters__item">
+      <label class="filters__label">Type</label>
+      <select class="select" aria-label="Type select">
+        <option value="all">All Types</option>
+        <option value="calibration">Calibration</option>
+        <option value="inspection">Inspection</option>
+        <option value="maintenance">Maintenance</option>
+      </select>
+    </div>
+
+    <div class="filters__item">
+      <label class="filters__label">Status</label>
+      <select class="select" aria-label="Status select">
+        <option value="all">All Status</option>
+        <option value="completed">Completed</option>
+        <option value="in-progress">In Progress</option>
+        <option value="pending">Pending</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="table" aria-label="Work orders table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Client</th>
+          <th>Location</th>
+          <th>Date</th>
+          <th>Technician</th>
+          <th>Status</th>
+          <th class="table__actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Calibration</td>
+          <td>Greenfield Labs</td>
+          <td>Sector 7</td>
+          <td>2026-05-15</td>
+          <td>John Doe</td>
+          <td>
+            <span class="status status--in-progress">In Progress</span>
+          </td>
+          <td class="table__actions">
+            <button class="btn btn--small" type="button">
+              <i class="ph ph-eye" aria-hidden="true"></i>
+              <span>View</span>
+            </button>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Inspection</td>
+          <td>Northwind Energy</td>
+          <td>Building A</td>
+          <td>2026-05-18</td>
+          <td>Jane Smith</td>
+          <td>
+            <span class="status status--pending">Pending</span>
+          </td>
+          <td class="table__actions">
+            <button class="btn btn--small" type="button">
+              <i class="ph ph-eye" aria-hidden="true"></i>
+              <span>View</span>
+            </button>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Maintenance</td>
+          <td>Orion Facilities</td>
+          <td>Warehouse 4</td>
+          <td>2026-05-10</td>
+          <td>Mike Johnson</td>
+          <td>
+            <span class="status status--completed">Completed</span>
+          </td>
+          <td class="table__actions">
+            <button class="btn btn--small" type="button">
+              <i class="ph ph-eye" aria-hidden="true"></i>
+              <span>View</span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="work-orders__bottom">
+    <div class="mini-metrics">
+      <div class="mini-metric">
+        <div class="mini-metric__value metric">24</div>
+        <div class="mini-metric__label">Total Orders</div>
+      </div>
+      <div class="mini-metric">
+        <div class="mini-metric__value metric">8</div>
+        <div class="mini-metric__label">Scheduled</div>
+      </div>
+      <div class="mini-metric">
+        <div class="mini-metric__value metric">5</div>
+        <div class="mini-metric__label">Assigned</div>
+      </div>
+    </div>
+  </div>
+</section>
+
