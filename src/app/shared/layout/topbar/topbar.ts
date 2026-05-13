@@ -1,9 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { LanguageService } from '../../../core/services/language.service';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
   selector: 'app-topbar',
-  imports: [],
+  imports: [TranslatePipe],
   templateUrl: './topbar.html',
   styleUrl: './topbar.scss',
 })
-export class Topbar {}
+export class Topbar {
+  protected lang = inject(LanguageService);
+}

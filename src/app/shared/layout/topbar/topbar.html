@@ -1,12 +1,14 @@
 <div class="topbar">
-  <div class="topbar__left">
-    <div class="titles">
-      <h1>EmSafe Monitoring System</h1>
-      <p>Radiation Monitoring &amp; Control Center</p>
-    </div>
+  <div class="topbar__brand">
+    <span class="brand-name">{{ 'topbar_brand' | t }}</span>
   </div>
 
   <div class="topbar__right">
+    <button class="lang-toggle" type="button" (click)="lang.toggle()" [title]="lang.lang() === 'en' ? 'Switch to Spanish' : 'Cambiar a inglés'">
+      <i class="ph ph-translate" aria-hidden="true"></i>
+      <span>{{ lang.lang() === 'en' ? 'ES' : 'EN' }}</span>
+    </button>
+
     <div class="icon-actions" aria-label="Quick actions">
       <button class="icon-btn" type="button" aria-label="Notifications">
         <i class="ph ph-bell" aria-hidden="true"></i>
@@ -18,12 +20,11 @@
     </div>
 
     <div class="profile">
-      <div class="avatar" aria-hidden="true">AT</div>
-
       <div class="profile__meta">
         <h3>Alex Thompson</h3>
-        <span>System Admin</span>
+        <span>{{ 'topbar_role' | t }}</span>
       </div>
+      <div class="avatar" aria-hidden="true">AT</div>
     </div>
   </div>
 </div>

@@ -1,0 +1,141 @@
+<section class="new-wo">
+  <!-- Breadcrumb + Header -->
+  <div class="new-wo__head">
+    <p class="breadcrumb">
+      <a routerLink="/work-orders">{{ 'nav_workOrders' | t }}</a>
+      <span> › </span>
+      <span>{{ 'wo_createNew' | t }}</span>
+    </p>
+    <h2 class="new-wo__title">{{ 'wo_new_title' | t }}</h2>
+    <p class="new-wo__subtitle">{{ 'wo_new_subtitle' | t }}</p>
+  </div>
+
+  <!-- Form Card -->
+  <div class="form-card">
+    <!-- Card header -->
+    <div class="form-card__header">
+      <div class="section-icon">
+        <i class="ph ph-arrows-clockwise" aria-hidden="true"></i>
+      </div>
+      <span class="section-title">{{ 'wo_new_sectionTitle' | t }}</span>
+    </div>
+
+    <!-- Form body -->
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form-body" novalidate>
+
+      <!-- Row 1: Type + Client -->
+      <div class="form-row form-row--2col">
+        <div class="field-group">
+          <label class="field-label">{{ 'wo_new_type' | t }} <span class="required">*</span></label>
+          <div class="select-wrap" [class.field--error]="isInvalid('type')">
+            <select formControlName="type" class="field-select">
+              <option value="">{{ 'wo_new_selectType' | t }}</option>
+              <option value="Installation">{{ 'wo_installation' | t }}</option>
+              <option value="Maintenance">{{ 'wo_maintenance' | t }}</option>
+              <option value="Collection">{{ 'wo_collection' | t }}</option>
+            </select>
+            <i class="ph ph-caret-down select-caret" aria-hidden="true"></i>
+          </div>
+          @if (isInvalid('type')) {
+            <span class="error-msg">{{ 'wo_new_type' | t }} is required</span>
+          }
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">{{ 'wo_new_clientName' | t }} <span class="required">*</span></label>
+          <div class="input-icon-wrap" [class.field--error]="isInvalid('client')">
+            <i class="ph ph-magnifying-glass input-icon" aria-hidden="true"></i>
+            <input
+              type="text"
+              class="field-input field-input--with-icon"
+              formControlName="client"
+              [placeholder]="'wo_new_searchClient' | t"
+            />
+          </div>
+          @if (isInvalid('client')) {
+            <span class="error-msg">{{ 'wo_new_clientName' | t }} is required</span>
+          }
+        </div>
+      </div>
+
+      <!-- Row 2: Location (full width) -->
+      <div class="form-row">
+        <div class="field-group">
+          <label class="field-label">{{ 'wo_new_location' | t }} <span class="required">*</span></label>
+          <div class="input-icon-wrap" [class.field--error]="isInvalid('location')">
+            <i class="ph ph-map-pin input-icon" aria-hidden="true"></i>
+            <input
+              type="text"
+              class="field-input field-input--with-icon"
+              formControlName="location"
+              [placeholder]="'wo_new_locationPlaceholder' | t"
+            />
+          </div>
+          @if (isInvalid('location')) {
+            <span class="error-msg">{{ 'wo_new_location' | t }} is required</span>
+          }
+        </div>
+      </div>
+
+      <!-- Row 3: Date + Technician -->
+      <div class="form-row form-row--2col">
+        <div class="field-group">
+          <label class="field-label">{{ 'wo_new_scheduledDate' | t }} <span class="required">*</span></label>
+          <input
+            type="datetime-local"
+            class="field-input"
+            formControlName="scheduledDate"
+            [class.field--error]="isInvalid('scheduledDate')"
+          />
+          @if (isInvalid('scheduledDate')) {
+            <span class="error-msg">{{ 'wo_new_scheduledDate' | t }} is required</span>
+          }
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">{{ 'wo_new_assignedTech' | t }} <span class="required">*</span></label>
+          <div class="select-wrap select-wrap--icon" [class.field--error]="isInvalid('technician')">
+            <select formControlName="technician" class="field-select">
+              <option value="">{{ 'wo_new_selectTech' | t }}</option>
+              @for (tech of technicians(); track tech.id) {
+                <option [value]="tech.name">{{ tech.name }}</option>
+              }
+            </select>
+            <i class="ph ph-user-gear select-icon-right" aria-hidden="true"></i>
+          </div>
+          @if (isInvalid('technician')) {
+            <span class="error-msg">{{ 'wo_new_assignedTech' | t }} is required</span>
+          }
+        </div>
+      </div>
+
+      <!-- Row 4: Notes (full width) -->
+      <div class="form-row">
+        <div class="field-group">
+          <label class="field-label">{{ 'wo_new_notes' | t }}</label>
+          <textarea
+            class="field-textarea"
+            formControlName="notes"
+            [placeholder]="'wo_new_notesPlaceholder' | t"
+            rows="5"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="form-divider"></div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn btn--cancel" (click)="cancel()">
+          {{ 'btn_cancel' | t }}
+        </button>
+        <button type="submit" class="btn btn--submit" [disabled]="submitting">
+          <i class="ph ph-check-circle" aria-hidden="true"></i>
+          {{ 'btn_submit' | t }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</section>
