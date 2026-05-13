@@ -1,0 +1,123 @@
+<section class="new-user">
+  <div class="new-user__header">
+    <div>
+      <p class="breadcrumb">
+        <a routerLink="/users">{{ 'nav_users' | t }}</a>
+        › {{ 'tech_title' | t }}
+      </p>
+      <h2 class="new-user__title">{{ 'tech_title' | t }}</h2>
+    </div>
+    <a routerLink="/users" class="btn btn--back">
+      {{ 'btn_backToList' | t }}
+    </a>
+  </div>
+
+  <form class="form-card" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-card__header">
+      <div class="section-icon">
+        <i class="ph ph-hard-hat" aria-hidden="true"></i>
+      </div>
+      <div>
+        <div class="section-title">{{ 'tech_sectionTitle' | t }}</div>
+        <div class="section-desc">{{ 'tech_sectionDesc' | t }}</div>
+      </div>
+    </div>
+
+    <div class="form-body">
+      <!-- Full Name + Email -->
+      <div class="form-row--2col">
+        <div class="field-group">
+          <label class="field-label">{{ 'form_fullName' | t }} <span class="required">*</span></label>
+          <input
+            class="field-input"
+            [class.field--error]="isInvalid('fullName')"
+            type="text"
+            formControlName="fullName"
+            placeholder="e.g. Alexander Pierce"
+          />
+          @if (isInvalid('fullName')) {
+            <span class="error-msg">Full name is required.</span>
+          }
+        </div>
+        <div class="field-group">
+          <label class="field-label">{{ 'form_emailAddress' | t }} <span class="required">*</span></label>
+          <input
+            class="field-input"
+            [class.field--error]="isInvalid('email')"
+            type="email"
+            formControlName="email"
+            placeholder="alex@emsafe.com"
+          />
+          @if (isInvalid('email')) {
+            <span class="error-msg">Valid email is required.</span>
+          }
+        </div>
+      </div>
+
+      <!-- Phone -->
+      <div class="field-group">
+        <label class="field-label">{{ 'form_phone' | t }}</label>
+        <input
+          class="field-input field-input--half"
+          type="tel"
+          formControlName="phone"
+          placeholder="+1 (555) 000-0000"
+        />
+      </div>
+
+      <!-- Password + Confirm -->
+      <div class="form-row--2col">
+        <div class="field-group">
+          <label class="field-label">{{ 'form_password' | t }} <span class="required">*</span></label>
+          <input
+            class="field-input"
+            [class.field--error]="isInvalid('password')"
+            type="password"
+            formControlName="password"
+            placeholder="••••••••"
+          />
+          @if (isInvalid('password')) {
+            <span class="error-msg">Password must be at least 8 characters.</span>
+          }
+        </div>
+        <div class="field-group">
+          <label class="field-label">{{ 'form_confirmPassword' | t }} <span class="required">*</span></label>
+          <input
+            class="field-input"
+            [class.field--error]="isInvalid('confirmPassword') || passwordMismatch"
+            type="password"
+            formControlName="confirmPassword"
+            placeholder="••••••••"
+          />
+          @if (passwordMismatch) {
+            <span class="error-msg">Passwords do not match.</span>
+          }
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="field-group">
+        <label class="field-label">{{ 'form_additionalNotes' | t }}</label>
+        <textarea
+          class="field-textarea"
+          formControlName="notes"
+          [placeholder]="'form_notesPlaceholder' | t"
+          rows="4"
+        ></textarea>
+      </div>
+
+      <!-- Info banner -->
+      <div class="info-banner">
+        <i class="ph ph-info" aria-hidden="true"></i>
+        <span>{{ 'form_activationMsg' | t }}</span>
+      </div>
+
+      <div class="form-divider"></div>
+
+      <div class="form-actions">
+        <button class="btn btn--cancel" type="button" (click)="cancel()">{{ 'btn_cancel' | t }}</button>
+        <button class="btn btn--submit" type="submit">{{ 'btn_create' | t }}</button>
+      </div>
+    </div>
+  </form>
+</section>

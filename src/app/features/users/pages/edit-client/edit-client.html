@@ -1,0 +1,350 @@
+<section class="edit-client">
+  <div class="edit-client__header">
+    <div>
+      <p class="breadcrumb">
+        <a routerLink="/users">{{ 'nav_users' | t }}</a>
+        › {{ 'client_edit_title' | t }}
+      </p>
+      <h2 class="edit-client__title">{{ 'client_edit_title' | t }}</h2>
+      <p class="edit-client__subtitle">{{ 'client_edit_subtitle' | t }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn--cancel" type="button" (click)="cancel()">{{ 'btn_cancel' | t }}</button>
+      <button class="btn btn--submit" type="button" (click)="submit()">
+        <i class="ph ph-floppy-disk" aria-hidden="true"></i>
+        {{ 'btn_save' | t }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Client type tabs -->
+  <div class="type-card">
+    <div class="type-label">{{ 'client_type' | t }}</div>
+    <div class="type-tabs">
+      <button
+        class="type-tab"
+        [class.type-tab--active]="clientType() === 'company'"
+        type="button"
+        (click)="setType('company')"
+      >
+        <i class="ph ph-buildings" aria-hidden="true"></i>
+        {{ 'client_company' | t }}
+      </button>
+      <button
+        class="type-tab"
+        [class.type-tab--active]="clientType() === 'individual'"
+        type="button"
+        (click)="setType('individual')"
+      >
+        <i class="ph ph-user" aria-hidden="true"></i>
+        {{ 'client_individual' | t }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Company form -->
+  @if (clientType() === 'company') {
+    <form [formGroup]="companyForm" class="form-sections">
+
+      <!-- Client Information -->
+      <div class="form-section">
+        <div class="form-section__header">
+          <i class="ph ph-info" aria-hidden="true"></i>
+          {{ 'client_info' | t }}
+        </div>
+        <div class="form-section__body">
+          <div class="form-row--2col">
+            <div class="field-group">
+              <label class="field-label">{{ 'client_companyName' | t }} <span class="required">*</span></label>
+              <input class="field-input" [class.field--error]="isInvalid('companyName')" type="text" formControlName="companyName" placeholder="Acme Corporation" />
+              @if (isInvalid('companyName')) { <span class="error-msg">Required.</span> }
+            </div>
+            <div class="field-group">
+              <label class="field-label">{{ 'client_taxId' | t }}</label>
+              <input class="field-input" type="text" formControlName="taxId" placeholder="XX-XXXXXXXXX" />
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">{{ 'client_industry' | t }}</label>
+            <div class="select-wrap">
+              <select class="field-select" formControlName="industry">
+                <option value="">{{ 'client_selectIndustry' | t }}</option>
+                <option value="energy">Energy & Utilities</option>
+                <option value="telecom">Telecommunications</option>
+                <option value="healthcare">Healthcare</option>
+                <option value="manufacturing">Manufacturing</option>
+                <option value="government">Government</option>
+              </select>
+              <i class="ph ph-caret-down select-caret" aria-hidden="true"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Location + Primary Contact -->
+      <div class="form-grid--2">
+        <div class="form-section">
+          <div class="form-section__header">
+            <i class="ph ph-map-pin" aria-hidden="true"></i>
+            {{ 'client_location' | t }}
+          </div>
+          <div class="form-section__body">
+            <div class="field-group">
+              <label class="field-label">{{ 'client_address' | t }} <span class="required">*</span></label>
+              <input class="field-input" [class.field--error]="isInvalid('address')" type="text" formControlName="address" placeholder="123 Vigilance St." />
+            </div>
+            <div class="form-row--2col">
+              <div class="field-group">
+                <label class="field-label">{{ 'client_city' | t }} <span class="required">*</span></label>
+                <input class="field-input" [class.field--error]="isInvalid('city')" type="text" formControlName="city" placeholder="Tech City" />
+              </div>
+              <div class="field-group">
+                <label class="field-label">{{ 'client_country' | t }} <span class="required">*</span></label>
+                <input class="field-input" type="text" formControlName="country" placeholder="United States" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section__header">
+            <i class="ph ph-address-book" aria-hidden="true"></i>
+            {{ 'client_primaryContact' | t }}
+          </div>
+          <div class="form-section__body">
+            <div class="field-group">
+              <label class="field-label">{{ 'client_contactName' | t }} <span class="required">*</span></label>
+              <input class="field-input" [class.field--error]="isInvalid('contactName')" type="text" formControlName="contactName" placeholder="John Doe" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">{{ 'client_contactEmail' | t }} <span class="required">*</span></label>
+              <input class="field-input" [class.field--error]="isInvalid('contactEmail')" type="email" formControlName="contactEmail" placeholder="john.doe@acme.com" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">{{ 'client_contactPhone' | t }}</label>
+              <input class="field-input" type="tel" formControlName="contactPhone" placeholder="+1 (555) 000-0000" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sensor Information -->
+      <div class="form-section">
+        <div class="form-section__header">
+          <i class="ph ph-broadcast" aria-hidden="true"></i>
+          {{ 'client_sensorInfo' | t }}
+        </div>
+        <div class="form-section__body">
+          <div class="form-row--2col">
+            <div class="field-group">
+              <label class="field-label">{{ 'client_numSensors' | t }} <span class="required">*</span></label>
+              <input class="field-input" type="number" formControlName="numSensors" min="0" placeholder="0" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">{{ 'client_sensorType' | t }}</label>
+              <input class="field-input" type="text" formControlName="sensorType" placeholder="Multi-select types..." />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- App Access -->
+      <div class="form-section">
+        <div class="form-section__header">
+          <i class="ph ph-device-mobile" aria-hidden="true"></i>
+          {{ 'client_appAccess' | t }}
+          <div class="toggle-wrap">
+            <label class="toggle">
+              <input type="checkbox" [checked]="enableApp()" (change)="enableApp.set($any($event.target).checked)" />
+              <span class="toggle__track"></span>
+            </label>
+            <span class="toggle-label">{{ 'client_enableApp' | t }}</span>
+          </div>
+        </div>
+        @if (enableApp()) {
+          <div class="form-section__body">
+            <div class="field-group">
+              <label class="field-label">{{ 'client_accessEmail' | t }} <span class="required">*</span></label>
+              <input class="field-input" type="email" formControlName="accessEmail" placeholder="john.doe@acme.com" />
+              <span class="field-hint">
+                <i class="ph ph-check-circle" aria-hidden="true"></i>
+                {{ 'client_prefilled' | t }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Status & Notes -->
+      <div class="form-section">
+        <div class="form-section__header">
+          <i class="ph ph-check-square" aria-hidden="true"></i>
+          {{ 'client_statusNotes' | t }}
+        </div>
+        <div class="form-section__body">
+          <div class="field-group">
+            <label class="field-label">{{ 'client_initialStatus' | t }}</label>
+            <div class="select-wrap">
+              <select class="field-select" formControlName="status">
+                <option value="active">{{ 'status_active' | t }}</option>
+                <option value="inactive">{{ 'status_inactive' | t }}</option>
+              </select>
+              <i class="ph ph-caret-down select-caret" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">{{ 'client_internalNotes' | t }}</label>
+            <textarea class="field-textarea" formControlName="notes" [placeholder]="'client_internalPlaceholder' | t" rows="4"></textarea>
+          </div>
+        </div>
+      </div>
+
+    </form>
+  }
+
+  <!-- Individual form -->
+  @if (clientType() === 'individual') {
+    <form [formGroup]="individualForm" class="form-sections">
+
+      <!-- Client Information -->
+      <div class="form-section">
+        <div class="form-section__header">
+          <i class="ph ph-info" aria-hidden="true"></i>
+          {{ 'client_info' | t }}
+        </div>
+        <div class="form-section__body">
+          <div class="form-row--2col">
+            <div class="field-group">
+              <label class="field-label">{{ 'client_fullName' | t }} <span class="required">*</span></label>
+              <input class="field-input" [class.field--error]="isInvalid('fullName')" type="text" formControlName="fullName" placeholder="John Doe" />
+              @if (isInvalid('fullName')) { <span class="error-msg">Required.</span> }
+            </div>
+            <div class="field-group">
+              <label class="field-label">{{ 'client_docId' | t }}</label>
+              <input class="field-input" type="text" formControlName="docId" placeholder="XXXXXXXXX-X" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Location + Primary Contact -->
+      <div class="form-grid--2">
+        <div class="form-section">
+          <div class="form-section__header">
+            <i class="ph ph-map-pin" aria-hidden="true"></i>
+            {{ 'client_location' | t }}
+          </div>
+          <div class="form-section__body">
+            <div class="field-group">
+              <label class="field-label">{{ 'client_address' | t }} <span class="required">*</span></label>
+              <input class="field-input" [class.field--error]="isInvalid('address')" type="text" formControlName="address" placeholder="123 Vigilance St." />
+            </div>
+            <div class="form-row--2col">
+              <div class="field-group">
+                <label class="field-label">{{ 'client_city' | t }} <span class="required">*</span></label>
+                <input class="field-input" type="text" formControlName="city" placeholder="Tech City" />
+              </div>
+              <div class="field-group">
+                <label class="field-label">{{ 'client_country' | t }}</label>
+                <input class="field-input" type="text" formControlName="country" placeholder="United States" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section__header">
+            <i class="ph ph-address-book" aria-hidden="true"></i>
+            {{ 'client_primaryContact' | t }}
+          </div>
+          <div class="form-section__body">
+            <div class="field-group">
+              <label class="field-label">{{ 'client_contactName' | t }} <span class="required">*</span></label>
+              <input class="field-input" [class.field--error]="isInvalid('contactName')" type="text" formControlName="contactName" placeholder="John Doe" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">{{ 'client_contactEmail' | t }} <span class="required">*</span></label>
+              <input class="field-input" [class.field--error]="isInvalid('contactEmail')" type="email" formControlName="contactEmail" placeholder="john.doe@acme.com" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">{{ 'client_contactPhone' | t }}</label>
+              <input class="field-input" type="tel" formControlName="contactPhone" placeholder="+1 (555) 000-0000" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sensor Information -->
+      <div class="form-section">
+        <div class="form-section__header">
+          <i class="ph ph-broadcast" aria-hidden="true"></i>
+          {{ 'client_sensorInfo' | t }}
+        </div>
+        <div class="form-section__body">
+          <div class="form-row--2col">
+            <div class="field-group">
+              <label class="field-label">{{ 'client_numSensors' | t }} <span class="required">*</span></label>
+              <input class="field-input" type="number" formControlName="numSensors" min="0" placeholder="0" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">{{ 'client_sensorType' | t }}</label>
+              <input class="field-input" type="text" formControlName="sensorType" placeholder="Multi-select types..." />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- App Access -->
+      <div class="form-section">
+        <div class="form-section__header">
+          <i class="ph ph-device-mobile" aria-hidden="true"></i>
+          {{ 'client_appAccess' | t }}
+          <div class="toggle-wrap">
+            <label class="toggle">
+              <input type="checkbox" [checked]="enableApp()" (change)="enableApp.set($any($event.target).checked)" />
+              <span class="toggle__track"></span>
+            </label>
+            <span class="toggle-label">{{ 'client_enableApp' | t }}</span>
+          </div>
+        </div>
+        @if (enableApp()) {
+          <div class="form-section__body">
+            <div class="field-group">
+              <label class="field-label">{{ 'client_accessEmail' | t }}</label>
+              <input class="field-input" type="email" formControlName="accessEmail" placeholder="john.doe@acme.com" />
+              <span class="field-hint">
+                <i class="ph ph-check-circle" aria-hidden="true"></i>
+                {{ 'client_prefilled' | t }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Status & Notes -->
+      <div class="form-section">
+        <div class="form-section__header">
+          <i class="ph ph-check-square" aria-hidden="true"></i>
+          {{ 'client_statusNotes' | t }}
+        </div>
+        <div class="form-section__body">
+          <div class="field-group">
+            <label class="field-label">{{ 'client_initialStatus' | t }}</label>
+            <div class="select-wrap">
+              <select class="field-select" formControlName="status">
+                <option value="active">{{ 'status_active' | t }}</option>
+                <option value="inactive">{{ 'status_inactive' | t }}</option>
+              </select>
+              <i class="ph ph-caret-down select-caret" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">{{ 'client_internalNotes' | t }}</label>
+            <textarea class="field-textarea" formControlName="notes" [placeholder]="'client_internalPlaceholder' | t" rows="4"></textarea>
+          </div>
+        </div>
+      </div>
+
+    </form>
+  }
+</section>

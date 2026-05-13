@@ -1,87 +1,49 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { NgApexchartsModule } from 'ng-apexcharts';
+import { DecimalPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { DataService } from '../../../../core/services/data.service';
+import { LanguageService } from '../../../../core/services/language.service';
+import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [NgApexchartsModule],
+  imports: [NgApexchartsModule, TranslatePipe, DecimalPipe, RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
 export class Dashboard {
-  // System Activity (line)
-  systemActivitySeries = [
-    {
-      name: 'Requests',
-      data: [12, 28, 22, 36, 45, 38, 52, 47],
-    },
-  ];
+  protected lang = inject(LanguageService);
+  private data = inject(DataService);
 
-  systemActivityChart = {
-    type: 'line',
-    height: 300,
-    toolbar: { show: false },
-    zoom: { enabled: false },
-  } as const;
+  // Data from db.json via json-server
+  stats = toSignal(this.data.getStats());
+  latestOrders = toSignal(this.data.getLatestWorkOrders());
+  alerts = toSignal(this.data.getAlerts());
 
+  // System Activity chart — Last 30 Days
+  systemActivitySeries = [{ name: 'Work Orders', data: [5, 14, 10, 22, 18, 30, 26, 38, 32, 45, 40, 52] }];
+  systemActivityChart = { type: 'line', height: 260, toolbar: { show: false }, zoom: { enabled: false }, background: 'transparent' } as const;
   systemActivityXAxis = {
-    categories: ['01h', '05h', '09h', '13h', '17h', '21h', '23h', '24h'],
+    categories: ['01 Oct', '', '', '10 Oct', '', '', '20 Oct', '', '', '', '30 Oct', ''],
+    labels: { style: { colors: '#6b7280', fontSize: '12px' } },
+    axisBorder: { show: false },
+    axisTicks: { show: false },
   };
+  systemActivityYAxis = { labels: { style: { colors: '#6b7280', fontSize: '12px' } } };
+  systemActivityStroke = { curve: 'smooth', width: 2.5 } as const;
+  systemActivityColors = ['#1a6eff'];
+  systemActivityGrid = { borderColor: '#f0f2f5', xaxis: { lines: { show: false } }, yaxis: { lines: { show: true } } };
+  systemActivityTooltip = { theme: 'light' };
 
-  systemActivityStroke = {
-    curve: 'smooth',
-    width: 3,
-  } as const;
-
-  systemActivityColors = ['#39D5FF'];
-
-  systemActivityGrid = {
-    borderColor: 'rgba(255,255,255,0.06)',
-    xaxis: { lines: { show: true } },
-    yaxis: { lines: { show: true } },
-  };
-
-  systemActivityTooltip = {
-    theme: 'dark',
-  };
-
-  // Radiation Trends (bar)
-  radiationTrendsSeries = [
-    {
-      name: 'Avg radiation',
-      data: [2.1, 2.4, 2.2, 2.8, 3.1, 2.6],
-    },
-  ];
-
-  radiationTrendsChart = {
-    type: 'bar',
-    height: 300,
-    toolbar: { show: false },
-  } as const;
-
-  radiationTrendsXAxis = {
-    categories: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6'],
-  };
-
-  radiationTrendsPlotOptions = {
-    bar: {
-      borderRadius: 6,
-      columnWidth: '45%',
-    },
-  };
-
-  radiationTrendsColors = ['#1A6EFF'];
-
-  radiationTrendsGrid = {
-    borderColor: 'rgba(255,255,255,0.06)',
-  };
-
-  radiationTrendsDataLabels = {
-    enabled: false,
-  };
-
-  radiationTrendsTooltip = {
-    theme: 'dark',
-  };
+  // Radiation Trends chart — green shades
+  radiationTrendsSeries = [{ name: 'Avg radiation (μSv/h)', data: [0.05, 0.07, 0.06, 0.09, 0.08, 0.11, 0.13, 0.12] }];
+  radiationTrendsChart = { type: 'bar', height: 200, toolbar: { show: false }, background: 'transparent' } as const;
+  radiationTrendsXAxis = { labels: { show: false }, axisBorder: { show: false }, axisTicks: { show: false } };
+  radiationTrendsPlotOptions = { bar: { borderRadius: 4, columnWidth: '60%', distributed: true } };
+  radiationTrendsColors = ['#bbf7d0', '#86efac', '#4ade80', '#22c55e', '#16a34a', '#15803d', '#166534', '#14532d'];
+  radiationTrendsGrid = { borderColor: '#f0f2f5', yaxis: { lines: { show: true } }, xaxis: { lines: { show: false } } };
+  radiationTrendsDataLabels = { enabled: false };
+  radiationTrendsTooltip = { theme: 'light' };
 }
-
-

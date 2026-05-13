@@ -1,0 +1,314 @@
+:host {
+  display: block;
+}
+
+.new-wo {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Header ──────────────────────────────────────── */
+.breadcrumb {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+
+  a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+.new-wo__title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0 0 6px;
+}
+
+.new-wo__subtitle {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Card ────────────────────────────────────────── */
+.form-card {
+  background: var(--color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.form-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 24px;
+  background: rgba(26, 110, 255, 0.04);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.section-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(26, 110, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  i {
+    font-size: 18px;
+    color: var(--color-primary);
+  }
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* ── Form body ───────────────────────────────────── */
+.form-body {
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row--2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.required {
+  color: var(--color-danger);
+  margin-left: 2px;
+}
+
+/* ── Inputs ──────────────────────────────────────── */
+.field-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-family: 'Manrope', sans-serif;
+  outline: none;
+  transition: 160ms ease;
+
+  &::placeholder { color: var(--color-text-secondary); }
+
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(26, 110, 255, 0.1);
+  }
+
+  &.field--error {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+  }
+}
+
+.field-input--with-icon {
+  padding-left: 38px;
+}
+
+/* ── Icon wrapper ────────────────────────────────── */
+.input-icon-wrap {
+  position: relative;
+
+  &.field--error .field-input {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+  }
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 17px;
+  color: var(--color-text-secondary);
+  pointer-events: none;
+}
+
+/* ── Select ──────────────────────────────────────── */
+.select-wrap {
+  position: relative;
+
+  &.field--error .field-select {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+  }
+}
+
+.select-wrap--icon .field-select {
+  padding-right: 38px;
+}
+
+.field-select {
+  width: 100%;
+  padding: 10px 36px 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-family: 'Manrope', sans-serif;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  transition: 160ms ease;
+
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(26, 110, 255, 0.1);
+  }
+}
+
+.select-caret {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  pointer-events: none;
+}
+
+.select-icon-right {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 17px;
+  color: var(--color-text-secondary);
+  pointer-events: none;
+}
+
+/* ── Textarea ────────────────────────────────────── */
+.field-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-family: 'Manrope', sans-serif;
+  outline: none;
+  resize: vertical;
+  min-height: 110px;
+  transition: 160ms ease;
+
+  &::placeholder { color: var(--color-text-secondary); }
+
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(26, 110, 255, 0.1);
+  }
+}
+
+/* ── Validation ──────────────────────────────────── */
+.error-msg {
+  font-size: 12px;
+  color: var(--color-danger);
+  font-weight: 500;
+}
+
+/* ── Divider + Actions ───────────────────────────── */
+.form-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 0;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+  transition: 160ms ease;
+  i { font-size: 17px; }
+}
+
+.btn--cancel {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--color-text-primary);
+
+  &:hover {
+    background: var(--color-surface-alt);
+  }
+}
+
+.btn--submit {
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 640px) {
+  .form-row--2col {
+    grid-template-columns: 1fr;
+  }
+
+  .new-wo {
+    max-width: 100%;
+  }
+}

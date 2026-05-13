@@ -1,0 +1,177 @@
+<section class="history">
+  <div class="history__header">
+    <div>
+      <h2 class="history__title">{{ 'hist_title' | t }}</h2>
+      <p class="history__subtitle">{{ 'hist_subtitle' | t }}</p>
+    </div>
+    <button class="btn btn--ghost" type="button" (click)="exportCsv()">
+      <i class="ph ph-download-simple" aria-hidden="true"></i>
+      <span>{{ 'btn_exportCsv' | t }}</span>
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+
+    <!-- Date range -->
+    <div class="filter-group">
+      <label class="filter-label">{{ 'hist_dateRange' | t }}</label>
+      <div class="date-range-wrap">
+        <div class="date-input-wrap">
+          <i class="ph ph-calendar-blank date-icon" aria-hidden="true"></i>
+          <input
+            class="date-input"
+            type="date"
+            [value]="dateFrom()"
+            (change)="dateFrom.set($any($event.target).value)"
+            [attr.aria-label]="'hist_from' | t"
+          />
+        </div>
+        <span class="date-sep">–</span>
+        <div class="date-input-wrap">
+          <i class="ph ph-calendar-blank date-icon" aria-hidden="true"></i>
+          <input
+            class="date-input"
+            type="date"
+            [value]="dateTo()"
+            (change)="dateTo.set($any($event.target).value)"
+            [attr.aria-label]="'hist_to' | t"
+          />
+        </div>
+        @if (dateFrom() || dateTo()) {
+          <button class="clear-btn" type="button" (click)="clearDates()" [title]="'hist_clearDates' | t">
+            <i class="ph ph-x" aria-hidden="true"></i>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Type -->
+    <div class="filter-group">
+      <label class="filter-label">{{ 'hist_type' | t }}</label>
+      <div class="select-wrap">
+        <select
+          class="field-select"
+          (change)="selectedType.set($any($event.target).value)"
+          aria-label="Filter by type"
+        >
+          <option value="all">{{ 'hist_allTypes' | t }}</option>
+          <option value="Installation">{{ 'wo_installation' | t }}</option>
+          <option value="Maintenance">{{ 'wo_maintenance' | t }}</option>
+          <option value="Collection">{{ 'wo_collection' | t }}</option>
+        </select>
+        <i class="ph ph-caret-down select-caret" aria-hidden="true"></i>
+      </div>
+    </div>
+
+    <!-- Technician -->
+    <div class="filter-group">
+      <label class="filter-label">{{ 'hist_technician' | t }}</label>
+      <div class="select-wrap">
+        <select
+          class="field-select"
+          (change)="selectedTechnician.set($any($event.target).value)"
+          aria-label="Filter by technician"
+        >
+          <option value="all">{{ 'hist_allPersonnel' | t }}</option>
+          @for (tech of technicians(); track tech) {
+            <option [value]="tech">{{ tech }}</option>
+          }
+        </select>
+        <i class="ph ph-caret-down select-caret" aria-hidden="true"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active range label -->
+  @if (dateRangeLabel()) {
+    <div class="range-pill">
+      <i class="ph ph-funnel-simple" aria-hidden="true"></i>
+      <span>{{ dateRangeLabel() }}</span>
+      <button class="range-pill__close" type="button" (click)="clearDates()">
+        <i class="ph ph-x" aria-hidden="true"></i>
+      </button>
+    </div>
+  }
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table class="table" aria-label="Work orders history table">
+      <thead>
+        <tr>
+          <th>{{ 'th_orderId' | t }}</th>
+          <th>{{ 'th_completionDate' | t }}</th>
+          <th>{{ 'th_clientSite' | t }}</th>
+          <th>{{ 'th_serviceType' | t }}</th>
+          <th>{{ 'th_leadTech' | t }}</th>
+          <th>{{ 'th_status' | t }}</th>
+          <th>{{ 'th_actions' | t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of items(); track item.id) {
+          <tr>
+            <td><span class="order-id">{{ item.orderId }}</span></td>
+            <td>
+              <div class="date-cell">
+                <span>{{ item.completionDate }}</span>
+                <small>{{ item.completionTime }}</small>
+              </div>
+            </td>
+            <td>
+              <div class="client-cell">
+                <span>{{ item.client }}</span>
+                <small>{{ item.site }}</small>
+              </div>
+            </td>
+            <td>
+              <span class="type-badge type-badge--{{ item.serviceType.toLowerCase() }}">
+                @if (item.serviceType === 'Installation') { {{ 'wo_installation' | t }} }
+                @else if (item.serviceType === 'Maintenance') { {{ 'wo_maintenance' | t }} }
+                @else { {{ 'wo_collection' | t }} }
+              </span>
+            </td>
+            <td>
+              <div class="tech-cell">
+                <div class="tech-avatar">{{ item.technicianInitials }}</div>
+                <span>{{ item.technician }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="status status--{{ item.status }}">
+                @if (item.status === 'completed') { {{ 'status_completed' | t }} }
+                @else { {{ 'status_cancelled' | t }} }
+              </span>
+            </td>
+            <td class="table__actions">
+              <button class="btn btn--icon" type="button" aria-label="Actions">
+                <i class="ph ph-dots-three-vertical" aria-hidden="true"></i>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="empty-row">No history records found.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      <span class="pagination__info">Showing {{ items().length }} results</span>
+      <div class="pagination__pages">
+        <button class="page-btn" type="button" aria-label="Previous">
+          <i class="ph ph-caret-left"></i>
+        </button>
+        <button class="page-btn active" type="button">1</button>
+        <button class="page-btn" type="button">2</button>
+        <button class="page-btn" type="button">3</button>
+        <span class="page-dots">…</span>
+        <button class="page-btn" type="button">10</button>
+        <button class="page-btn" type="button" aria-label="Next">
+          <i class="ph ph-caret-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

@@ -4,8 +4,8 @@
       <div class="logo-box" aria-hidden="true">E</div>
 
       <div class="brand">
-        <h2>EmSafe</h2>
-        <p>Admin Portal</p>
+        <h2>Admin Portal</h2>
+        <p>EMSafe</p>
         <span class="tag">Vigilance &amp; Control</span>
       </div>
     </div>
@@ -16,23 +16,23 @@
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }"
       >
-        <i class="ph ph-layout-grid" aria-hidden="true"></i>
-        <span>Dashboard</span>
+        <i class="ph ph-squares-four" aria-hidden="true"></i>
+        <span>{{ 'nav_dashboard' | t }}</span>
       </a>
 
       <a routerLink="/work-orders" routerLinkActive="active">
         <i class="ph ph-clipboard-text" aria-hidden="true"></i>
-        <span>Work Orders</span>
+        <span>{{ 'nav_workOrders' | t }}</span>
       </a>
 
       <a routerLink="/history" routerLinkActive="active">
         <i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i>
-        <span>History</span>
+        <span>{{ 'nav_history' | t }}</span>
       </a>
 
       <a routerLink="/users" routerLinkActive="active">
         <i class="ph ph-users" aria-hidden="true"></i>
-        <span>Users</span>
+        <span>{{ 'nav_users' | t }}</span>
       </a>
     </nav>
   </div>
@@ -40,12 +40,12 @@
   <div class="sidebar__bottom">
     <a class="bottom-link" href="#" (click)="$event.preventDefault()">
       <i class="ph ph-headset" aria-hidden="true"></i>
-      <span>Support</span>
+      <span>{{ 'nav_support' | t }}</span>
     </a>
 
     <a class="bottom-link bottom-link--danger" href="#" (click)="$event.preventDefault()">
       <i class="ph ph-sign-out" aria-hidden="true"></i>
-      <span>Logout</span>
+      <span>{{ 'nav_logout' | t }}</span>
     </a>
   </div>
 </div>

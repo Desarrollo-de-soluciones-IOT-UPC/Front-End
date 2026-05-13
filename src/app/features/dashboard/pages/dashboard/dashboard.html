@@ -1,145 +1,116 @@
 <section class="dashboard">
   <div class="dashboard__header">
     <div class="dashboard__titles">
-      <h2 class="dashboard__title">System Overview</h2>
-      <p class="dashboard__subtitle">
-        Real-time view of sensors, clients, tasks and critical alerts across the EMSafe network.
-      </p>
+      <h2 class="dashboard__title">{{ 'dash_title' | t }}</h2>
+      <p class="dashboard__subtitle">{{ 'dash_subtitle' | t }}</p>
     </div>
-
     <div class="dashboard__actions">
       <button class="btn btn--ghost" type="button">
-        <i class="ph ph-file-export" aria-hidden="true"></i>
-        <span>Export Report</span>
+        <i class="ph ph-download-simple" aria-hidden="true"></i>
+        <span>{{ 'btn_exportReport' | t }}</span>
       </button>
-
-      <button class="btn btn--primary" type="button">
+      <a routerLink="/work-orders/new" class="btn btn--primary">
         <i class="ph ph-plus" aria-hidden="true"></i>
-        <span>New Work Order</span>
-      </button>
+        <span>{{ 'dash_newWorkOrder' | t }}</span>
+      </a>
     </div>
   </div>
 
+  <!-- Metric Cards -->
   <div class="dashboard__metrics">
     <div class="metric-card">
-      <div class="metric-card__top">
-        <div class="metric-card__icon metric-card__icon--accent">
-          <i class="ph ph-cpu" aria-hidden="true"></i>
+      <div class="metric-card__header">
+        <div class="metric-card__icon metric-card__icon--blue">
+          <i class="ph ph-broadcast" aria-hidden="true"></i>
         </div>
-        <div class="metric-card__meta">
-          <div class="metric-card__label">Total Sensors</div>
-          <div class="metric-card__value metric-card__value--accent">128</div>
-        </div>
+        <span class="metric-badge metric-badge--success">{{ stats()?.sensorsDelta ?? '+12%' }}</span>
       </div>
-
-      <div class="metric-card__bottom">
-        <span class="chip chip--accent">
-          <i class="ph ph-wifi" aria-hidden="true"></i>
-          Active
-        </span>
-        <div class="metric-card__progress">
-          <div class="metric-card__progress-bar" style="width: 78%"></div>
-        </div>
+      <div class="metric-card__label">{{ 'dash_totalSensors' | t }}</div>
+      <div class="metric-card__value">{{ (stats()?.totalSensors ?? 1284) | number }}</div>
+      <div class="metric-card__progress">
+        <div class="metric-card__progress-bar metric-card__progress-bar--blue" style="width: 78%"></div>
       </div>
     </div>
 
     <div class="metric-card">
-      <div class="metric-card__top">
-        <div class="metric-card__icon metric-card__icon--primary">
-          <i class="ph ph-users" aria-hidden="true"></i>
+      <div class="metric-card__header">
+        <div class="metric-card__icon metric-card__icon--green">
+          <i class="ph ph-buildings" aria-hidden="true"></i>
         </div>
-        <div class="metric-card__meta">
-          <div class="metric-card__label">Active Clients</div>
-          <div class="metric-card__value metric-card__value--primary">46</div>
-        </div>
+        <span class="metric-badge metric-badge--success">{{ stats()?.clientsDelta ?? '+3' }}</span>
       </div>
-
-      <div class="metric-card__bottom">
-        <span class="chip chip--success">
-          <i class="ph ph-check" aria-hidden="true"></i>
-          Healthy
-        </span>
-        <div class="metric-card__progress">
-          <div class="metric-card__progress-bar" style="width: 64%"></div>
-        </div>
+      <div class="metric-card__label">{{ 'dash_activeClients' | t }}</div>
+      <div class="metric-card__value">{{ stats()?.activeClients ?? 42 }}</div>
+      <div class="metric-card__progress">
+        <div class="metric-card__progress-bar metric-card__progress-bar--green" style="width: 64%"></div>
       </div>
     </div>
 
     <div class="metric-card">
-      <div class="metric-card__top">
-        <div class="metric-card__icon metric-card__icon--warning">
-          <i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i>
+      <div class="metric-card__header">
+        <div class="metric-card__icon metric-card__icon--purple">
+          <i class="ph ph-clipboard-text" aria-hidden="true"></i>
         </div>
-        <div class="metric-card__meta">
-          <div class="metric-card__label">Pending Tasks</div>
-          <div class="metric-card__value metric-card__value--warning">12</div>
-        </div>
+        <span class="metric-badge metric-badge--neutral">{{ stats()?.tasksStatus ?? 'Stable' }}</span>
       </div>
-
-      <div class="metric-card__bottom">
-        <span class="chip chip--warning">
-          <i class="ph ph-hourglass" aria-hidden="true"></i>
-          Pending
-        </span>
-        <div class="metric-card__progress">
-          <div class="metric-card__progress-bar" style="width: 28%"></div>
-        </div>
+      <div class="metric-card__label">{{ 'dash_pendingTasks' | t }}</div>
+      <div class="metric-card__value">{{ stats()?.pendingTasks ?? 18 }}</div>
+      <div class="metric-card__progress">
+        <div class="metric-card__progress-bar metric-card__progress-bar--purple" style="width: 40%"></div>
       </div>
     </div>
 
     <div class="metric-card">
-      <div class="metric-card__top">
-        <div class="metric-card__icon metric-card__icon--danger">
-          <i class="ph ph-flame" aria-hidden="true"></i>
+      <div class="metric-card__header">
+        <div class="metric-card__icon metric-card__icon--red">
+          <i class="ph ph-warning" aria-hidden="true"></i>
         </div>
-        <div class="metric-card__meta">
-          <div class="metric-card__label">Critical Alerts</div>
-          <div class="metric-card__value metric-card__value--danger">3</div>
-        </div>
+        <span class="metric-badge metric-badge--danger">{{ stats()?.alertsStatus ?? 'High Risk' }}</span>
       </div>
-
-      <div class="metric-card__bottom">
-        <span class="chip chip--danger">
-          <i class="ph ph-warning-circle" aria-hidden="true"></i>
-          Critical
-        </span>
-        <div class="metric-card__progress">
-          <div class="metric-card__progress-bar" style="width: 18%"></div>
-        </div>
+      <div class="metric-card__label">{{ 'dash_criticalAlerts' | t }}</div>
+      <div class="metric-card__value">{{ (stats()?.criticalAlerts ?? 2) | number:'2.0' }}</div>
+      <div class="metric-card__progress">
+        <div class="metric-card__progress-bar metric-card__progress-bar--red" style="width: 18%"></div>
       </div>
     </div>
   </div>
 
+  <!-- Charts Row -->
   <div class="dashboard__grid">
     <div class="panel">
       <div class="panel__header">
-        <div class="panel__title">System Activity</div>
-        <div class="panel__hint">Last 24 hours</div>
+        <div>
+          <div class="panel__title">{{ 'dash_systemActivity' | t }}</div>
+          <div class="panel__hint">{{ 'dash_activityHint' | t }}</div>
+        </div>
+        <button class="period-btn" type="button">
+          {{ 'dash_last30Days' | t }} <i class="ph ph-caret-down" aria-hidden="true"></i>
+        </button>
       </div>
-
       <div class="panel__body">
         <apx-chart
           class="chart"
           [series]="systemActivitySeries"
           [chart]="systemActivityChart"
           [xaxis]="systemActivityXAxis"
+          [yaxis]="systemActivityYAxis"
           [stroke]="systemActivityStroke"
           [colors]="systemActivityColors"
           [grid]="systemActivityGrid"
           [tooltip]="systemActivityTooltip"
           type="line"
         ></apx-chart>
-
-
       </div>
     </div>
 
     <div class="panel">
       <div class="panel__header">
-        <div class="panel__title">Radiation Trends</div>
-        <div class="panel__hint">Avg radiation values</div>
+        <div>
+          <div class="panel__title">{{ 'dash_radiationTrends' | t }}</div>
+          <div class="panel__hint">{{ 'dash_radiationHint' | t }}</div>
+        </div>
+        <i class="ph ph-info panel__info-icon" aria-hidden="true"></i>
       </div>
-
       <div class="panel__body">
         <apx-chart
           class="chart"
@@ -154,124 +125,89 @@
           [tooltip]="radiationTrendsTooltip"
         ></apx-chart>
 
-
+        <div class="radiation-stats">
+          <div class="radiation-row">
+            <span class="radiation-label">{{ 'dash_currentAvg' | t }}</span>
+            <span class="radiation-value radiation-value--safe">{{ stats()?.currentRadiationAvg ?? 0.12 }} μSv/h</span>
+          </div>
+          <div class="radiation-row">
+            <span class="radiation-label">{{ 'dash_safetyThreshold' | t }}</span>
+            <span class="radiation-value radiation-value--danger">{{ stats()?.safetyThreshold ?? 0.50 }} μSv/h</span>
+          </div>
+          <div class="radiation-safe-badge">
+            <i class="ph ph-check-circle" aria-hidden="true"></i>
+            <span>{{ 'dash_safeMsg' | t }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- Lower Row -->
   <div class="dashboard__lower">
-    <div class="panel panel--wide">
+    <div class="panel">
       <div class="panel__header">
-        <div class="panel__title">Latest Work Orders</div>
-        <div class="panel__hint">Most recent updates</div>
+        <div class="panel__title">{{ 'dash_latestOrders' | t }}</div>
+        <a class="view-all-link" href="#">{{ 'btn_viewAll' | t }}</a>
       </div>
-
       <div class="panel__body">
         <div class="table-wrap">
           <table class="table">
             <thead>
               <tr>
-                <th>Type</th>
-                <th>Client</th>
-                <th>Location</th>
-                <th>Date</th>
-                <th>Technician</th>
-                <th>Status</th>
-                <th class="table__actions">Actions</th>
+                <th>{{ 'th_orderId' | t }}</th>
+                <th>{{ 'th_siteLocation' | t }}</th>
+                <th>{{ 'th_technician' | t }}</th>
+                <th>{{ 'th_status' | t }}</th>
+                <th>{{ 'th_date' | t }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Calibration</td>
-                <td>Greenfield Labs</td>
-                <td>Sector 7</td>
-                <td>2026-05-12</td>
-                <td>Alex Morgan</td>
-                <td>
-                  <span class="status status--completed">Completed</span>
-                </td>
-                <td class="table__actions">
-                  <button class="btn btn--small" type="button">
-                    <i class="ph ph-eye" aria-hidden="true"></i>
-                    <span>View</span>
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td>Inspection</td>
-                <td>Northwind Energy</td>
-                <td>Building A</td>
-                <td>2026-05-13</td>
-                <td>Sam Rivera</td>
-                <td>
-                  <span class="status status--in-progress">In Progress</span>
-                </td>
-                <td class="table__actions">
-                  <button class="btn btn--small" type="button">
-                    <i class="ph ph-eye" aria-hidden="true"></i>
-                    <span>View</span>
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td>Maintenance</td>
-                <td>Orion Facilities</td>
-                <td>Warehouse 4</td>
-                <td>2026-05-10</td>
-                <td>Chris Lee</td>
-                <td>
-                  <span class="status status--pending">Pending</span>
-                </td>
-                <td class="table__actions">
-                  <button class="btn btn--small" type="button">
-                    <i class="ph ph-eye" aria-hidden="true"></i>
-                    <span>View</span>
-                  </button>
-                </td>
-              </tr>
+              @for (order of latestOrders(); track order.id) {
+                <tr>
+                  <td><a class="order-link" href="#">{{ order.orderId }}</a></td>
+                  <td>{{ order.siteLocation }}</td>
+                  <td>{{ order.technician }}</td>
+                  <td>
+                    <span class="status status--{{ order.status }}">
+                      @if (order.status === 'completed') { {{ 'status_completed' | t }} }
+                      @else if (order.status === 'in-progress') { {{ 'status_inProgress' | t }} }
+                      @else { {{ 'status_pending' | t }} }
+                    </span>
+                  </td>
+                  <td>{{ order.date }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="empty-row">Loading...</td></tr>
+              }
             </tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <div class="panel panel--side">
+    <div class="panel">
       <div class="panel__header">
-        <div class="panel__title">System Alerts</div>
-        <div class="panel__hint">Live status</div>
+        <div class="panel__title">{{ 'dash_alerts' | t }}</div>
       </div>
-
       <div class="panel__body">
         <div class="alerts">
-          <div class="alert">
-            <div class="alert__dot alert__dot--danger"></div>
-            <div class="alert__content">
-              <div class="alert__title">Radiation spike detected</div>
-              <div class="alert__meta">Sensor A-12 · 14m ago</div>
+          @for (alert of alerts(); track alert.id) {
+            <div class="alert-item">
+              <div class="alert-icon alert-icon--{{ alert.type }}">
+                <i class="ph {{ alert.icon }}" aria-hidden="true"></i>
+              </div>
+              <div class="alert-content">
+                <div class="alert-title">{{ alert.title }}</div>
+                <div class="alert-desc">{{ alert.description }}</div>
+                <div class="alert-time">{{ alert.time }}</div>
+              </div>
             </div>
-            <span class="chip chip--danger">Critical</span>
-          </div>
-
-          <div class="alert">
-            <div class="alert__dot alert__dot--warning"></div>
-            <div class="alert__content">
-              <div class="alert__title">Calibration overdue</div>
-              <div class="alert__meta">Monitor B-05 · 2h ago</div>
-            </div>
-            <span class="chip chip--warning">Pending</span>
-          </div>
-
-          <div class="alert">
-            <div class="alert__dot alert__dot--success"></div>
-            <div class="alert__content">
-              <div class="alert__title">All systems operational</div>
-              <div class="alert__meta">Network · stable</div>
-            </div>
-            <span class="chip chip--success">Healthy</span>
-          </div>
+          } @empty {
+            <p class="empty-row">Loading...</p>
+          }
         </div>
       </div>
     </div>
   </div>
 </section>
-
