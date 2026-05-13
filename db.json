@@ -1,0 +1,250 @@
+{
+  "stats": {
+    "totalSensors": 1284,
+    "sensorsDelta": "+12%",
+    "activeClients": 42,
+    "clientsDelta": "+3",
+    "pendingTasks": 18,
+    "tasksStatus": "Stable",
+    "criticalAlerts": 2,
+    "alertsStatus": "High Risk",
+    "avgCompletionHours": 4.2,
+    "currentRadiationAvg": 0.12,
+    "safetyThreshold": 0.5
+  },
+  "workOrders": [
+    {
+      "id": "2",
+      "orderId": "#WO-9283",
+      "type": "Maintenance",
+      "client": "Global Net Systems",
+      "location": "Tower 7 - Substation",
+      "city": "San Jose, CA",
+      "date": "2023-10-25",
+      "technician": "Maria Silva",
+      "technicianInitials": "MS",
+      "status": "in-progress"
+    },
+    {
+      "id": "3",
+      "orderId": "#WO-9282",
+      "type": "Collection",
+      "client": "Urban Health Trust",
+      "location": "North Wing Lab",
+      "city": "Seattle, WA",
+      "date": "2023-10-26",
+      "technician": "Robert King",
+      "technicianInitials": "RK",
+      "status": "pending"
+    },
+    {
+      "id": "4",
+      "orderId": "#WO-9281",
+      "type": "Installation",
+      "client": "Coastal Antenna Inc.",
+      "location": "Coastal Antenna 4",
+      "city": "Miami, FL",
+      "date": "2023-10-26",
+      "technician": "Sarah Jenkins",
+      "technicianInitials": "SJ",
+      "status": "completed"
+    },
+    {
+      "id": "5",
+      "orderId": "#WO-9280",
+      "type": "Maintenance",
+      "client": "Northwind Energy",
+      "location": "Building A",
+      "city": "Denver, CO",
+      "date": "2023-10-27",
+      "technician": "Michael Chen",
+      "technicianInitials": "MC",
+      "status": "completed"
+    },
+    {
+      "id": "6",
+      "orderId": "#WO-9279",
+      "type": "Collection",
+      "client": "Greenfield Labs",
+      "location": "Sector 7",
+      "city": "Boston, MA",
+      "date": "2023-10-27",
+      "technician": "Robert Pike",
+      "technicianInitials": "RP",
+      "status": "pending"
+    },
+    {
+      "orderId": "#WO-9958",
+      "type": "Installation",
+      "client": "hc",
+      "location": "gvhjvj",
+      "city": "",
+      "date": "May 13, 2026",
+      "technician": "Marcus Rivera",
+      "technicianInitials": "MR",
+      "status": "pending",
+      "id": "W448tdUHPQQ"
+    }
+  ],
+  "history": [
+    {
+      "id": "1",
+      "orderId": "#WO-92841",
+      "completionDate": "2023-10-28",
+      "completionTime": "14:45 PM",
+      "client": "Quantum Dynamics Lab",
+      "site": "Sector 7-B, North Wing",
+      "serviceType": "Installation",
+      "technician": "Sarah Jenkins",
+      "technicianInitials": "SJ",
+      "status": "completed"
+    },
+    {
+      "id": "2",
+      "orderId": "#WO-92838",
+      "completionDate": "2023-10-27",
+      "completionTime": "11:15 AM",
+      "client": "Metro Data Center",
+      "site": "UPS Battery Room 2",
+      "serviceType": "Maintenance",
+      "technician": "Marcus Chen",
+      "technicianInitials": "MC",
+      "status": "completed"
+    },
+    {
+      "id": "3",
+      "orderId": "#WO-92832",
+      "completionDate": "2023-10-25",
+      "completionTime": "09:30 AM",
+      "client": "Skyline Telecom Hub",
+      "site": "Roof Terrace - Tower 4",
+      "serviceType": "Collection",
+      "technician": "Elena Rodriguez",
+      "technicianInitials": "ER",
+      "status": "completed"
+    },
+    {
+      "id": "4",
+      "orderId": "#WO-92829",
+      "completionDate": "2023-10-22",
+      "completionTime": "16:10 PM",
+      "client": "Global Pharma Corp",
+      "site": "MRI Suite 1 - Basement",
+      "serviceType": "Installation",
+      "technician": "Sarah Jenkins",
+      "technicianInitials": "SJ",
+      "status": "completed"
+    },
+    {
+      "id": "5",
+      "orderId": "#WO-92821",
+      "completionDate": "2023-10-19",
+      "completionTime": "10:00 AM",
+      "client": "Vertex Office Plaza",
+      "site": "Lobby & Public Zones",
+      "serviceType": "Maintenance",
+      "technician": "Marcus Chen",
+      "technicianInitials": "MC",
+      "status": "cancelled"
+    }
+  ],
+  "users": [
+    {
+      "id": "1",
+      "name": "Julianne Davis",
+      "initials": "JD",
+      "joinDate": "2023-10-01",
+      "role": "Admin",
+      "email": "j.davis@emsafe-iot.com",
+      "status": "active"
+    },
+    {
+      "id": "2",
+      "name": "Marcus Rivera",
+      "initials": "MR",
+      "joinDate": "2023-11-01",
+      "role": "Technician",
+      "email": "m.rivera@field.emsafe.com",
+      "status": "active"
+    },
+    {
+      "id": "3",
+      "name": "Sarah Koppel",
+      "initials": "SK",
+      "joinDate": "2023-12-01",
+      "role": "Technician",
+      "email": "s.koppel@field.emsafe.com",
+      "status": "inactive"
+    },
+    {
+      "id": "4",
+      "name": "Brandon Hall",
+      "initials": "BH",
+      "joinDate": "2024-01-01",
+      "role": "Client",
+      "email": "b.hall@gmail.com",
+      "status": "active"
+    }
+  ],
+  "alerts": [
+    {
+      "id": "1",
+      "type": "danger",
+      "icon": "ph-warning-circle",
+      "title": "Abnormal Radiation Spike",
+      "description": "Sector 7-B detected levels above 0.42 μSv/h.",
+      "time": "12 minutes ago"
+    },
+    {
+      "id": "2",
+      "type": "info",
+      "icon": "ph-arrows-clockwise",
+      "title": "Auto-Calibration Success",
+      "description": "Network node #401 recalibrated successfully.",
+      "time": "2 hours ago"
+    },
+    {
+      "id": "3",
+      "type": "success",
+      "icon": "ph-user-plus",
+      "title": "New Technician Onboarded",
+      "description": "Robert Pike added to field service team.",
+      "time": "5 hours ago"
+    }
+  ],
+  "latestWorkOrders": [
+    {
+      "id": "1",
+      "orderId": "#WO-9284",
+      "siteLocation": "North Sector Hub",
+      "technician": "Sarah Jenkins",
+      "status": "in-progress",
+      "date": "Oct 28, 2023"
+    },
+    {
+      "id": "2",
+      "orderId": "#WO-9283",
+      "siteLocation": "Downtown Relay B",
+      "technician": "Michael Chen",
+      "status": "completed",
+      "date": "Oct 27, 2023"
+    },
+    {
+      "id": "3",
+      "orderId": "#WO-9282",
+      "siteLocation": "West Ridge Grid",
+      "technician": "Sarah Jenkins",
+      "status": "pending",
+      "date": "Oct 27, 2023"
+    },
+    {
+      "id": "4",
+      "orderId": "#WO-9281",
+      "siteLocation": "Coastal Antenna 4",
+      "technician": "Robert Pike",
+      "status": "completed",
+      "date": "Oct 26, 2023"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
