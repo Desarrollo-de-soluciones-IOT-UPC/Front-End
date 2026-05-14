@@ -68,10 +68,10 @@ export class EditClient {
   submit(): void {
     this.submitted = true;
     if (this.activeForm.invalid) return;
-    this.router.navigate(['/users']);
+    this.router.navigate(['/admin/users']);
   }
 
   cancel(): void {
-    this.router.navigate(['/users']);
+    this.router.navigate(['/admin/users']);
   }
 }

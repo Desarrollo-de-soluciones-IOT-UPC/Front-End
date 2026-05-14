@@ -51,6 +51,11 @@ export class WorkOrders implements OnInit {
 
   ngOnInit(): void {
     this.loadOrders();
+    this.data.getChartData().subscribe(c => {
+      if (!c) return;
+      this.regionalSeries = [{ name: 'Orders', data: c.regional.series }];
+      this.regionalXAxis  = { ...this.regionalXAxis, categories: c.regional.categories };
+    });
   }
 
   loadOrders(): void {
@@ -76,10 +81,10 @@ export class WorkOrders implements OnInit {
   }
 
   // ── Charts ────────────────────────────────────────────────────
-  regionalSeries = [{ name: 'Orders', data: [42, 28, 35, 19] }];
+  regionalSeries: { name: string; data: number[] }[] = [{ name: 'Orders', data: [] }];
   regionalChart  = { type: 'bar', height: 130, toolbar: { show: false }, background: 'transparent' } as const;
-  regionalXAxis  = {
-    categories: ['TX', 'CA', 'WA', 'NY'],
+  regionalXAxis: { categories: string[]; labels: object; axisBorder: object; axisTicks: object } = {
+    categories: [],
     labels: { style: { colors: '#6b7280', fontSize: '12px', fontFamily: 'Manrope, sans-serif' } },
     axisBorder: { show: false },
     axisTicks:  { show: false },

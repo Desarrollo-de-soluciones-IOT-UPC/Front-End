@@ -5,12 +5,12 @@ import { LanguageService } from '../../../core/services/language.service';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
-  selector: 'app-sidebar',
+  selector: 'app-tech-sidebar',
   imports: [RouterLink, RouterLinkActive, TranslatePipe],
-  templateUrl: './sidebar.html',
-  styleUrl: './sidebar.scss',
+  templateUrl: './tech-sidebar.html',
+  styleUrl: './tech-sidebar.scss',
 })
-export class Sidebar {
+export class TechSidebar {
   protected lang = inject(LanguageService);
   protected auth = inject(AuthService);
 }

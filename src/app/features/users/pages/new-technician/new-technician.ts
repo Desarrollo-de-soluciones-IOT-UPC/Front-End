@@ -46,10 +46,10 @@ export class NewTechnician {
   submit(): void {
     this.submitted = true;
     if (this.form.invalid) return;
-    this.router.navigate(['/users']);
+    this.router.navigate(['/admin/users']);
   }
 
   cancel(): void {
-    this.router.navigate(['/users']);
+    this.router.navigate(['/admin/users']);
   }
 }

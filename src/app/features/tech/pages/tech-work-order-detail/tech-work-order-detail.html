@@ -1,0 +1,303 @@
+@if (order(); as o) {
+  <div class="detail-page">
+
+    <!-- Breadcrumb + title -->
+    <div class="detail-header">
+      <div class="header-left">
+        <p class="breadcrumb">
+          <a routerLink="/tech/work-orders">Work Orders</a>
+          &rsaquo; {{ o.orderId }}
+        </p>
+        <div class="title-row">
+          <h1>Work Order {{ o.orderId }}</h1>
+          <span class="status-badge" [class]="statusClass(o.status)">{{ statusLabel(o.status) }}</span>
+        </div>
+        <p class="detail-subtitle">{{ o.type }} &mdash; {{ o.client }}</p>
+      </div>
+
+      <div class="header-actions">
+        @if (o.status === 'pending') {
+          <button class="btn-primary" type="button" [disabled]="saving()" (click)="startJob()">
+            @if (saving()) { <span class="spinner"></span> }
+            <i class="ph ph-play" aria-hidden="true"></i>
+            {{ 'tech_detail_startJob' | t }}
+          </button>
+        }
+        @if (o.status === 'in-progress') {
+          <button class="btn-secondary" type="button" [disabled]="saving()" (click)="saveChanges()">
+            @if (saving()) { <span class="spinner spinner--dark"></span> }
+            {{ 'tech_detail_saveChanges' | t }}
+          </button>
+          <button class="btn-primary" type="button" [disabled]="saving()" (click)="markCompleted()">
+            <i class="ph ph-check-circle" aria-hidden="true"></i>
+            {{ 'tech_detail_markCompleted' | t }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- ── PENDING view ─────────────────────────────────────────────────────── -->
+    @if (o.status === 'pending') {
+      <div class="pending-layout">
+        <div class="pending-main">
+          <!-- Sensor Installation card -->
+          <div class="card">
+            <div class="card-header">
+              <i [class]="'ph ' + typeIcon(o.type)" aria-hidden="true"></i>
+              <h3>{{ 'tech_detail_sensorInstall' | t }}</h3>
+              <span class="expected-badge">{{ 'tech_detail_expectedSensors' | t }} {{ o.expectedSensors }}</span>
+            </div>
+            <div class="install-fields">
+              <div class="field-group">
+                <label>{{ 'tech_detail_numSensors' | t }}</label>
+                <input type="number" [ngModel]="numSensors()" (ngModelChange)="numSensors.set($event)" min="0" />
+              </div>
+              <div class="field-group">
+                <label>{{ 'tech_detail_sensorType' | t }}</label>
+                <select [ngModel]="sensorType()" (ngModelChange)="sensorType.set($event)">
+                  <option value="">Select Type...</option>
+                  <option value="EM-A1">EM-A1</option>
+                  <option value="EM-B2">EM-B2</option>
+                  <option value="EM-C3">EM-C3</option>
+                </select>
+              </div>
+            </div>
+            <div class="upload-zone">
+              <i class="ph ph-camera" aria-hidden="true"></i>
+              <p>{{ 'tech_detail_uploadProof' | t }}</p>
+              <span>{{ 'tech_detail_dragDrop' | t }}</span>
+            </div>
+          </div>
+
+          <!-- General Info -->
+          <div class="card info-grid">
+            <h3>{{ 'tech_detail_generalInfo' | t }}</h3>
+            <div class="info-row">
+              <span class="info-label">Location</span>
+              <span class="info-value">{{ o.location }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">{{ 'tech_detail_scheduledDate' | t }}</span>
+              <span class="info-value mono">{{ o.scheduledDate }} &bull; {{ o.scheduledTime }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service Info sidebar -->
+        <div class="pending-sidebar">
+          <div class="card">
+            <h3>{{ 'tech_detail_serviceInfo' | t }}</h3>
+            <div class="info-row">
+              <span class="info-label">{{ 'tech_detail_scheduledDate' | t }}</span>
+              <span class="info-value mono">{{ o.scheduledDate }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">{{ 'tech_detail_priority' | t }}</span>
+              <span class="priority-chip" [class.priority-chip--high]="o.priority === 'High Priority'">{{ o.priority }}</span>
+            </div>
+            <div class="info-row tools-row">
+              <span class="info-label">{{ 'tech_detail_requiredTools' | t }}</span>
+              <div class="tools-wrap">
+                @for (tool of o.requiredTools; track tool) {
+                  <span class="tool-chip">{{ tool }}</span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>{{ 'tech_detail_clientContact' | t }}</h3>
+            <div class="contact-avatar">
+              <span>{{ o.contactName.split(' ').map(n => n[0]).join('') }}</span>
+            </div>
+            <p class="contact-name">{{ o.contactName }}</p>
+            <p class="contact-role">{{ o.contactRole }}</p>
+            <div class="contact-btns">
+              <button class="contact-btn" type="button">
+                <i class="ph ph-phone" aria-hidden="true"></i>
+                {{ 'tech_detail_callClient' | t }}
+              </button>
+              <button class="contact-btn" type="button">
+                <i class="ph ph-envelope" aria-hidden="true"></i>
+                {{ 'tech_detail_emailClient' | t }}
+              </button>
+            </div>
+            @if (o.accessInstructions) {
+              <div class="access-note">
+                <i class="ph ph-info" aria-hidden="true"></i>
+                <p>{{ o.accessInstructions }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── IN-PROGRESS view ──────────────────────────────────────────────────── -->
+    @if (o.status === 'in-progress') {
+      <div class="inprogress-layout">
+
+        <!-- Info cards row -->
+        <div class="info-cards-row">
+          <div class="info-mini-card">
+            <i class="ph ph-map-pin" aria-hidden="true"></i>
+            <div>
+              <span class="info-mini-label">Location</span>
+              <p>{{ o.location }}</p>
+            </div>
+          </div>
+          <div class="info-mini-card">
+            <i class="ph ph-user" aria-hidden="true"></i>
+            <div>
+              <span class="info-mini-label">{{ 'tech_detail_clientContact' | t }}</span>
+              <p>{{ o.contactName }}</p>
+            </div>
+          </div>
+          <div class="info-mini-card info-mini-card--highlight">
+            <i class="ph ph-info" aria-hidden="true"></i>
+            <div>
+              <span class="info-mini-label">{{ 'tech_detail_serviceInfo' | t }}</span>
+              <p>{{ o.type }} &mdash; {{ o.priority }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sensor check + notes -->
+        <div class="inprogress-body">
+          <div class="card sensor-card">
+            <div class="card-header">
+              <h3>{{ 'tech_detail_sensorCheck' | t }}</h3>
+              <span class="required-chip">REQUIRED</span>
+            </div>
+            @if (o.sensors && o.sensors.length > 0) {
+              <div class="sensor-list">
+                @for (sensor of o.sensors; track sensor.id) {
+                  <div class="sensor-row">
+                    <i class="ph ph-broadcast sensor-icon" aria-hidden="true"></i>
+                    <div class="sensor-info">
+                      <span class="sensor-id">{{ sensor.id }}</span>
+                      <span class="sensor-loc">{{ sensor.location }}</span>
+                    </div>
+                    <button
+                      class="sensor-toggle"
+                      [class]="sensorStatusClass(sensor.status)"
+                      type="button"
+                      (click)="toggleSensor(sensor)"
+                    >
+                      {{ sensor.status === 'ok' ? 'OK' : 'Requires Maintenance' }}
+                    </button>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="no-sensors">No sensors registered for this order.</p>
+            }
+          </div>
+
+          <div class="card notes-status-card">
+            <div class="notes-section">
+              <h3>{{ 'tech_detail_techNotes' | t }}</h3>
+              <textarea
+                class="notes-textarea"
+                [placeholder]="'Enter notes here...'"
+                [ngModel]="techNotes()"
+                (ngModelChange)="techNotes.set($event)"
+                rows="5"
+              ></textarea>
+            </div>
+
+            <div class="status-section">
+              <h3>{{ 'tech_detail_updateStatus' | t }}</h3>
+              <div class="status-select-wrap">
+                <select class="status-select">
+                  <option value="in-progress" selected>In Progress</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </div>
+              <p class="status-hint">All sensor checks must be marked OK or 'Maintenance' before closing.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── COMPLETED view ────────────────────────────────────────────────────── -->
+    @if (o.status === 'completed') {
+      <div class="completed-layout">
+        <div class="completed-main">
+          <!-- Summary card -->
+          <div class="card">
+            <div class="card-header">
+              <i [class]="'ph ' + typeIcon(o.type)" aria-hidden="true"></i>
+              <h3>Service Summary</h3>
+            </div>
+            <div class="info-row">
+              <span class="info-label">{{ 'tech_detail_serviceInfo' | t }}</span>
+              <span class="info-value">{{ o.type }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">{{ 'tech_detail_priority' | t }}</span>
+              <span class="info-value">{{ o.priority }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">{{ 'th_date' | t }}</span>
+              <span class="info-value mono">{{ o.scheduledDate }}</span>
+            </div>
+          </div>
+
+          <!-- Technician notes (read only) -->
+          <div class="card">
+            <h3>{{ 'tech_detail_techNotes' | t }}</h3>
+            @if (o.technicianNotes) {
+              <p class="completed-notes">"{{ o.technicianNotes }}"</p>
+            } @else {
+              <p class="no-notes">No notes recorded.</p>
+            }
+          </div>
+        </div>
+
+        <div class="completed-sidebar">
+          <!-- General Info -->
+          <div class="card">
+            <h3>GENERAL INFO</h3>
+            <div class="info-row"><span class="info-label">Status</span><span class="info-value" style="color:var(--color-success);font-weight:700">Completed</span></div>
+            <div class="info-row"><span class="info-label">Asset ID</span><span class="info-value mono">{{ o.assetId }}</span></div>
+          </div>
+
+          <!-- Client contact -->
+          <div class="card">
+            <h3>{{ 'tech_detail_clientContact' | t }}</h3>
+            <div class="contact-row">
+              <span class="location-chip">{{ o.client }}</span>
+              <span class="contact-name-small">{{ o.contactName }}</span>
+            </div>
+          </div>
+
+          <!-- Activity log -->
+          @if (o.activityLog && o.activityLog.length > 0) {
+            <div class="card">
+              <h3>{{ 'tech_detail_activityLog' | t }}</h3>
+              <div class="activity-list">
+                @for (entry of o.activityLog; track entry.event) {
+                  <div class="activity-item">
+                    <span class="activity-dot"></span>
+                    <div>
+                      <p class="activity-event">{{ entry.event }}</p>
+                      <span class="activity-time mono">{{ entry.time }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+} @else {
+  <div class="loading-state">
+    <span class="spinner spinner--dark"></span>
+    <p>Loading work order...</p>
+  </div>
+}

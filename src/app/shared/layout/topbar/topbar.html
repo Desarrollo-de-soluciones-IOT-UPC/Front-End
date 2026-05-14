@@ -21,10 +21,10 @@
 
     <div class="profile">
       <div class="profile__meta">
-        <h3>Alex Thompson</h3>
-        <span>{{ 'topbar_role' | t }}</span>
+        <h3>{{ auth.currentUser()?.name ?? 'User' }}</h3>
+        <span>{{ auth.currentUser()?.role === 'admin' ? ('topbar_role' | t) : ('topbar_role_tech' | t) }}</span>
       </div>
-      <div class="avatar" aria-hidden="true">AT</div>
+      <div class="avatar" aria-hidden="true">{{ auth.currentUser()?.initials ?? '?' }}</div>
     </div>
   </div>
 </div>

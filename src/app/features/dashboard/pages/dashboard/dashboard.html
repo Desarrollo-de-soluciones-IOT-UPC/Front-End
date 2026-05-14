@@ -9,7 +9,7 @@
         <i class="ph ph-download-simple" aria-hidden="true"></i>
         <span>{{ 'btn_exportReport' | t }}</span>
       </button>
-      <a routerLink="/work-orders/new" class="btn btn--primary">
+      <a routerLink="/admin/work-orders/new" class="btn btn--primary">
         <i class="ph ph-plus" aria-hidden="true"></i>
         <span>{{ 'dash_newWorkOrder' | t }}</span>
       </a>
@@ -23,10 +23,10 @@
         <div class="metric-card__icon metric-card__icon--blue">
           <i class="ph ph-broadcast" aria-hidden="true"></i>
         </div>
-        <span class="metric-badge metric-badge--success">{{ stats()?.sensorsDelta ?? '+12%' }}</span>
+        <span class="metric-badge metric-badge--success">{{ stats()?.sensorsDelta ?? '—' }}</span>
       </div>
       <div class="metric-card__label">{{ 'dash_totalSensors' | t }}</div>
-      <div class="metric-card__value">{{ (stats()?.totalSensors ?? 1284) | number }}</div>
+      <div class="metric-card__value">{{ (stats()?.totalSensors ?? 0) | number }}</div>
       <div class="metric-card__progress">
         <div class="metric-card__progress-bar metric-card__progress-bar--blue" style="width: 78%"></div>
       </div>
@@ -37,10 +37,10 @@
         <div class="metric-card__icon metric-card__icon--green">
           <i class="ph ph-buildings" aria-hidden="true"></i>
         </div>
-        <span class="metric-badge metric-badge--success">{{ stats()?.clientsDelta ?? '+3' }}</span>
+        <span class="metric-badge metric-badge--success">{{ stats()?.clientsDelta ?? '—' }}</span>
       </div>
       <div class="metric-card__label">{{ 'dash_activeClients' | t }}</div>
-      <div class="metric-card__value">{{ stats()?.activeClients ?? 42 }}</div>
+      <div class="metric-card__value">{{ stats()?.activeClients ?? 0 }}</div>
       <div class="metric-card__progress">
         <div class="metric-card__progress-bar metric-card__progress-bar--green" style="width: 64%"></div>
       </div>
@@ -51,10 +51,10 @@
         <div class="metric-card__icon metric-card__icon--purple">
           <i class="ph ph-clipboard-text" aria-hidden="true"></i>
         </div>
-        <span class="metric-badge metric-badge--neutral">{{ stats()?.tasksStatus ?? 'Stable' }}</span>
+        <span class="metric-badge metric-badge--neutral">{{ stats()?.tasksStatus ?? '—' }}</span>
       </div>
       <div class="metric-card__label">{{ 'dash_pendingTasks' | t }}</div>
-      <div class="metric-card__value">{{ stats()?.pendingTasks ?? 18 }}</div>
+      <div class="metric-card__value">{{ stats()?.pendingTasks ?? 0 }}</div>
       <div class="metric-card__progress">
         <div class="metric-card__progress-bar metric-card__progress-bar--purple" style="width: 40%"></div>
       </div>
@@ -65,10 +65,10 @@
         <div class="metric-card__icon metric-card__icon--red">
           <i class="ph ph-warning" aria-hidden="true"></i>
         </div>
-        <span class="metric-badge metric-badge--danger">{{ stats()?.alertsStatus ?? 'High Risk' }}</span>
+        <span class="metric-badge metric-badge--danger">{{ stats()?.alertsStatus ?? '—' }}</span>
       </div>
       <div class="metric-card__label">{{ 'dash_criticalAlerts' | t }}</div>
-      <div class="metric-card__value">{{ (stats()?.criticalAlerts ?? 2) | number:'2.0' }}</div>
+      <div class="metric-card__value">{{ (stats()?.criticalAlerts ?? 0) | number:'2.0' }}</div>
       <div class="metric-card__progress">
         <div class="metric-card__progress-bar metric-card__progress-bar--red" style="width: 18%"></div>
       </div>
@@ -178,7 +178,12 @@
                   <td>{{ order.date }}</td>
                 </tr>
               } @empty {
-                <tr><td colspan="5" class="empty-row">Loading...</td></tr>
+                <tr>
+                  <td colspan="5" class="empty-row">
+                    <i class="ph ph-clipboard-text" aria-hidden="true"></i>
+                    <span>No recent work orders</span>
+                  </td>
+                </tr>
               }
             </tbody>
           </table>
@@ -204,7 +209,10 @@
               </div>
             </div>
           } @empty {
-            <p class="empty-row">Loading...</p>
+            <div class="empty-row">
+              <i class="ph ph-bell-slash" aria-hidden="true"></i>
+              <span>No alerts at this time</span>
+            </div>
           }
         </div>
       </div>

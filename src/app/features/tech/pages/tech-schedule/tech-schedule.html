@@ -1,0 +1,221 @@
+<div class="schedule-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-title">
+      <h1>{{ 'tech_sched_title' | t }}</h1>
+      <p>{{ 'tech_sched_subtitle' | t }}</p>
+    </div>
+
+    <div class="calendar-controls">
+      <button class="nav-btn" type="button" (click)="prevWeek()" aria-label="Previous week">
+        <i class="ph ph-caret-left"></i>
+      </button>
+      <span class="month-label">{{ monthLabel() }}</span>
+      <button class="nav-btn" type="button" (click)="nextWeek()" aria-label="Next week">
+        <i class="ph ph-caret-right"></i>
+      </button>
+
+      <button class="today-btn" type="button" (click)="today()">{{ 'tech_sched_today' | t }}</button>
+
+      <div class="view-toggle">
+        <button class="view-btn" [class.view-btn--active]="viewMode() === 'week'"
+                type="button" (click)="setViewMode('week')">
+          {{ 'tech_sched_week' | t }}
+        </button>
+        <button class="view-btn" [class.view-btn--active]="viewMode() === 'day'"
+                type="button" (click)="setViewMode('day')">
+          {{ 'tech_sched_day' | t }}
+        </button>
+      </div>
+
+      <div class="filter-wrap">
+        <button class="filters-btn" type="button" (click)="toggleFilterPanel()"
+                [class.filters-btn--active]="filterOpen()">
+          <i class="ph ph-funnel"></i>
+          {{ 'tech_sched_filters' | t }}
+          @if (activeFilterCount() > 0) {
+            <span class="filter-badge">{{ activeFilterCount() }}</span>
+          }
+        </button>
+
+        @if (filterOpen()) {
+          <div class="filter-panel">
+            <div class="filter-panel__header">
+              <span class="filter-panel__title">Filters</span>
+              <button class="filter-reset" type="button" (click)="resetFilters()">Reset</button>
+            </div>
+
+            <div class="filter-section">
+              <p class="filter-section__label">Status</p>
+              @for (key of statusKeys; track key) {
+                <label class="filter-checkbox">
+                  <input type="checkbox"
+                         [checked]="statusFilters()[key]"
+                         (change)="toggleStatus(key)" />
+                  <span class="filter-dot" [class]="'dot--' + key"></span>
+                  <span>{{ key === 'in-progress' ? 'In Progress' : key === 'completed' ? 'Completed' : 'Pending' }}</span>
+                </label>
+              }
+            </div>
+
+            <div class="filter-section">
+              <p class="filter-section__label">Service Type</p>
+              @for (key of serviceKeys; track key) {
+                <label class="filter-checkbox">
+                  <input type="checkbox"
+                         [checked]="serviceFilters()[key]"
+                         (change)="toggleService(key)" />
+                  <i [class]="'ph ' + typeIcon(key)"></i>
+                  <span>{{ key }}</span>
+                </label>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- ── WEEK VIEW ───────────────────────────────────────────────────────────── -->
+  @if (viewMode() === 'week') {
+    <div class="calendar-card">
+      <div class="calendar-grid">
+        @for (day of weekDays(); track day.getTime(); let i = $index) {
+          <div class="day-col"
+               [class.day-col--today]="isToday(day)"
+               [class.day-col--selected]="isSelectedDay(day)">
+            <div class="day-header" (click)="selectDay(day)" style="cursor:pointer">
+              <span class="day-name">{{ dayNames[i] }}</span>
+              <span class="day-num" [class.day-num--today]="isToday(day)">
+                {{ day.getDate().toString().padStart(2,'0') }}
+              </span>
+              @if (ordersForDay(day).length > 0) {
+                <span class="day-count">{{ ordersForDay(day).length }}</span>
+              }
+            </div>
+
+            <div class="day-tasks">
+              @for (order of ordersForDay(day); track order.id) {
+                <a class="task-card" [routerLink]="['/tech/work-orders', order.id]">
+                  <div class="task-top">
+                    <span class="task-status" [class]="statusClass(order.status)">
+                      {{ statusLabel(order.status) }}
+                    </span>
+                    <span class="task-time">{{ order.scheduledTime }}</span>
+                  </div>
+                  <h4 class="task-name">{{ order.client }}</h4>
+                  <p class="task-location">
+                    <i class="ph ph-map-pin"></i>
+                    {{ order.location }}
+                  </p>
+                  <span class="task-type">
+                    <i [class]="'ph ' + typeIcon(order.type)"></i>
+                    {{ order.type }}
+                  </span>
+                </a>
+              }
+              @if (ordersForDay(day).length === 0) {
+                <div class="no-tasks">
+                  <i class="ph ph-calendar-x"></i>
+                  <span>{{ 'tech_sched_noTasks' | t }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ── DAY VIEW ────────────────────────────────────────────────────────────── -->
+  @if (viewMode() === 'day') {
+    <div class="day-view-card">
+      <div class="day-view-header">
+        <button class="nav-btn" type="button" (click)="prevDay()">
+          <i class="ph ph-caret-left"></i>
+        </button>
+        <h2 class="day-view-title">{{ selectedDayLabel() }}</h2>
+        <button class="nav-btn" type="button" (click)="nextDay()">
+          <i class="ph ph-caret-right"></i>
+        </button>
+      </div>
+
+      <div class="day-view-body">
+        @for (order of ordersForSelected(); track order.id) {
+          <a class="day-task-row" [routerLink]="['/tech/work-orders', order.id]">
+            <div class="day-task-time">
+              <span>{{ order.scheduledTime }}</span>
+            </div>
+            <div class="day-task-bar" [class]="statusClass(order.status)"></div>
+            <div class="day-task-info">
+              <div class="day-task-top">
+                <h4>{{ order.client }}</h4>
+                <span class="task-status" [class]="statusClass(order.status)">{{ statusLabel(order.status) }}</span>
+              </div>
+              <p class="day-task-loc">
+                <i class="ph ph-map-pin"></i> {{ order.location }}
+              </p>
+              <div class="day-task-meta">
+                <span class="task-type">
+                  <i [class]="'ph ' + typeIcon(order.type)"></i>
+                  {{ order.type }}
+                </span>
+                <span class="priority-chip" [class.priority-chip--high]="order.priority === 'High Priority'">
+                  {{ order.priority }}
+                </span>
+              </div>
+            </div>
+            <i class="ph ph-arrow-right day-task-arrow"></i>
+          </a>
+        }
+        @empty {
+          <div class="day-empty">
+            <i class="ph ph-calendar-x"></i>
+            <p>{{ 'tech_sched_noTasks' | t }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Bottom summary -->
+  <div class="summary-row">
+    <div class="summary-card">
+      @if (priorityTask(); as task) {
+        <div class="summary-icon summary-icon--warn">
+          <i class="ph ph-warning" aria-hidden="true"></i>
+        </div>
+        <div class="summary-body">
+          <span class="summary-label">{{ 'tech_sched_priorityTask' | t }}</span>
+          <h4>{{ task.client }}</h4>
+          <p>{{ task.location }} &bull; {{ task.scheduledDate }}</p>
+        </div>
+      } @else {
+        <div class="summary-icon summary-icon--green">
+          <i class="ph ph-check-circle" aria-hidden="true"></i>
+        </div>
+        <div class="summary-body">
+          <span class="summary-label">{{ 'tech_sched_priorityTask' | t }}</span>
+          <h4>No priority tasks this week</h4>
+        </div>
+      }
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-icon summary-icon--green">
+        <i class="ph ph-check-circle" aria-hidden="true"></i>
+      </div>
+      <div class="summary-body">
+        <span class="summary-label">{{ 'tech_sched_weekProgress' | t }}</span>
+        <h4>{{ weekProgress().done }}/{{ weekProgress().total }} {{ 'tech_sched_tasksCompleted' | t }}</h4>
+        <div class="progress-bar">
+          <div class="progress-fill"
+               [style.width.%]="weekProgress().total > 0 ? (weekProgress().done / weekProgress().total) * 100 : 0">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

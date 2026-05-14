@@ -9,34 +9,29 @@
       </div>
 
       <div class="brand">
-        <h2>Admin Portal</h2>
-        <span class="tag">Vigilance &amp; Control</span>
+        <h2>{{ 'nav_techPortal' | t }}</h2>
+        <span class="tag">{{ 'nav_techTagline' | t }}</span>
       </div>
     </div>
 
-    <nav class="nav-links" aria-label="Admin navigation">
+    <nav class="nav-links" aria-label="Technician navigation">
       <a
-        routerLink="/admin"
+        routerLink="/tech"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }"
       >
-        <i class="ph ph-squares-four" aria-hidden="true"></i>
-        <span>{{ 'nav_dashboard' | t }}</span>
+        <i class="ph ph-calendar-blank" aria-hidden="true"></i>
+        <span>{{ 'nav_mySchedule' | t }}</span>
       </a>
 
-      <a routerLink="/admin/work-orders" routerLinkActive="active">
+      <a routerLink="/tech/work-orders" routerLinkActive="active">
         <i class="ph ph-clipboard-text" aria-hidden="true"></i>
         <span>{{ 'nav_workOrders' | t }}</span>
       </a>
 
-      <a routerLink="/admin/history" routerLinkActive="active">
+      <a routerLink="/tech/history" routerLinkActive="active">
         <i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i>
         <span>{{ 'nav_history' | t }}</span>
-      </a>
-
-      <a routerLink="/admin/users" routerLinkActive="active">
-        <i class="ph ph-users" aria-hidden="true"></i>
-        <span>{{ 'nav_users' | t }}</span>
       </a>
     </nav>
   </div>

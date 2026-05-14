@@ -67,12 +67,12 @@ export class NewWorkOrder {
     };
 
     this.data.createWorkOrder(newOrder).subscribe({
-      next: () => this.router.navigate(['/work-orders']),
+      next: () => this.router.navigate(['/admin/work-orders']),
       error: () => { this.submitting = false; },
     });
   }
 
   cancel(): void {
-    this.router.navigate(['/work-orders']);
+    this.router.navigate(['/admin/work-orders']);
   }
 }
