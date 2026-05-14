@@ -309,29 +309,58 @@
   flex-shrink: 0;
 }
 
-/* ── Type badges ─────────────────────────────────── */
 .type-badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 6px;
+  white-space: nowrap;
 
-  &--installation { background: rgba(26, 110, 255, 0.1); color: var(--color-primary); }
-  &--maintenance  { background: rgba(139, 92, 246, 0.1); color: #7c3aed; }
-  &--collection   { background: rgba(249, 115, 22, 0.1); color: #ea580c; }
+  i {
+    font-size: 16px;
+  }
+
+  &::before {
+    display: none;
+  }
+}
+
+
+.type-badge--installation {
+  background-color: #e0e7ff;
+  color: #4338ca;
+  width: 130px;
+  i { color: #4338ca; }
+}
+
+.type-badge--maintenance {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+  width: 130px;
+  i { color: #1d4ed8; }
+}
+
+.type-badge--collection {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  width: 130px;
+  i { color: #b91c1c; }
 }
 
 /* ── Status ──────────────────────────────────────── */
 .status {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
+  width: 90px;
 
   &--completed  { background: rgba(22, 163, 74, 0.1); color: #16a34a; }
   &--cancelled  { background: rgba(220, 38, 38, 0.1); color: #dc2626; }
