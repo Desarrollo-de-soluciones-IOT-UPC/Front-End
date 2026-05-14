@@ -1,4 +1,23 @@
 {
+  "credentials": [
+    {
+      "id": "1",
+      "email": "admin@emsafe.com",
+      "password": "admin123",
+      "name": "Alex Thompson",
+      "initials": "AT",
+      "role": "admin"
+    },
+    {
+      "id": "2",
+      "email": "marcus@emsafe.com",
+      "password": "tech123",
+      "name": "Marcus Rivera",
+      "initials": "MR",
+      "role": "technician",
+      "technicianId": "2"
+    }
+  ],
   "stats": {
     "totalSensors": 1284,
     "sensorsDelta": "+12%",
@@ -13,6 +32,18 @@
     "safetyThreshold": 0.5
   },
   "workOrders": [
+    {
+      "id": "1",
+      "orderId": "#WO-9284",
+      "type": "Installation",
+      "client": "Metro Logistics Corp.",
+      "location": "Downtown Plaza",
+      "city": "Austin, TX",
+      "date": "2023-10-24",
+      "technician": "Alex Jensen",
+      "technicianInitials": "AJ",
+      "status": "in-progress"
+    },
     {
       "id": "2",
       "orderId": "#WO-9283",
@@ -54,7 +85,7 @@
       "orderId": "#WO-9280",
       "type": "Maintenance",
       "client": "Northwind Energy",
-      "location": "Building A",
+      "location": "Building A - Floor 3",
       "city": "Denver, CO",
       "date": "2023-10-27",
       "technician": "Michael Chen",
@@ -74,16 +105,601 @@
       "status": "pending"
     },
     {
-      "orderId": "#WO-9958",
-      "type": "Installation",
-      "client": "hc",
-      "location": "gvhjvj",
-      "city": "",
-      "date": "May 13, 2026",
+      "id": "7",
+      "orderId": "#WO-9278",
+      "type": "Maintenance",
+      "client": "Pacific Heights Clinic",
+      "location": "Wing B - MRI Suite",
+      "city": "San Francisco, CA",
+      "date": "2023-10-23",
       "technician": "Marcus Rivera",
       "technicianInitials": "MR",
+      "status": "completed"
+    },
+    {
+      "id": "8",
+      "orderId": "#WO-9277",
+      "type": "Installation",
+      "client": "Harbor Medical Center",
+      "location": "ER Department - Ground Floor",
+      "city": "Portland, OR",
+      "date": "2023-10-22",
+      "technician": "Elena Rodriguez",
+      "technicianInitials": "ER",
+      "status": "completed"
+    },
+    {
+      "id": "9",
+      "orderId": "#WO-9276",
+      "type": "Collection",
+      "client": "Atlas Semiconductor",
+      "location": "Clean Room B4",
+      "city": "Phoenix, AZ",
+      "date": "2023-10-28",
+      "technician": "Sarah Jenkins",
+      "technicianInitials": "SJ",
+      "status": "pending"
+    },
+    {
+      "id": "10",
+      "orderId": "#WO-9275",
+      "type": "Installation",
+      "client": "Summit Data Center",
+      "location": "Server Hall 2",
+      "city": "Las Vegas, NV",
+      "date": "2023-10-28",
+      "technician": "Marcus Rivera",
+      "technicianInitials": "MR",
+      "status": "pending"
+    },
+    {
+      "id": "11",
+      "orderId": "#WO-9274",
+      "type": "Maintenance",
+      "client": "Nexus Research Lab",
+      "location": "Quantum Lab - Sub B",
+      "city": "Chicago, IL",
+      "date": "2023-10-21",
+      "technician": "Maria Silva",
+      "technicianInitials": "MS",
+      "status": "completed"
+    },
+    {
+      "id": "12",
+      "orderId": "#WO-9273",
+      "type": "Collection",
+      "client": "Bay General Hospital",
+      "location": "Radiology - 2nd Floor",
+      "city": "Oakland, CA",
+      "date": "2023-10-29",
+      "technician": "Robert King",
+      "technicianInitials": "RK",
+      "status": "pending"
+    }
+  ],
+  "techWorkOrders": [
+    {
+      "id": "WO-8492",
+      "orderId": "#WO-8492",
+      "type": "Maintenance",
+      "status": "completed",
+      "client": "TechPark Plaza",
+      "location": "North Wing, L4, TechPark",
+      "scheduledDate": "2026-05-11",
+      "scheduledTime": "09:00 AM",
+      "technicianId": "2",
+      "priority": "Standard",
+      "serviceType": "Maintenance",
+      "contactName": "Sarah Jenkins",
+      "contactRole": "Facility Manager",
+      "contactPhone": "+1-555-0123",
+      "contactEmail": "s.jenkins@techpark.com",
+      "accessInstructions": "Report to the security desk. Badge required.",
+      "requiredTools": [
+        "Standard Toolkit"
+      ],
+      "expectedSensors": 6,
+      "assetId": "TP-NW-L4",
+      "sensors": [],
+      "technicianNotes": "All sensors calibrated and within normal range.",
+      "activityLog": [
+        {
+          "event": "Work Order Completed",
+          "time": "May 11, 09:45"
+        },
+        {
+          "event": "Arrival at Site",
+          "time": "May 11, 08:55"
+        }
+      ]
+    },
+    {
+      "id": "WO-9102",
+      "orderId": "#WO-9102",
+      "type": "Installation",
+      "status": "in-progress",
+      "client": "Greenview Residences",
+      "location": "Block B, Lobby, Sector 7",
+      "scheduledDate": "2026-05-12",
+      "scheduledTime": "01:30 PM",
+      "technicianId": "2",
+      "priority": "High Priority",
+      "serviceType": "Installation",
+      "contactName": "Linda Torres",
+      "contactRole": "Property Manager",
+      "contactPhone": "+1-555-0188",
+      "contactEmail": "l.torres@greenview.com",
+      "accessInstructions": "Ask for the building manager at the front desk.",
+      "requiredTools": [
+        "Standard Toolkit",
+        "Calibration Rig B"
+      ],
+      "expectedSensors": 6,
+      "assetId": "GV-BL-S7",
+      "sensors": [
+        {
+          "id": "#S-101",
+          "location": "Main Hallway - North Wing",
+          "status": "ok"
+        },
+        {
+          "id": "#S-102",
+          "location": "MRI Suite Entrance",
+          "status": "maintenance"
+        },
+        {
+          "id": "#S-103",
+          "location": "Emergency Exit B",
+          "status": "maintenance"
+        }
+      ],
+      "technicianNotes": "",
+      "activityLog": []
+    },
+    {
+      "id": "WO-7734",
+      "orderId": "#WO-7734",
+      "type": "Collection",
+      "status": "in-progress",
+      "client": "St. Jude Medical",
+      "location": "MRI Suite A, Floor 2",
+      "scheduledDate": "2026-05-13",
+      "scheduledTime": "10:00 AM",
+      "technicianId": "2",
+      "priority": "High Priority",
+      "serviceType": "Collection",
+      "contactName": "Dr. Sarah Jenkins",
+      "contactRole": "Department Head",
+      "contactPhone": "+1-555-0143",
+      "contactEmail": "s.jenkins@stjude.med",
+      "accessInstructions": "Report to the security desk. Requires Level 2 RFID clearance badge.",
+      "requiredTools": [
+        "Standard Toolkit",
+        "Calibration Rig B"
+      ],
+      "expectedSensors": 8,
+      "assetId": "SJ-MRI-F2",
+      "sensors": [],
+      "technicianNotes": "",
+      "activityLog": []
+    },
+    {
+      "id": "WO-4401",
+      "orderId": "#WO-4401",
+      "type": "Maintenance",
       "status": "pending",
-      "id": "W448tdUHPQQ"
+      "client": "Skyline Towers",
+      "location": "Rooftop Antennas, Main St.",
+      "scheduledDate": "2026-05-14",
+      "scheduledTime": "09:00 AM",
+      "technicianId": "2",
+      "priority": "Standard",
+      "serviceType": "Maintenance",
+      "contactName": "Mike Anderson",
+      "contactRole": "Building Manager",
+      "contactPhone": "+1-555-0156",
+      "contactEmail": "m.anderson@skyline.com",
+      "accessInstructions": "Rooftop access key at security desk.",
+      "requiredTools": [
+        "Standard Toolkit"
+      ],
+      "expectedSensors": 4,
+      "assetId": "ST-RF-001",
+      "sensors": [],
+      "technicianNotes": "",
+      "activityLog": []
+    },
+    {
+      "id": "WO-5521",
+      "orderId": "#WO-5521",
+      "type": "Installation",
+      "status": "pending",
+      "client": "Metropolis Data Center",
+      "location": "Server Room 4, Basement",
+      "scheduledDate": "2026-05-15",
+      "scheduledTime": "11:00 AM",
+      "technicianId": "2",
+      "priority": "High Priority",
+      "serviceType": "Installation",
+      "contactName": "James Reilly",
+      "contactRole": "IT Operations Manager",
+      "contactPhone": "+1-555-0199",
+      "contactEmail": "j.reilly@metropolis.com",
+      "accessInstructions": "Report to the security desk. Requires Level 2 RFID clearance badge.",
+      "requiredTools": [
+        "Standard Toolkit",
+        "Calibration Rig B"
+      ],
+      "expectedSensors": 8,
+      "assetId": "MDC-SR4-B",
+      "sensors": [],
+      "technicianNotes": "",
+      "activityLog": []
+    },
+    {
+      "id": "WO-3310",
+      "orderId": "#WO-3310",
+      "type": "Installation",
+      "status": "pending",
+      "client": "Harbor Medical Center",
+      "location": "ER Department, Ground Floor",
+      "scheduledDate": "2026-05-18",
+      "scheduledTime": "08:00 AM",
+      "technicianId": "2",
+      "priority": "High Priority",
+      "serviceType": "Installation",
+      "contactName": "Dr. Patel",
+      "contactRole": "Chief Medical Officer",
+      "contactPhone": "+1-555-0201",
+      "contactEmail": "r.patel@harbormed.com",
+      "accessInstructions": "Check in at reception, escort required to ER.",
+      "requiredTools": [
+        "Standard Toolkit",
+        "Calibration Rig B",
+        "Safety Meter"
+      ],
+      "expectedSensors": 10,
+      "assetId": "HMC-ER-GF",
+      "sensors": [],
+      "technicianNotes": "",
+      "activityLog": []
+    },
+    {
+      "id": "WO-3311",
+      "orderId": "#WO-3311",
+      "type": "Maintenance",
+      "status": "in-progress",
+      "client": "Riverside Tech Hub",
+      "location": "Server Corridor, Level 2",
+      "scheduledDate": "2026-05-19",
+      "scheduledTime": "10:30 AM",
+      "technicianId": "2",
+      "priority": "Standard",
+      "serviceType": "Maintenance",
+      "contactName": "Karen Voss",
+      "contactRole": "Facilities Coordinator",
+      "contactPhone": "+1-555-0214",
+      "contactEmail": "k.voss@riverside.tech",
+      "accessInstructions": "Badge access via main entrance, Level 2 key card needed.",
+      "requiredTools": [
+        "Standard Toolkit"
+      ],
+      "expectedSensors": 5,
+      "assetId": "RTH-SC-L2",
+      "sensors": [
+        {
+          "id": "#S-201",
+          "location": "Corridor A - Entry",
+          "status": "ok"
+        },
+        {
+          "id": "#S-202",
+          "location": "Corridor B - Middle",
+          "status": "ok"
+        },
+        {
+          "id": "#S-203",
+          "location": "Server Room Door",
+          "status": "maintenance"
+        }
+      ],
+      "technicianNotes": "Sensor 203 shows intermittent signal. Investigating.",
+      "activityLog": []
+    },
+    {
+      "id": "WO-3312",
+      "orderId": "#WO-3312",
+      "type": "Collection",
+      "status": "completed",
+      "client": "Downtown Financial Tower",
+      "location": "Executive Floor 28, Zone C",
+      "scheduledDate": "2026-05-20",
+      "scheduledTime": "02:00 PM",
+      "technicianId": "2",
+      "priority": "Standard",
+      "serviceType": "Collection",
+      "contactName": "Olivia Grant",
+      "contactRole": "Office Manager",
+      "contactPhone": "+1-555-0222",
+      "contactEmail": "o.grant@dft.com",
+      "accessInstructions": "Security check at lobby, appointment registered.",
+      "requiredTools": [
+        "Collection Kit"
+      ],
+      "expectedSensors": 3,
+      "assetId": "DFT-EF-28C",
+      "sensors": [],
+      "technicianNotes": "All 3 sensors collected and sealed for transport.",
+      "activityLog": [
+        {
+          "event": "Work Order Completed",
+          "time": "May 20, 14:52"
+        },
+        {
+          "event": "Sensors Collected",
+          "time": "May 20, 14:35"
+        },
+        {
+          "event": "Arrival at Site",
+          "time": "May 20, 14:05"
+        }
+      ]
+    },
+    {
+      "id": "WO-3313",
+      "orderId": "#WO-3313",
+      "type": "Installation",
+      "status": "pending",
+      "client": "Nexus Research Lab",
+      "location": "Quantum Lab - Sub B",
+      "scheduledDate": "2026-05-21",
+      "scheduledTime": "09:00 AM",
+      "technicianId": "2",
+      "priority": "High Priority",
+      "serviceType": "Installation",
+      "contactName": "Dr. Nguyen",
+      "contactRole": "Lab Director",
+      "contactPhone": "+1-555-0233",
+      "contactEmail": "d.nguyen@nexuslab.com",
+      "accessInstructions": "Clearance required. Contact security 30 min prior.",
+      "requiredTools": [
+        "Standard Toolkit",
+        "Calibration Rig B"
+      ],
+      "expectedSensors": 12,
+      "assetId": "NRL-QL-SB",
+      "sensors": [],
+      "technicianNotes": "",
+      "activityLog": []
+    },
+    {
+      "id": "WO-3314",
+      "orderId": "#WO-3314",
+      "type": "Maintenance",
+      "status": "pending",
+      "client": "Pacific Heights Clinic",
+      "location": "Wing B - MRI Suite",
+      "scheduledDate": "2026-05-22",
+      "scheduledTime": "11:00 AM",
+      "technicianId": "2",
+      "priority": "Standard",
+      "serviceType": "Maintenance",
+      "contactName": "Nurse Martinez",
+      "contactRole": "Department Supervisor",
+      "contactPhone": "+1-555-0241",
+      "contactEmail": "c.martinez@phclinic.com",
+      "accessInstructions": "Sign in at nursing station. Do not enter when MRI in use.",
+      "requiredTools": [
+        "Standard Toolkit"
+      ],
+      "expectedSensors": 4,
+      "assetId": "PHC-WB-MRI",
+      "sensors": [],
+      "technicianNotes": "",
+      "activityLog": []
+    },
+    {
+      "id": "WO-4420",
+      "orderId": "#WO-4420",
+      "type": "Collection",
+      "status": "completed",
+      "client": "Atlas Semiconductor Plant",
+      "location": "Clean Room B4",
+      "scheduledDate": "2026-05-25",
+      "scheduledTime": "08:30 AM",
+      "technicianId": "2",
+      "priority": "Standard",
+      "serviceType": "Collection",
+      "contactName": "Thomas Holt",
+      "contactRole": "Plant Manager",
+      "contactPhone": "+1-555-0255",
+      "contactEmail": "t.holt@atlassemi.com",
+      "accessInstructions": "Full clean room protocol. Suit-up at entry.",
+      "requiredTools": [
+        "Collection Kit",
+        "ESD Protection"
+      ],
+      "expectedSensors": 6,
+      "assetId": "ASP-CR-B4",
+      "sensors": [],
+      "technicianNotes": "Clean room protocol followed. 6 sensors collected.",
+      "activityLog": [
+        {
+          "event": "Work Order Completed",
+          "time": "May 25, 09:30"
+        },
+        {
+          "event": "Arrival at Site",
+          "time": "May 25, 08:25"
+        }
+      ]
+    },
+    {
+      "id": "WO-4421",
+      "orderId": "#WO-4421",
+      "type": "Installation",
+      "status": "pending",
+      "client": "Summit Data Center",
+      "location": "Server Hall 2, Rack Row D",
+      "scheduledDate": "2026-05-26",
+      "scheduledTime": "09:00 AM",
+      "technicianId": "2",
+      "priority": "High Priority",
+      "serviceType": "Installation",
+      "contactName": "Bryan Lee",
+      "contactRole": "Data Center Manager",
+      "contactPhone": "+1-555-0266",
+      "contactEmail": "b.lee@summitdc.com",
+      "accessInstructions": "Biometric check at entry. No phones in server hall.",
+      "requiredTools": [
+        "Standard Toolkit",
+        "Calibration Rig B"
+      ],
+      "expectedSensors": 8,
+      "assetId": "SDC-SH2-D",
+      "sensors": [],
+      "technicianNotes": "",
+      "activityLog": []
+    },
+    {
+      "id": "WO-4422",
+      "orderId": "#WO-4422",
+      "type": "Maintenance",
+      "status": "in-progress",
+      "client": "Bay Area General Hospital",
+      "location": "Radiology - 2nd Floor",
+      "scheduledDate": "2026-05-27",
+      "scheduledTime": "01:00 PM",
+      "technicianId": "2",
+      "priority": "Standard",
+      "serviceType": "Maintenance",
+      "contactName": "Jessica Chan",
+      "contactRole": "Radiology Supervisor",
+      "contactPhone": "+1-555-0277",
+      "contactEmail": "j.chan@bagh.com",
+      "accessInstructions": "Report to radiology reception. Wear hospital ID badge.",
+      "requiredTools": [
+        "Standard Toolkit"
+      ],
+      "expectedSensors": 5,
+      "assetId": "BAGH-RAD-2F",
+      "sensors": [
+        {
+          "id": "#S-301",
+          "location": "X-Ray Room 1",
+          "status": "ok"
+        },
+        {
+          "id": "#S-302",
+          "location": "CT Scan Room",
+          "status": "ok"
+        },
+        {
+          "id": "#S-303",
+          "location": "MRI Anteroom",
+          "status": "maintenance"
+        },
+        {
+          "id": "#S-304",
+          "location": "Hallway B",
+          "status": "ok"
+        }
+      ],
+      "technicianNotes": "S-303 needs recalibration. Parts ordered.",
+      "activityLog": []
+    },
+    {
+      "id": "WO-4423",
+      "orderId": "#WO-4423",
+      "type": "Collection",
+      "status": "pending",
+      "client": "Urban Tech Campus",
+      "location": "Innovation Hub - 5th Floor",
+      "scheduledDate": "2026-05-28",
+      "scheduledTime": "03:00 PM",
+      "technicianId": "2",
+      "priority": "Standard",
+      "serviceType": "Collection",
+      "contactName": "Sophia Reyes",
+      "contactRole": "Campus Operations",
+      "contactPhone": "+1-555-0288",
+      "contactEmail": "s.reyes@urbantechcampus.com",
+      "accessInstructions": "Check in at the main desk. Elevator B to 5th floor.",
+      "requiredTools": [
+        "Collection Kit"
+      ],
+      "expectedSensors": 4,
+      "assetId": "UTC-IH-5F",
+      "sensors": [],
+      "technicianNotes": "",
+      "activityLog": []
+    },
+    {
+      "id": "WO-5530",
+      "orderId": "#WO-5530",
+      "type": "Maintenance",
+      "status": "completed",
+      "client": "Vertex Telecom Hub",
+      "location": "Antenna Array - Roof Level",
+      "scheduledDate": "2026-05-05",
+      "scheduledTime": "07:00 AM",
+      "technicianId": "2",
+      "priority": "Standard",
+      "serviceType": "Maintenance",
+      "contactName": "Paul Simmons",
+      "contactRole": "Telecom Engineer",
+      "contactPhone": "+1-555-0299",
+      "contactEmail": "p.simmons@vertextelecom.com",
+      "accessInstructions": "Roof key at security. Hard hat required.",
+      "requiredTools": [
+        "Standard Toolkit",
+        "Safety Meter"
+      ],
+      "expectedSensors": 6,
+      "assetId": "VTH-AR-RF",
+      "sensors": [],
+      "technicianNotes": "All antennas inspected. Minor alignment done on sensor 4.",
+      "activityLog": [
+        {
+          "event": "Work Order Completed",
+          "time": "May 05, 09:15"
+        },
+        {
+          "event": "Maintenance Performed",
+          "time": "May 05, 08:00"
+        },
+        {
+          "event": "Arrival at Site",
+          "time": "May 05, 07:10"
+        }
+      ]
+    },
+    {
+      "id": "WO-5531",
+      "orderId": "#WO-5531",
+      "type": "Installation",
+      "status": "pending",
+      "client": "Global Pharma HQ",
+      "location": "Lab Wing C - Floor 3",
+      "scheduledDate": "2026-05-08",
+      "scheduledTime": "10:00 AM",
+      "technicianId": "2",
+      "priority": "High Priority",
+      "serviceType": "Installation",
+      "contactName": "Dr. Amelia Stone",
+      "contactRole": "Lab Safety Officer",
+      "contactPhone": "+1-555-0311",
+      "contactEmail": "a.stone@globalpharma.com",
+      "accessInstructions": "Lab coat and goggles required. Escort from security.",
+      "requiredTools": [
+        "Standard Toolkit",
+        "Calibration Rig B"
+      ],
+      "expectedSensors": 10,
+      "assetId": "GPH-LWC-F3",
+      "sensors": [],
+      "technicianNotes": "",
+      "activityLog": []
     }
   ],
   "history": [
@@ -107,8 +723,8 @@
       "client": "Metro Data Center",
       "site": "UPS Battery Room 2",
       "serviceType": "Maintenance",
-      "technician": "Marcus Chen",
-      "technicianInitials": "MC",
+      "technician": "Marcus Rivera",
+      "technicianInitials": "MR",
       "status": "completed"
     },
     {
@@ -143,19 +759,103 @@
       "client": "Vertex Office Plaza",
       "site": "Lobby & Public Zones",
       "serviceType": "Maintenance",
-      "technician": "Marcus Chen",
-      "technicianInitials": "MC",
+      "technician": "Marcus Rivera",
+      "technicianInitials": "MR",
       "status": "cancelled"
+    },
+    {
+      "id": "6",
+      "orderId": "#WO-92815",
+      "completionDate": "2023-10-17",
+      "completionTime": "13:20 PM",
+      "client": "Harbor Medical Center",
+      "site": "ER Department - Ground Floor",
+      "serviceType": "Installation",
+      "technician": "Marcus Rivera",
+      "technicianInitials": "MR",
+      "status": "completed"
+    },
+    {
+      "id": "7",
+      "orderId": "#WO-92807",
+      "completionDate": "2023-10-15",
+      "completionTime": "11:45 AM",
+      "client": "Pacific Heights Clinic",
+      "site": "Wing B - MRI Suite",
+      "serviceType": "Maintenance",
+      "technician": "Sarah Jenkins",
+      "technicianInitials": "SJ",
+      "status": "completed"
+    },
+    {
+      "id": "8",
+      "orderId": "#WO-92800",
+      "completionDate": "2023-10-14",
+      "completionTime": "15:00 PM",
+      "client": "Nexus Research Lab",
+      "site": "Quantum Lab - Sub B",
+      "serviceType": "Collection",
+      "technician": "Elena Rodriguez",
+      "technicianInitials": "ER",
+      "status": "completed"
+    },
+    {
+      "id": "9",
+      "orderId": "#WO-92793",
+      "completionDate": "2023-10-12",
+      "completionTime": "09:00 AM",
+      "client": "Riverside Tech Hub",
+      "site": "Server Corridor - Level 2",
+      "serviceType": "Maintenance",
+      "technician": "Marcus Rivera",
+      "technicianInitials": "MR",
+      "status": "cancelled"
+    },
+    {
+      "id": "10",
+      "orderId": "#WO-92785",
+      "completionDate": "2023-10-10",
+      "completionTime": "17:30 PM",
+      "client": "Downtown Financial Tower",
+      "site": "Executive Floor 28, Zone C",
+      "serviceType": "Collection",
+      "technician": "Marcus Rivera",
+      "technicianInitials": "MR",
+      "status": "completed"
+    },
+    {
+      "id": "11",
+      "orderId": "#WO-92778",
+      "completionDate": "2023-10-09",
+      "completionTime": "12:00 PM",
+      "client": "Bay Area General Hospital",
+      "site": "Radiology - 2nd Floor",
+      "serviceType": "Installation",
+      "technician": "Sarah Jenkins",
+      "technicianInitials": "SJ",
+      "status": "completed"
+    },
+    {
+      "id": "12",
+      "orderId": "#WO-92770",
+      "completionDate": "2023-10-07",
+      "completionTime": "08:45 AM",
+      "client": "Atlas Semiconductor Plant",
+      "site": "Clean Room B4",
+      "serviceType": "Maintenance",
+      "technician": "Elena Rodriguez",
+      "technicianInitials": "ER",
+      "status": "completed"
     }
   ],
   "users": [
     {
       "id": "1",
-      "name": "Julianne Davis",
-      "initials": "JD",
-      "joinDate": "2023-10-01",
+      "name": "Alex Thompson",
+      "initials": "AT",
+      "joinDate": "2023-09-01",
       "role": "Admin",
-      "email": "j.davis@emsafe-iot.com",
+      "email": "admin@emsafe.com",
       "status": "active"
     },
     {
@@ -164,25 +864,79 @@
       "initials": "MR",
       "joinDate": "2023-11-01",
       "role": "Technician",
-      "email": "m.rivera@field.emsafe.com",
+      "email": "marcus@emsafe.com",
       "status": "active"
     },
     {
       "id": "3",
-      "name": "Sarah Koppel",
-      "initials": "SK",
-      "joinDate": "2023-12-01",
+      "name": "Sarah Jenkins",
+      "initials": "SJ",
+      "joinDate": "2023-10-15",
       "role": "Technician",
-      "email": "s.koppel@field.emsafe.com",
-      "status": "inactive"
+      "email": "s.jenkins@field.emsafe.com",
+      "status": "active"
     },
     {
       "id": "4",
-      "name": "Brandon Hall",
-      "initials": "BH",
-      "joinDate": "2024-01-01",
+      "name": "Elena Rodriguez",
+      "initials": "ER",
+      "joinDate": "2023-12-01",
+      "role": "Technician",
+      "email": "e.rodriguez@field.emsafe.com",
+      "status": "active"
+    },
+    {
+      "id": "5",
+      "name": "Julianne Davis",
+      "initials": "JD",
+      "joinDate": "2023-09-15",
+      "role": "Admin",
+      "email": "j.davis@emsafe-iot.com",
+      "status": "active"
+    },
+    {
+      "id": "6",
+      "name": "Maria Silva",
+      "initials": "MS",
+      "joinDate": "2024-01-10",
+      "role": "Technician",
+      "email": "m.silva@field.emsafe.com",
+      "status": "active"
+    },
+    {
+      "id": "7",
+      "name": "Robert King",
+      "initials": "RK",
+      "joinDate": "2024-01-20",
+      "role": "Technician",
+      "email": "r.king@field.emsafe.com",
+      "status": "inactive"
+    },
+    {
+      "id": "8",
+      "name": "Quantum Dynamics Lab",
+      "initials": "QD",
+      "joinDate": "2023-10-01",
       "role": "Client",
-      "email": "b.hall@gmail.com",
+      "email": "ops@quantumdyn.com",
+      "status": "active"
+    },
+    {
+      "id": "9",
+      "name": "Harbor Medical Center",
+      "initials": "HM",
+      "joinDate": "2023-11-05",
+      "role": "Client",
+      "email": "facilities@harbormed.com",
+      "status": "active"
+    },
+    {
+      "id": "10",
+      "name": "Global Pharma Corp",
+      "initials": "GP",
+      "joinDate": "2024-02-01",
+      "role": "Client",
+      "email": "safety@globalpharma.com",
       "status": "active"
     }
   ],
@@ -208,43 +962,117 @@
       "type": "success",
       "icon": "ph-user-plus",
       "title": "New Technician Onboarded",
-      "description": "Robert Pike added to field service team.",
+      "description": "Elena Rodriguez added to field service team.",
       "time": "5 hours ago"
+    },
+    {
+      "id": "4",
+      "type": "danger",
+      "icon": "ph-warning-circle",
+      "title": "Sensor Offline — WO-9275",
+      "description": "Sensor #S-204 at Summit Data Center lost connection.",
+      "time": "1 hour ago"
+    },
+    {
+      "id": "5",
+      "type": "info",
+      "icon": "ph-clipboard-text",
+      "title": "New Work Order Created",
+      "description": "WO-9276 assigned to Sarah Jenkins — Atlas Semiconductor.",
+      "time": "3 hours ago"
     }
   ],
   "latestWorkOrders": [
     {
       "id": "1",
       "orderId": "#WO-9284",
-      "siteLocation": "North Sector Hub",
-      "technician": "Sarah Jenkins",
+      "siteLocation": "Downtown Plaza — Austin, TX",
+      "technician": "Alex Jensen",
       "status": "in-progress",
       "date": "Oct 28, 2023"
     },
     {
       "id": "2",
       "orderId": "#WO-9283",
-      "siteLocation": "Downtown Relay B",
-      "technician": "Michael Chen",
-      "status": "completed",
+      "siteLocation": "Tower 7 Substation — San Jose, CA",
+      "technician": "Maria Silva",
+      "status": "in-progress",
       "date": "Oct 27, 2023"
     },
     {
       "id": "3",
       "orderId": "#WO-9282",
-      "siteLocation": "West Ridge Grid",
-      "technician": "Sarah Jenkins",
+      "siteLocation": "North Wing Lab — Seattle, WA",
+      "technician": "Robert King",
       "status": "pending",
       "date": "Oct 27, 2023"
     },
     {
       "id": "4",
       "orderId": "#WO-9281",
-      "siteLocation": "Coastal Antenna 4",
-      "technician": "Robert Pike",
+      "siteLocation": "Coastal Antenna 4 — Miami, FL",
+      "technician": "Sarah Jenkins",
       "status": "completed",
       "date": "Oct 26, 2023"
     }
   ],
+  "chartData": {
+    "systemActivity": {
+      "series": [
+        5,
+        14,
+        10,
+        22,
+        18,
+        30,
+        26,
+        38,
+        32,
+        45,
+        40,
+        52
+      ],
+      "categories": [
+        "01 May",
+        "",
+        "",
+        "10 May",
+        "",
+        "",
+        "20 May",
+        "",
+        "",
+        "",
+        "30 May",
+        ""
+      ]
+    },
+    "radiationTrends": {
+      "series": [
+        0.05,
+        0.07,
+        0.06,
+        0.09,
+        0.08,
+        0.11,
+        0.13,
+        0.12
+      ]
+    },
+    "regional": {
+      "series": [
+        42,
+        28,
+        35,
+        19
+      ],
+      "categories": [
+        "TX",
+        "CA",
+        "WA",
+        "NY"
+      ]
+    }
+  },
   "$schema": "./node_modules/json-server/schema.json"
 }

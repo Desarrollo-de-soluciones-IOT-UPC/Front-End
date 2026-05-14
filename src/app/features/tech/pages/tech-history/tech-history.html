@@ -1,0 +1,127 @@
+<div class="hist-page">
+
+  <div class="page-header">
+    <div>
+      <h1>{{ 'hist_title' | t }}</h1>
+      <p>{{ 'hist_subtitle' | t }}</p>
+    </div>
+    <button class="btn-export" type="button" (click)="exportCsv()">
+      <i class="ph ph-export" aria-hidden="true"></i>
+      {{ 'btn_exportCsv' | t }}
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div class="date-group">
+      <label>{{ 'hist_dateRange' | t }}</label>
+      <div class="date-inputs">
+        <div class="date-input-wrap">
+          <i class="ph ph-calendar-blank" aria-hidden="true"></i>
+          <input type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event)" [placeholder]="'hist_from' | t" />
+        </div>
+        <span class="date-sep">—</span>
+        <div class="date-input-wrap">
+          <i class="ph ph-calendar-blank" aria-hidden="true"></i>
+          <input type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event)" [placeholder]="'hist_to' | t" />
+        </div>
+        @if (dateFrom() || dateTo()) {
+          <button class="clear-btn" type="button" (click)="clearDates()">{{ 'hist_clearDates' | t }}</button>
+        }
+      </div>
+    </div>
+
+    <div class="select-group">
+      <label>{{ 'hist_type' | t }}</label>
+      <select [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event)">
+        <option value="all">{{ 'hist_allTypes' | t }}</option>
+        <option value="Installation">Installation</option>
+        <option value="Maintenance">Maintenance</option>
+        <option value="Collection">Collection</option>
+      </select>
+    </div>
+
+    <div class="select-group">
+      <label>{{ 'hist_technician' | t }}</label>
+      <select [ngModel]="techFilter()" (ngModelChange)="techFilter.set($event)">
+        <option value="all">{{ 'hist_allPersonnel' | t }}</option>
+        @for (tech of technicians(); track tech) {
+          <option [value]="tech">{{ tech }}</option>
+        }
+      </select>
+    </div>
+
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <table class="hist-table">
+      <thead>
+        <tr>
+          <th>{{ 'th_orderId' | t }}</th>
+          <th>{{ 'th_completionDate' | t }}</th>
+          <th>{{ 'th_clientSite' | t }}</th>
+          <th>{{ 'th_serviceType' | t }}</th>
+          <th>{{ 'th_leadTech' | t }}</th>
+          <th>{{ 'th_status' | t }}</th>
+          <th>{{ 'th_actions' | t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of filtered(); track item.id) {
+          <tr>
+            <td><span class="order-id">{{ item.orderId }}</span></td>
+            <td>
+              <span class="date-val">{{ item.completionDate }}</span>
+              <span class="time-val">{{ item.completionTime }}</span>
+            </td>
+            <td>
+              <span class="client-name">{{ item.client }}</span>
+              <span class="site-name">{{ item.site }}</span>
+            </td>
+            <td>
+              <span class="service-badge">
+                <i [class]="'ph ' + typeIcon(item.serviceType)" aria-hidden="true"></i>
+                {{ item.serviceType }}
+              </span>
+            </td>
+            <td>
+              <div class="tech-cell">
+                <span class="tech-avatar">{{ item.technicianInitials }}</span>
+                <span>{{ item.technician }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge" [class]="statusClass(item.status)">
+                {{ item.status === 'completed' ? ('status_completed' | t) : ('status_cancelled' | t) }}
+              </span>
+            </td>
+            <td>
+              <button class="action-btn" type="button">
+                <i class="ph ph-dots-three-vertical" aria-hidden="true"></i>
+              </button>
+            </td>
+          </tr>
+        }
+        @empty {
+          <tr>
+            <td colspan="7" class="empty-row">
+              <i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i>
+              <span>No history records found.</span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="table-footer">
+      <span class="showing">Showing 1 - {{ filtered().length }} of {{ filtered().length }} results</span>
+      <div class="pagination">
+        <button class="page-btn" type="button" disabled><i class="ph ph-caret-left"></i></button>
+        <button class="page-btn page-btn--active" type="button">1</button>
+        <button class="page-btn" type="button" disabled><i class="ph ph-caret-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,147 @@
+<div class="two-panel">
+
+  <div class="main-panel">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+        <input
+          type="search"
+          [placeholder]="'tech_wo_search' | t"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+        />
+      </div>
+
+      <div class="right-tools">
+        <select [ngModel]="serviceFilter()" (ngModelChange)="serviceFilter.set($event)" class="filter-select">
+          <option value="all">{{ 'tech_wo_serviceType' | t }}: All</option>
+          <option value="Installation">Installation</option>
+          <option value="Maintenance">Maintenance</option>
+          <option value="Collection">Collection</option>
+        </select>
+
+        <button class="btn-export" type="button">
+          <i class="ph ph-export" aria-hidden="true"></i>
+          {{ 'tech_wo_export' | t }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Status tabs -->
+    <div class="tabs">
+      <button class="tab" [class.tab--active]="activeTab() === 'all'"        type="button" (click)="setTab('all')">
+        {{ 'tech_wo_allOrders' | t }}
+      </button>
+      <button class="tab" [class.tab--active]="activeTab() === 'pending'"    type="button" (click)="setTab('pending')">
+        {{ 'status_pending' | t }}
+        <span class="tab-count">{{ tabCount('pending') }}</span>
+      </button>
+      <button class="tab" [class.tab--active]="activeTab() === 'in-progress'" type="button" (click)="setTab('in-progress')">
+        {{ 'status_inProgress' | t }}
+        <span class="tab-count">{{ tabCount('in-progress') }}</span>
+      </button>
+      <button class="tab" [class.tab--active]="activeTab() === 'completed'"  type="button" (click)="setTab('completed')">
+        {{ 'status_completed' | t }}
+        <span class="tab-count">{{ tabCount('completed') }}</span>
+      </button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>{{ 'th_clientSite' | t }}</th>
+            <th>{{ 'th_location' | t }}</th>
+            <th>{{ 'th_serviceType' | t }}</th>
+            <th>{{ 'th_date' | t }}</th>
+            <th>{{ 'th_status' | t }}</th>
+            <th>{{ 'th_actions' | t }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of filtered(); track order.id) {
+            <tr>
+              <td>
+                <a class="order-link" [routerLink]="['/tech/work-orders', order.id]">{{ order.client }}</a>
+                <span class="order-id">{{ order.orderId }}</span>
+              </td>
+              <td>
+                <span class="location-wrap">
+                  <i class="ph ph-map-pin" aria-hidden="true"></i>
+                  {{ order.location }}
+                </span>
+              </td>
+              <td>
+                <span class="service-badge">
+                  <i [class]="'ph ' + typeIcon(order.type)" aria-hidden="true"></i>
+                  {{ order.type }}
+                </span>
+              </td>
+              <td class="mono">{{ order.scheduledDate }} &bull; {{ order.scheduledTime }}</td>
+              <td>
+                <span class="status-badge" [class]="statusClass(order.status)">
+                  {{ statusLabel(order.status) }}
+                </span>
+              </td>
+              <td>
+                <a class="action-link" [routerLink]="['/tech/work-orders', order.id]">
+                  <i class="ph ph-eye" aria-hidden="true"></i>
+                </a>
+              </td>
+            </tr>
+          }
+          @empty {
+            <tr>
+              <td colspan="6" class="empty-row">
+                <i class="ph ph-clipboard-text" aria-hidden="true"></i>
+                <span>No work orders found.</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <div class="table-footer">
+        <span class="showing-text">Showing {{ filtered().length }} of {{ myOrders().length }} work orders</span>
+        <div class="pagination">
+          <button class="page-btn" type="button" disabled><i class="ph ph-caret-left"></i></button>
+          <button class="page-btn page-btn--active" type="button">1</button>
+          <button class="page-btn" type="button" disabled><i class="ph ph-caret-right"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Side summary -->
+  <div class="side-panel">
+    @if (priorityTask(); as task) {
+      <div class="summary-card summary-card--priority">
+        <div class="s-icon">
+          <i class="ph ph-warning" aria-hidden="true"></i>
+        </div>
+        <div class="s-body">
+          <span class="s-label">{{ 'tech_sched_priorityTask' | t }}</span>
+          <h4>{{ task.client }}</h4>
+          <p>{{ task.location }} &bull; {{ task.scheduledDate }}</p>
+        </div>
+      </div>
+    }
+
+    <div class="summary-card summary-card--progress">
+      <div class="s-icon s-icon--green">
+        <i class="ph ph-check-circle" aria-hidden="true"></i>
+      </div>
+      <div class="s-body">
+        <span class="s-label">{{ 'tech_sched_weekProgress' | t }}</span>
+        <h4>{{ weekProgress().done }}/{{ weekProgress().total }} {{ 'tech_sched_tasksCompleted' | t }}</h4>
+        <div class="progress-bar">
+          <div class="progress-fill"
+               [style.width.%]="weekProgress().total > 0 ? (weekProgress().done / weekProgress().total) * 100 : 0">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
