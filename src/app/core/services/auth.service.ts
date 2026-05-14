@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { map, catchError, of } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface AuthUser {
   id: string;
@@ -24,7 +25,7 @@ export class AuthService {
   private http         = inject(HttpClient);
   private router       = inject(Router);
   private platformId   = inject(PLATFORM_ID);
-  private base         = 'http://localhost:3000';
+  private base         = environment.apiUrl;
 
   private _user = signal<AuthUser | null>(this.loadFromStorage());
   readonly currentUser = this._user.asReadonly();
