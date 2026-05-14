@@ -34,11 +34,40 @@
   flex-shrink: 0;
 }
 
-/* Filters */
 .filters {
-  display: flex;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
   gap: 12px;
   align-items: center;
+}
+
+
+.select-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.field-select {
+  width: 100%;
+  padding: 10px 34px 10px 14px;
+  border-radius: var(--radius-button);
+  border: 1px solid var(--border-color);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.select-caret {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  pointer-events: none;
 }
 
 .field {
@@ -74,45 +103,9 @@
   }
 }
 
-.filter-select-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 14px;
-  border-radius: var(--radius-button);
-  border: 1px solid var(--border-color);
-  background: var(--color-surface);
-  cursor: pointer;
-  font-size: 14px;
-  color: var(--color-text-primary);
-  white-space: nowrap;
 
-  select {
-    border: none;
-    background: transparent;
-    color: var(--color-text-primary);
-    font-size: 14px;
-    outline: none;
-    cursor: pointer;
-  }
-}
 
-.select {
-  padding: 10px 14px;
-  border-radius: var(--radius-button);
-  border: 1px solid var(--border-color);
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-  font-size: 14px;
-  outline: none;
-  cursor: pointer;
-  transition: 160ms ease;
 
-  &:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(26, 110, 255, 0.1);
-  }
-}
 
 /* Table */
 .table-wrap {
@@ -164,6 +157,7 @@
 .status {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 11px;
@@ -172,16 +166,19 @@
 
 .status--completed {
   background: rgba(22, 163, 74, 0.1);
+  width: 100px;
   color: var(--color-success);
 }
 
 .status--in-progress {
   background: rgba(26, 110, 255, 0.1);
+  width: 100px;
   color: var(--color-primary);
 }
 
 .status--pending {
   background: rgba(217, 119, 6, 0.1);
+  width: 100px;
   color: var(--color-warning);
 }
 
@@ -199,6 +196,7 @@
   transition: 160ms ease;
   font-weight: 600;
   font-size: 14px;
+  text-decoration: none;
 
   i { font-size: 17px; }
 }
@@ -264,39 +262,38 @@
   &.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
 }
 
-/* Type badge */
+/* Type badge actualizado */
 .type-badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
+  gap: 8px; /* Espacio entre icono y texto */
+  font-size: 14px;
   font-weight: 600;
+  padding: 4px 0; /* Ajustado para que no parezca un botón si no quieres fondo */
 
+  i {
+    font-size: 20px; /* Tamaño del icono */
+  }
+
+  /* Eliminamos el círculo anterior */
   &::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.7;
+    display: none;
   }
 }
 
 .type-badge--installation {
-  background: rgba(26, 110, 255, 0.1);
-  color: var(--color-primary);
+  color: #1a365d; // Un azul más oscuro según la imagen
+  i { color: #1e40af; }
 }
 
 .type-badge--maintenance {
-  background: rgba(124, 58, 237, 0.1);
-  color: #7c3aed;
+  color: #1e293b;
+  i { color: #2563eb; }
 }
 
 .type-badge--collection {
-  background: rgba(217, 119, 6, 0.1);
-  color: var(--color-warning);
+  color: #1e293b;
+  i { color: #1e3a8a; }
 }
 
 /* Technician cell */
@@ -336,7 +333,7 @@
   height: 32px;
   padding: 0;
   border-radius: 6px;
-  border: 1px solid var(--border-color);
+  border: none;
   background: transparent;
   color: var(--color-text-secondary);
   display: flex;

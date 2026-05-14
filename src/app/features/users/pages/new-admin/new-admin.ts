@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 
 function passwordsMatch(group: AbstractControl) {
@@ -11,7 +12,7 @@ function passwordsMatch(group: AbstractControl) {
 
 @Component({
   selector: 'app-new-admin',
-  imports: [ReactiveFormsModule, TranslatePipe, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, RouterLink],
   templateUrl: './new-admin.html',
   styleUrl: './new-admin.scss',
 })
@@ -30,6 +31,10 @@ export class NewAdmin {
 
   submitted = false;
 
+  showPassword = false;
+  showConfirmPassword = false;
+
+
   isInvalid(field: string): boolean {
     const c = this.form.get(field);
     return !!(this.submitted && c && c.invalid);
@@ -42,10 +47,10 @@ export class NewAdmin {
   submit(): void {
     this.submitted = true;
     if (this.form.invalid) return;
-    this.router.navigate(['/users']);
+    this.router.navigate(['/admin/users']);
   }
 
   cancel(): void {
-    this.router.navigate(['/users']);
+    this.router.navigate(['/admin/users']);
   }
 }

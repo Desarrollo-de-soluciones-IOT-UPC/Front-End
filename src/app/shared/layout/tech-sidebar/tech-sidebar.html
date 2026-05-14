@@ -1,0 +1,50 @@
+<div class="sidebar">
+  <div class="sidebar__top">
+    <div class="logo-section">
+      <div class="logo-box" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="shield-icon">
+          <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1Z" fill="white"/>
+          <path d="M12 3L19 6.11V11C19 15.33 16.01 19.43 12 20.92V3Z" fill="rgba(255,255,255,0.2)"/>
+        </svg>
+      </div>
+
+      <div class="brand">
+        <h2>{{ 'nav_techPortal' | t }}</h2>
+        <span class="tag">{{ 'nav_techTagline' | t }}</span>
+      </div>
+    </div>
+
+    <nav class="nav-links" aria-label="Technician navigation">
+      <a
+        routerLink="/tech"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <i class="ph ph-calendar-blank" aria-hidden="true"></i>
+        <span>{{ 'nav_mySchedule' | t }}</span>
+      </a>
+
+      <a routerLink="/tech/work-orders" routerLinkActive="active">
+        <i class="ph ph-clipboard-text" aria-hidden="true"></i>
+        <span>{{ 'nav_workOrders' | t }}</span>
+      </a>
+
+      <a routerLink="/tech/history" routerLinkActive="active">
+        <i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i>
+        <span>{{ 'nav_history' | t }}</span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="sidebar__bottom">
+    <a class="bottom-link" href="#" (click)="$event.preventDefault()">
+      <i class="ph ph-headset" aria-hidden="true"></i>
+      <span>{{ 'nav_support' | t }}</span>
+    </a>
+
+    <a class="bottom-link bottom-link--danger" href="#" (click)="$event.preventDefault(); auth.logout()">
+      <i class="ph ph-sign-out" aria-hidden="true"></i>
+      <span>{{ 'nav_logout' | t }}</span>
+    </a>
+  </div>
+</div>

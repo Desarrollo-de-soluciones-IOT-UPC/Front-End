@@ -126,9 +126,16 @@
             </td>
             <td>
               <span class="type-badge type-badge--{{ item.serviceType.toLowerCase() }}">
-                @if (item.serviceType === 'Installation') { {{ 'wo_installation' | t }} }
-                @else if (item.serviceType === 'Maintenance') { {{ 'wo_maintenance' | t }} }
-                @else { {{ 'wo_collection' | t }} }
+                @if (item.serviceType === 'Installation') {
+                  <i class="ph ph-monitor"></i>
+                  {{ 'wo_installation' | t }}
+                } @else if (item.serviceType === 'Maintenance') {
+                  <i class="ph ph-wrench"></i>
+                  {{ 'wo_maintenance' | t }}
+                } @else {
+                  <i class="ph ph-package"></i>
+                  {{ 'wo_collection' | t }}
+                }
               </span>
             </td>
             <td>

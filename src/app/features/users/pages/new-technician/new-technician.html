@@ -2,12 +2,12 @@
   <div class="new-user__header">
     <div>
       <p class="breadcrumb">
-        <a routerLink="/users">{{ 'nav_users' | t }}</a>
+        <a routerLink="/admin/users">{{ 'nav_users' | t }}</a>
         › {{ 'tech_title' | t }}
       </p>
       <h2 class="new-user__title">{{ 'tech_title' | t }}</h2>
     </div>
-    <a routerLink="/users" class="btn btn--back">
+    <a routerLink="/admin/users" class="btn btn--back">
       {{ 'btn_backToList' | t }}
     </a>
   </div>
@@ -69,26 +69,44 @@
       <div class="form-row--2col">
         <div class="field-group">
           <label class="field-label">{{ 'form_password' | t }} <span class="required">*</span></label>
-          <input
-            class="field-input"
-            [class.field--error]="isInvalid('password')"
-            type="password"
-            formControlName="password"
-            placeholder="••••••••"
-          />
+
+          <div class="password-wrap">
+            <input
+              class="field-input"
+              [class.field--error]="isInvalid('password')"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="••••••••"
+            />
+            <i
+              class="ph"
+              [ngClass]="showPassword ? 'ph-eye-slash' : 'ph-eye'"
+              (click)="showPassword = !showPassword"
+            ></i>
+          </div>
+
           @if (isInvalid('password')) {
             <span class="error-msg">Password must be at least 8 characters.</span>
           }
         </div>
         <div class="field-group">
           <label class="field-label">{{ 'form_confirmPassword' | t }} <span class="required">*</span></label>
-          <input
-            class="field-input"
-            [class.field--error]="isInvalid('confirmPassword') || passwordMismatch"
-            type="password"
-            formControlName="confirmPassword"
-            placeholder="••••••••"
-          />
+
+          <div class="password-wrap">
+            <input
+              class="field-input"
+              [class.field--error]="isInvalid('confirmPassword') || passwordMismatch"
+              [type]="showConfirmPassword ? 'text' : 'password'"
+              formControlName="confirmPassword"
+              placeholder="••••••••"
+            />
+            <i
+              class="ph"
+              [ngClass]="showConfirmPassword ? 'ph-eye-slash' : 'ph-eye'"
+              (click)="showConfirmPassword = !showConfirmPassword"
+            ></i>
+          </div>
+
           @if (passwordMismatch) {
             <span class="error-msg">Passwords do not match.</span>
           }

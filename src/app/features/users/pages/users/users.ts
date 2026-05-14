@@ -62,9 +62,9 @@ export class Users implements OnInit {
   addUser(type: 'Admin' | 'Technician' | 'Client'): void {
     this.showAddModal.set(false);
     const routes: Record<string, string> = {
-      Admin:      '/users/new-admin',
-      Technician: '/users/new-technician',
-      Client:     '/users/edit-client/new',
+      Admin:      '/admin/users/new-admin',
+      Technician: '/admin/users/new-technician',
+      Client:     '/admin/users/edit-client/new',
     };
     this.router.navigate([routes[type]]);
   }
@@ -72,9 +72,9 @@ export class Users implements OnInit {
   editUser(user: User): void {
     this.openMenuId = null;
     const routes: Record<string, string> = {
-      Admin:      `/users/edit-admin/${user.id}`,
-      Technician: `/users/edit-technician/${user.id}`,
-      Client:     `/users/edit-client/${user.id}`,
+      Admin:      `/admin/users/edit-admin/${user.id}`,
+      Technician: `/admin/users/edit-technician/${user.id}`,
+      Client:     `/admin/users/edit-client/${user.id}`,
     };
     this.router.navigate([routes[user.role]]);
   }

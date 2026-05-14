@@ -222,6 +222,24 @@
   &:disabled { opacity: 0.65; cursor: not-allowed; }
 }
 
+.password-wrap {
+  position: relative;
+}
+
+.password-wrap .field-input {
+  padding-right: 38px;
+}
+
+.password-wrap i {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
 /* ── Responsive ──────────────────────────────────── */
 @media (max-width: 640px) {
   .form-row--2col { grid-template-columns: 1fr; }
