@@ -279,10 +279,12 @@
 .role-badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
+  width: 100px;
 
   &--admin       { background: rgba(26, 110, 255, 0.1); color: var(--color-primary); }
   &--technician  { background: rgba(16, 185, 129, 0.1); color: #059669; }

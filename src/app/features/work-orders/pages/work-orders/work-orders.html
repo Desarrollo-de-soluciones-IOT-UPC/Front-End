@@ -25,27 +25,33 @@
       />
     </div>
 
-    <select
-      class="select"
-      aria-label="Filter by type"
-      (change)="selectedType.set($any($event.target).value)"
-    >
-      <option value="all">{{ 'wo_typeAll' | t }}</option>
-      <option value="Installation">{{ 'wo_installation' | t }}</option>
-      <option value="Maintenance">{{ 'wo_maintenance' | t }}</option>
-      <option value="Collection">{{ 'wo_collection' | t }}</option>
-    </select>
+    <div class="select-wrap">
+      <select
+        class="field-select"
+        aria-label="Filter by type"
+        (change)="selectedType.set($any($event.target).value)"
+      >
+        <option value="all">{{ 'wo_typeAll' | t }}</option>
+        <option value="Installation">{{ 'wo_installation' | t }}</option>
+        <option value="Maintenance">{{ 'wo_maintenance' | t }}</option>
+        <option value="Collection">{{ 'wo_collection' | t }}</option>
+      </select>
+      <i class="ph ph-caret-down select-caret"></i>
+    </div>
 
-    <select
-      class="select"
-      aria-label="Filter by status"
-      (change)="selectedStatus.set($any($event.target).value)"
-    >
-      <option value="all">{{ 'wo_statusAll' | t }}</option>
-      <option value="completed">{{ 'status_completed' | t }}</option>
-      <option value="in-progress">{{ 'status_inProgress' | t }}</option>
-      <option value="pending">{{ 'status_pending' | t }}</option>
-    </select>
+    <div class="select-wrap">
+      <select
+        class="field-select"
+        aria-label="Filter by status"
+        (change)="selectedStatus.set($any($event.target).value)"
+      >
+        <option value="all">{{ 'wo_statusAll' | t }}</option>
+        <option value="completed">{{ 'status_completed' | t }}</option>
+        <option value="in-progress">{{ 'status_inProgress' | t }}</option>
+        <option value="pending">{{ 'status_pending' | t }}</option>
+      </select>
+      <i class="ph ph-caret-down select-caret"></i>
+    </div>
   </div>
 
   <!-- Table -->
@@ -67,9 +73,16 @@
           <tr>
             <td>
               <span class="type-badge type-badge--{{ order.type.toLowerCase() }}">
-                @if (order.type === 'Installation') { {{ 'wo_installation' | t }} }
-                @else if (order.type === 'Maintenance') { {{ 'wo_maintenance' | t }} }
-                @else { {{ 'wo_collection' | t }} }
+                @if (order.type === 'Installation') {
+                  <i class="ph ph-monitor"></i>
+                  {{ 'wo_installation' | t }}
+                } @else if (order.type === 'Maintenance') {
+                  <i class="ph ph-wrench"></i>
+                  {{ 'wo_maintenance' | t }}
+                } @else {
+                  <i class="ph ph-package"></i>
+                  {{ 'wo_collection' | t }}
+                }
               </span>
             </td>
             <td>{{ order.client }}</td>

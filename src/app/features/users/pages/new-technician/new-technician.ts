@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 
 function passwordsMatch(group: AbstractControl) {
@@ -11,7 +12,7 @@ function passwordsMatch(group: AbstractControl) {
 
 @Component({
   selector: 'app-new-technician',
-  imports: [ReactiveFormsModule, TranslatePipe, RouterLink],
+  imports: [ReactiveFormsModule, TranslatePipe, RouterLink, CommonModule],
   templateUrl: './new-technician.html',
   styleUrl: './new-technician.scss',
 })
@@ -29,6 +30,9 @@ export class NewTechnician {
   }, { validators: passwordsMatch });
 
   submitted = false;
+
+  showPassword = false;
+  showConfirmPassword = false;
 
   isInvalid(field: string): boolean {
     const c = this.form.get(field);
