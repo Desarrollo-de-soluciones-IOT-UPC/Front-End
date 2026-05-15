@@ -3,7 +3,6 @@ import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { DataService, HistoryItem } from '../../../../core/services/data.service';
-import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-tech-history',
@@ -13,14 +12,12 @@ import { AuthService } from '../../../../core/services/auth.service';
 })
 export class TechHistory {
   private data = inject(DataService);
-  private auth = inject(AuthService);
 
-  private _all  = toSignal(this.data.getHistory(), { initialValue: [] as HistoryItem[] });
-  private myName = computed(() => this.auth.currentUser()?.name ?? '');
-  private all   = computed(() => this._all().filter(h => h.technician === this.myName()));
+  // Backend already filters by the logged-in technician's JWT token
+  private all = toSignal(this.data.getTechHistory(), { initialValue: [] as HistoryItem[] });
 
-  protected dateFrom  = signal('');
-  protected dateTo    = signal('');
+  protected dateFrom   = signal('');
+  protected dateTo     = signal('');
   protected typeFilter = signal('all');
   protected techFilter = signal('all');
 

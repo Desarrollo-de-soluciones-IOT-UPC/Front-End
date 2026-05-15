@@ -5,7 +5,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { LanguageService } from '../../../../core/services/language.service';
 import { DataService, TechWorkOrder } from '../../../../core/services/data.service';
-import { AuthService } from '../../../../core/services/auth.service';
 
 type StatusTab = 'all' | 'pending' | 'in-progress' | 'completed';
 
@@ -16,21 +15,17 @@ type StatusTab = 'all' | 'pending' | 'in-progress' | 'completed';
   styleUrl: './tech-work-orders.scss',
 })
 export class TechWorkOrders {
-  private data  = inject(DataService);
-  private auth  = inject(AuthService);
+  private data   = inject(DataService);
   protected lang = inject(LanguageService);
 
+  // Backend already filters by the logged-in technician's JWT token
   private allOrders = toSignal(this.data.getTechWorkOrders(), { initialValue: [] as TechWorkOrder[] });
 
-  private techId = computed(() => this.auth.currentUser()?.technicianId ?? '');
-
-  protected search      = signal('');
-  protected activeTab   = signal<StatusTab>('all');
+  protected search        = signal('');
+  protected activeTab     = signal<StatusTab>('all');
   protected serviceFilter = signal('all');
 
-  protected myOrders = computed(() =>
-    this.allOrders().filter(o => o.technicianId === this.techId())
-  );
+  protected myOrders = computed(() => this.allOrders());
 
   protected filtered = computed(() => {
     const q    = this.search().toLowerCase();

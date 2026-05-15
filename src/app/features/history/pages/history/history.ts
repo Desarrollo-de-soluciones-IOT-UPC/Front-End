@@ -12,6 +12,7 @@ export class History implements OnInit {
   private data = inject(DataService);
 
   private _allItems = signal<HistoryItem[]>([]);
+  loading = signal(true);
 
   selectedType       = signal('all');
   selectedTechnician = signal('all');
@@ -59,7 +60,10 @@ export class History implements OnInit {
   });
 
   ngOnInit(): void {
-    this.data.getHistory().subscribe(items => this._allItems.set(items));
+    this.data.getHistory().subscribe(items => {
+      this._allItems.set(items);
+      this.loading.set(false);
+    });
   }
 
   clearDates(): void {

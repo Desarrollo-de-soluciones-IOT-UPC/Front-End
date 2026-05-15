@@ -1,8 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
+import { DataService } from '../../../../core/services/data.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 function passwordsMatch(group: AbstractControl) {
   const pw  = group.get('password')?.value;
@@ -16,9 +18,15 @@ function passwordsMatch(group: AbstractControl) {
   templateUrl: './new-admin.html',
   styleUrl: './new-admin.scss',
 })
-export class NewAdmin {
+export class NewAdmin implements OnInit {
   private fb     = inject(FormBuilder);
   private router = inject(Router);
+  private route  = inject(ActivatedRoute);
+  private data   = inject(DataService);
+  private toast  = inject(ToastService);
+
+  private userId: string | null = null;
+  isEditMode = signal(false);
 
   form = this.fb.group({
     fullName:        ['', Validators.required],
@@ -30,10 +38,31 @@ export class NewAdmin {
   }, { validators: passwordsMatch });
 
   submitted = false;
+  saving    = signal(false);
 
   showPassword = false;
   showConfirmPassword = false;
 
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.userId = id;
+      this.isEditMode.set(true);
+      // Password not required when editing
+      this.form.get('password')?.clearValidators();
+      this.form.get('password')?.updateValueAndValidity();
+      this.form.get('confirmPassword')?.clearValidators();
+      this.form.get('confirmPassword')?.updateValueAndValidity();
+      this.data.getUserById(id).subscribe(user => {
+        if (!user) return;
+        this.form.patchValue({
+          fullName: user.name,
+          email:    user.email,
+          phone:    (user as any).phone ?? '',
+        });
+      });
+    }
+  }
 
   isInvalid(field: string): boolean {
     const c = this.form.get(field);
@@ -47,7 +76,46 @@ export class NewAdmin {
   submit(): void {
     this.submitted = true;
     if (this.form.invalid) return;
-    this.router.navigate(['/admin/users']);
+    const v = this.form.value;
+    const name = v.fullName ?? '';
+    this.saving.set(true);
+
+    if (this.userId) {
+      this.data.updateUser(this.userId, {
+        name,
+        email: v.email ?? '',
+        phone: v.phone ?? '',
+      }).subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.toast.success('Admin updated successfully');
+          this.router.navigate(['/admin/users']);
+        },
+        error: () => {
+          this.toast.error('Failed to update admin');
+          this.saving.set(false);
+        },
+      });
+    } else {
+      this.data.createUser({
+        name,
+        initials: name.split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2),
+        email:    v.email    ?? '',
+        password: v.password ?? '',
+        role:     'ADMIN',
+        phone:    v.phone    ?? undefined,
+      }).subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.toast.success('Admin created successfully');
+          this.router.navigate(['/admin/users']);
+        },
+        error: () => {
+          this.toast.error('Failed to create admin');
+          this.saving.set(false);
+        },
+      });
+    }
   }
 
   cancel(): void {

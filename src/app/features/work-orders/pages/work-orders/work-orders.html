@@ -56,6 +56,12 @@
 
   <!-- Table -->
   <div class="table-wrap">
+    @if (loading()) {
+      <div class="loading-state">
+        <i class="ph ph-circle-notch ph-spin"></i>
+        <span>Loading...</span>
+      </div>
+    }
     <table class="table" aria-label="Work orders table">
       <thead>
         <tr>

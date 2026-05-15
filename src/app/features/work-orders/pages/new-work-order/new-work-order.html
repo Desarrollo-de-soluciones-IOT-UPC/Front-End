@@ -80,45 +80,25 @@
       <!-- Row 3: Date + Technician -->
       <div class="form-row form-row--2col">
         <div class="field-group">
-          <label class="field-label">{{ 'wo_new_scheduledDate' | t }} <span class="required">*</span></label>
+          <label class="field-label">{{ 'wo_new_scheduledDate' | t }}</label>
           <input
-            type="datetime-local"
+            type="date"
             class="field-input"
             formControlName="scheduledDate"
-            [class.field--error]="isInvalid('scheduledDate')"
           />
-          @if (isInvalid('scheduledDate')) {
-            <span class="error-msg">{{ 'wo_new_scheduledDate' | t }} is required</span>
-          }
         </div>
 
         <div class="field-group">
-          <label class="field-label">{{ 'wo_new_assignedTech' | t }} <span class="required">*</span></label>
-          <div class="select-wrap select-wrap--icon" [class.field--error]="isInvalid('technician')">
-            <select formControlName="technician" class="field-select">
-              <option value="">{{ 'wo_new_selectTech' | t }}</option>
+          <label class="field-label">{{ 'wo_new_assignedTech' | t }}</label>
+          <div class="select-wrap select-wrap--icon">
+            <select formControlName="technicianId" class="field-select">
+              <option [value]="null">{{ 'wo_new_selectTech' | t }}</option>
               @for (tech of technicians(); track tech.id) {
-                <option [value]="tech.name">{{ tech.name }}</option>
+                <option [value]="tech.id">{{ tech.name }}</option>
               }
             </select>
             <i class="ph ph-user-gear select-icon-right" aria-hidden="true"></i>
           </div>
-          @if (isInvalid('technician')) {
-            <span class="error-msg">{{ 'wo_new_assignedTech' | t }} is required</span>
-          }
-        </div>
-      </div>
-
-      <!-- Row 4: Notes (full width) -->
-      <div class="form-row">
-        <div class="field-group">
-          <label class="field-label">{{ 'wo_new_notes' | t }}</label>
-          <textarea
-            class="field-textarea"
-            formControlName="notes"
-            [placeholder]="'wo_new_notesPlaceholder' | t"
-            rows="5"
-          ></textarea>
         </div>
       </div>
 

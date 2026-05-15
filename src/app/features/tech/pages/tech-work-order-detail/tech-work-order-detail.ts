@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -45,7 +45,7 @@ export class TechWorkOrderDetail {
     return s === 'ok' ? 'sensor--ok' : 'sensor--maintenance';
   }
 
-  protected toggleSensor(sensor: { id: string; location: string; status: string }): void {
+  protected toggleSensor(sensor: { id: number; sensorId: string; location: string; status: string }): void {
     sensor.status = sensor.status === 'ok' ? 'maintenance' : 'ok';
   }
 
@@ -53,7 +53,11 @@ export class TechWorkOrderDetail {
     const o = this.order();
     if (!o) return;
     this.saving.set(true);
-    this.data.updateTechWorkOrderStatus(o.id, 'in-progress').subscribe(() => {
+    this.data.patchTechWorkOrder(o.id, {
+      status: 'in-progress',
+      technicianNotes: this.techNotes(),
+      activityLogEntry: { event: 'Job started', time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) },
+    }).subscribe(() => {
       this.saving.set(false);
       this.router.navigate(['/tech/work-orders', o.id]);
     });
@@ -63,7 +67,11 @@ export class TechWorkOrderDetail {
     const o = this.order();
     if (!o) return;
     this.saving.set(true);
-    this.data.updateTechWorkOrderStatus(o.id, 'in-progress').subscribe(() => {
+    this.data.patchTechWorkOrder(o.id, {
+      status: 'in-progress',
+      technicianNotes: this.techNotes(),
+      sensors: o.sensors.map(s => ({ sensorId: s.sensorId, location: s.location, status: s.status })),
+    }).subscribe(() => {
       this.saving.set(false);
     });
   }
@@ -72,7 +80,12 @@ export class TechWorkOrderDetail {
     const o = this.order();
     if (!o) return;
     this.saving.set(true);
-    this.data.updateTechWorkOrderStatus(o.id, 'completed').subscribe(() => {
+    this.data.patchTechWorkOrder(o.id, {
+      status: 'completed',
+      technicianNotes: this.techNotes(),
+      sensors: o.sensors.map(s => ({ sensorId: s.sensorId, location: s.location, status: s.status })),
+      activityLogEntry: { event: 'Work order completed', time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) },
+    }).subscribe(() => {
       this.saving.set(false);
       this.router.navigate(['/tech/work-orders']);
     });

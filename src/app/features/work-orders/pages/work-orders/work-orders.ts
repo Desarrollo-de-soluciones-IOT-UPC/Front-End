@@ -4,6 +4,8 @@ import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { LanguageService } from '../../../../core/services/language.service';
 import { DataService, WorkOrder } from '../../../../core/services/data.service';
+import { ConfirmService } from '../../../../core/services/confirm.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-work-orders',
@@ -12,11 +14,14 @@ import { DataService, WorkOrder } from '../../../../core/services/data.service';
   styleUrl: './work-orders.scss',
 })
 export class WorkOrders implements OnInit {
-  protected lang = inject(LanguageService);
-  private data = inject(DataService);
+  protected lang    = inject(LanguageService);
+  private data      = inject(DataService);
+  private confirm   = inject(ConfirmService);
+  private toast     = inject(ToastService);
 
   // Source data (writable so we can update after delete)
   private _allOrders = signal<WorkOrder[]>([]);
+  loading = signal(true);
 
   // Filter signals
   searchQuery  = signal('');
@@ -59,7 +64,11 @@ export class WorkOrders implements OnInit {
   }
 
   loadOrders(): void {
-    this.data.getWorkOrders().subscribe(orders => this._allOrders.set(orders));
+    this.loading.set(true);
+    this.data.getWorkOrders().subscribe(orders => {
+      this._allOrders.set(orders);
+      this.loading.set(false);
+    });
   }
 
   @HostListener('document:click')
@@ -74,8 +83,10 @@ export class WorkOrders implements OnInit {
 
   deleteOrder(id: number | string, event: Event): void {
     event.stopPropagation();
+    if (!this.confirm.confirm('Are you sure you want to delete this work order?')) return;
     this.data.deleteWorkOrder(id).subscribe(() => {
       this._allOrders.update(list => list.filter(o => String(o.id) !== String(id)));
+      this.toast.success('Work order deleted successfully');
     });
     this.openMenuIndex = null;
   }

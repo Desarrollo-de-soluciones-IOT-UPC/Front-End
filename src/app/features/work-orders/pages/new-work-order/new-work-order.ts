@@ -5,7 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { LanguageService } from '../../../../core/services/language.service';
-import { DataService } from '../../../../core/services/data.service';
+import { DataService, CreateWorkOrderPayload } from '../../../../core/services/data.service';
 
 @Component({
   selector: 'app-new-work-order',
@@ -32,9 +32,9 @@ export class NewWorkOrder {
     type:          ['', Validators.required],
     client:        ['', Validators.required],
     location:      ['', Validators.required],
-    scheduledDate: ['', Validators.required],
-    technician:    ['', Validators.required],
-    notes:         [''],
+    scheduledDate: [''],
+    technicianId:  [null as number | null],
+    priority:      ['Standard'],
   });
 
   get f() { return this.form.controls; }
@@ -53,20 +53,23 @@ export class NewWorkOrder {
     this.submitting = true;
     const v = this.form.value;
 
-    const selected = this.technicians().find(t => t.name === v.technician);
-    const newOrder = {
-      orderId: `#WO-${Math.floor(Math.random() * 9000 + 1000)}`,
-      type:               v.type ?? '',
-      client:             v.client ?? '',
-      location:           v.location ?? '',
-      city:               '',
-      date:               new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      technician:         v.technician ?? '',
-      technicianInitials: selected ? selected.initials : '',
-      status:             'pending' as const,
+    // Map display name to backend enum (INSTALLATION, MAINTENANCE, COLLECTION)
+    const typeMap: Record<string, string> = {
+      'Installation': 'INSTALLATION',
+      'Maintenance':  'MAINTENANCE',
+      'Collection':   'COLLECTION',
     };
 
-    this.data.createWorkOrder(newOrder).subscribe({
+    const payload: CreateWorkOrderPayload = {
+      type:          typeMap[v.type ?? ''] ?? (v.type ?? '').toUpperCase(),
+      client:        v.client ?? '',
+      location:      v.location ?? '',
+      scheduledDate: v.scheduledDate || undefined,
+      technicianId:  v.technicianId ?? undefined,
+      priority:      v.priority ?? 'Standard',
+    };
+
+    this.data.createWorkOrder(payload).subscribe({
       next: () => this.router.navigate(['/admin/work-orders']),
       error: () => { this.submitting = false; },
     });

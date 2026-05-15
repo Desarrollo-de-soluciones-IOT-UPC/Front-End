@@ -3,20 +3,25 @@ import { Router, RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { DataService, User } from '../../../../core/services/data.service';
+import { ConfirmService } from '../../../../core/services/confirm.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 type RoleFilter = 'all' | 'Admin' | 'Technician' | 'Client';
 
 @Component({
   selector: 'app-users',
-  imports: [TranslatePipe, RouterLink, DecimalPipe],
+  imports: [TranslatePipe, DecimalPipe],
   templateUrl: './users.html',
   styleUrl: './users.scss',
 })
 export class Users implements OnInit {
-  private data   = inject(DataService);
-  private router = inject(Router);
+  private data    = inject(DataService);
+  private router  = inject(Router);
+  private confirm = inject(ConfirmService);
+  private toast   = inject(ToastService);
 
   private _allUsers = signal<User[]>([]);
+  loading      = signal(true);
   searchQuery  = signal('');
   activeTab    = signal<RoleFilter>('all');
   openMenuId: number | string | null = null;
@@ -44,7 +49,10 @@ export class Users implements OnInit {
   pendingCount = computed(() => this._allUsers().filter(u => u.status === 'inactive').length);
 
   ngOnInit(): void {
-    this.data.getUsers().subscribe(users => this._allUsers.set(users));
+    this.data.getUsers().subscribe(users => {
+      this._allUsers.set(users);
+      this.loading.set(false);
+    });
   }
 
   setTab(tab: RoleFilter): void {
@@ -91,8 +99,10 @@ export class Users implements OnInit {
 
   deleteUser(id: number | string, event: Event): void {
     event.stopPropagation();
+    if (!this.confirm.confirm('Are you sure you want to delete this user?')) return;
     this.data.deleteUser(id).subscribe(() => {
       this._allUsers.update(list => list.filter(u => String(u.id) !== String(id)));
+      this.toast.success('User deleted successfully');
     });
     this.openMenuId = null;
   }
