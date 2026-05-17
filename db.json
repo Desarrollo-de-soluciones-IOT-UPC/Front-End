@@ -16,6 +16,15 @@
       "initials": "MR",
       "role": "technician",
       "technicianId": "2"
+    },
+     {
+      "id": "3",
+      "email": "marcus2@emsafe.com",
+      "password": "tech0123",
+      "name": "Marcus1 Rivera",
+      "initials": "MR",
+      "role": "technician",
+      "technicianId": "3"
     }
   ],
   "stats": {
