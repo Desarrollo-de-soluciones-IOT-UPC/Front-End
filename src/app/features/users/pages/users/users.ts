@@ -44,9 +44,11 @@ export class Users implements OnInit {
     return list;
   });
 
-  totalUsers   = computed(() => this._allUsers().length);
-  activeNow    = computed(() => this._allUsers().filter(u => u.status === 'active').length);
-  pendingCount = computed(() => this._allUsers().filter(u => u.status === 'inactive').length);
+  totalUsers         = computed(() => this._allUsers().length);
+  activeNow          = computed(() => this._allUsers().filter(u => u.status === 'active').length);
+  pendingCount       = computed(() => this._allUsers().filter(u => u.status === 'inactive').length);
+  activeClientCount  = computed(() => this._allUsers().filter(u => u.role === 'Client' && u.status === 'active').length);
+  inactiveClientCount = computed(() => this._allUsers().filter(u => u.role === 'Client' && u.status === 'inactive').length);
 
   ngOnInit(): void {
     this.data.getUsers().subscribe(users => {

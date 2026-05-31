@@ -1,6 +1,5 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { DataService, HistoryItem } from '../../../../core/services/data.service';
 
@@ -10,40 +9,80 @@ import { DataService, HistoryItem } from '../../../../core/services/data.service
   templateUrl: './tech-history.html',
   styleUrl: './tech-history.scss',
 })
-export class TechHistory {
+export class TechHistory implements OnInit {
   private data = inject(DataService);
 
-  // Backend already filters by the logged-in technician's JWT token
-  private all = toSignal(this.data.getTechHistory(), { initialValue: [] as HistoryItem[] });
+  protected items      = signal<HistoryItem[]>([]);
+  protected loading    = signal(true);
 
   protected dateFrom   = signal('');
   protected dateTo     = signal('');
   protected typeFilter = signal('all');
   protected techFilter = signal('all');
 
+  // Pagination signals
+  protected currentPage   = signal(0);
+  protected totalPages    = signal(0);
+  protected totalElements = signal(0);
+  readonly pageSize = 10;
+
   protected technicians = computed(() => {
-    const unique = new Set(this.all().map(h => h.technician));
+    const unique = new Set(this.items().map(h => h.technician));
     return Array.from(unique).sort();
   });
 
-  protected filtered = computed(() => {
-    const from = this.dateFrom();
-    const to   = this.dateTo();
-    const type = this.typeFilter();
-    const tech = this.techFilter();
+  // Alias for template compatibility
+  protected get filtered() { return this.items; }
 
-    return this.all().filter(h => {
-      const matchType = type === 'all' || h.serviceType === type;
-      const matchTech = tech === 'all' || h.technician === tech;
-      const matchFrom = !from || h.completionDate >= from;
-      const matchTo   = !to   || h.completionDate <= to;
-      return matchType && matchTech && matchFrom && matchTo;
+  ngOnInit(): void {
+    this.loadItems();
+  }
+
+  private loadItems(): void {
+    this.loading.set(true);
+    this.data.getTechHistoryPaged(undefined, undefined, this.currentPage(), this.pageSize).subscribe(response => {
+      let content = response.content;
+      const type = this.typeFilter();
+      const tech = this.techFilter();
+      const from = this.dateFrom();
+      const to   = this.dateTo();
+
+      if (type !== 'all') content = content.filter(h => h.serviceType === type);
+      if (tech !== 'all') content = content.filter(h => h.technician === tech);
+      if (from) content = content.filter(h => h.completionDate >= from);
+      if (to)   content = content.filter(h => h.completionDate <= to);
+
+      this.items.set(content);
+      this.totalPages.set(response.totalPages);
+      this.totalElements.set(response.totalElements);
+      this.loading.set(false);
     });
-  });
+  }
+
+  protected applyFilters(): void {
+    this.currentPage.set(0);
+    this.loadItems();
+  }
+
+  protected goToPage(page: number): void {
+    if (page >= 0 && page < this.totalPages()) {
+      this.currentPage.set(page);
+      this.loadItems();
+    }
+  }
+
+  protected getPagesArray(): number[] {
+    return Array.from({ length: this.totalPages() }, (_, i) => i);
+  }
+
+  protected min(a: number, b: number): number {
+    return Math.min(a, b);
+  }
 
   protected clearDates(): void {
     this.dateFrom.set('');
     this.dateTo.set('');
+    this.applyFilters();
   }
 
   protected exportCsv(): void {

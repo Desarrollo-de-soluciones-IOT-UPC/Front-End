@@ -19,16 +19,12 @@
       <div class="stat-value">{{ totalUsers() | number }}<span class="stat-delta stat-delta--up">↗ 2%</span></div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">{{ 'users_activeNow' | t }}</div>
-      <div class="stat-value stat-value--green">{{ activeNow() }}<span class="stat-sub">{{ 'users_activeSub' | t }}</span></div>
+      <div class="stat-label">{{ 'users_activeClients' | t }}</div>
+      <div class="stat-value stat-value--green">{{ activeClientCount() }}<span class="stat-sub">{{ 'users_activeClientsSub' | t }}</span></div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">{{ 'users_pendingApproval' | t }}</div>
-      <div class="stat-value">{{ pendingCount() }}<span class="stat-sub stat-sub--danger">{{ 'users_pendingSub' | t }}</span></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">{{ 'users_systemHealth' | t }}</div>
-      <div class="stat-value stat-value--green">99.9%<span class="stat-sub">{{ 'users_healthSub' | t }}</span></div>
+      <div class="stat-label">{{ 'users_inactiveClients' | t }}</div>
+      <div class="stat-value">{{ inactiveClientCount() }}<span class="stat-sub stat-sub--danger">{{ 'users_inactiveClientsSub' | t }}</span></div>
     </div>
   </div>
 

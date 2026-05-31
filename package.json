@@ -23,8 +23,10 @@
     "@angular/router": "^21.2.0",
     "@angular/ssr": "^21.2.10",
     "@phosphor-icons/web": "^2.1.2",
+    "@types/leaflet": "^1.9.21",
     "apexcharts": "^5.11.0",
     "express": "^5.1.0",
+    "leaflet": "^1.9.4",
     "ng-apexcharts": "^2.4.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"

@@ -20,6 +20,11 @@ import { TechWorkOrders }      from './features/tech/pages/tech-work-orders/tech
 import { TechWorkOrderDetail } from './features/tech/pages/tech-work-order-detail/tech-work-order-detail';
 import { TechHistory }         from './features/tech/pages/tech-history/tech-history';
 
+import { Profile }       from './features/profile/pages/profile/profile';
+import { Devices }       from './features/devices/pages/devices/devices';
+import { Alarms }        from './features/alarms/pages/alarms/alarms';
+import { MapRadiation }  from './features/map-radiation/pages/map-radiation/map-radiation';
+
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 
@@ -33,6 +38,7 @@ export const routes: Routes = [
       { path: '',                          component: Dashboard },
       { path: 'work-orders',               component: WorkOrders },
       { path: 'work-orders/new',           component: NewWorkOrder },
+      { path: 'work-orders/edit/:id',      component: NewWorkOrder },
       { path: 'history',                   component: History },
       { path: 'users',                     component: Users },
       { path: 'users/new-admin',           component: NewAdmin },
@@ -40,6 +46,10 @@ export const routes: Routes = [
       { path: 'users/edit-admin/:id',      component: NewAdmin },
       { path: 'users/edit-technician/:id', component: NewTechnician },
       { path: 'users/edit-client/:id',     component: EditClient },
+      { path: 'profile',                   component: Profile },
+      { path: 'devices',                   component: Devices },
+      { path: 'alarms',                    component: Alarms },
+      { path: 'map-radiation',             component: MapRadiation },
     ],
   },
 
@@ -52,6 +62,7 @@ export const routes: Routes = [
       { path: 'work-orders',     component: TechWorkOrders },
       { path: 'work-orders/:id', component: TechWorkOrderDetail },
       { path: 'history',         component: TechHistory },
+      { path: 'profile',         component: Profile },
     ],
   },
 

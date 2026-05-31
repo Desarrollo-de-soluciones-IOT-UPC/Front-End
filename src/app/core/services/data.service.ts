@@ -58,7 +58,7 @@ export interface WorkOrder {
   date: string;
   technician: string;
   technicianInitials: string;
-  status: 'completed' | 'in-progress' | 'pending';
+  status: 'completed' | 'in-progress' | 'pending' | 'cancelled';
 }
 
 export interface HistoryItem {
@@ -146,6 +146,58 @@ export interface CreateWorkOrderPayload {
   scheduledTime?: string;
   technicianId?: number;
   priority?: string;
+  notes?: string;
+}
+
+export interface UpdateWorkOrderPayload {
+  type?: string;
+  client?: string;
+  location?: string;
+  city?: string;
+  scheduledDate?: string;
+  scheduledTime?: string;
+  technicianId?: number;
+  priority?: string;
+  notes?: string;
+}
+
+export interface WorkOrderDetail {
+  id: number;
+  orderId: string;
+  type: string;
+  client: string;
+  location: string;
+  city?: string;
+  date: string;
+  technician: string;
+  technicianInitials: string;
+  status: 'completed' | 'in-progress' | 'pending' | 'cancelled';
+  scheduledDate?: string;
+  scheduledTime?: string;
+  technicianId?: number;
+  priority?: string;
+  notes?: string;
+  cancellationReason?: string;
+}
+
+export interface HistoryDetail {
+  id: number;
+  orderId: string;
+  completionDate: string;
+  completionTime: string;
+  client: string;
+  site: string;
+  serviceType: string;
+  technician: string;
+  technicianInitials: string;
+  status: 'completed' | 'cancelled';
+  notes?: string;
+  priority?: string;
+  scheduledDate?: string;
+  location?: string;
+  technicianNotes?: string;
+  sensors?: { sensorId: string; location: string; status: string }[];
+  cancellationReason?: string;
 }
 
 export interface CreateUserPayload {
@@ -158,6 +210,7 @@ export interface CreateUserPayload {
   location?: string;
   specialty?: string;
   department?: string;
+  status?: string;
 }
 
 export interface UpdateUserPayload {
@@ -168,6 +221,92 @@ export interface UpdateUserPayload {
   specialty?: string;
   department?: string;
   status?: string;
+}
+
+export interface Device {
+  id: number;
+  name: string;
+  type: string;
+  location: string;
+  status: 'active' | 'inactive' | 'in-maintenance' | 'requires-maintenance' | 'collecting';
+  serialNumber: string;
+  installDate: string;
+  createdAt: string;
+  client?: string;
+  clientId?: number;
+  clientName?: string;
+}
+
+export interface CreateDevicePayload {
+  name: string;
+  type: string;
+  location?: string;
+  status?: string;
+  serialNumber?: string;
+  installDate?: string;
+  clientId?: number | null;
+}
+
+export interface AlarmItem {
+  id: number;
+  type: 'danger' | 'info' | 'success' | 'warning';
+  icon: string;
+  title: string;
+  description: string;
+  time: string;
+  resolved: boolean;
+  resolvedAt: string | null;
+}
+
+export interface CreateAlarmPayload {
+  type: 'danger' | 'info' | 'success' | 'warning';
+  icon?: string;
+  title: string;
+  description?: string;
+}
+
+export interface RadiationPoint {
+  id: number;
+  latitude: number;
+  longitude: number;
+  location: string;
+  sensorId: string;
+  value: number;
+  readingDate: string;
+}
+
+export interface ClientDeviceReading {
+  deviceId: number;
+  deviceName: string;
+  deviceType: string;
+  serialNumber: string;
+  deviceLocation: string;
+  deviceStatus: string;
+  latestValue: number;
+  readingDate: string;
+}
+
+export interface ClientRadiationPoint {
+  clientId: number;
+  clientName: string;
+  latitude: number;
+  longitude: number;
+  location: string;
+  maxValue: number;
+  level: 'safe' | 'caution' | 'danger';
+  devices: ClientDeviceReading[];
+}
+
+export interface UserProfile {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  initials: string;
+  phone: string;
+  location: string;
+  joinDate: string;
+  status: string;
 }
 
 // ── Service ───────────────────────────────────────────────────────────────────
@@ -341,6 +480,124 @@ export class DataService {
     ).pipe(
       map(r => r.data),
       catchError(() => of(null))
+    );
+  }
+
+  // ── Profile ───────────────────────────────────────────────────────────────────
+  getUserProfile(): Observable<UserProfile | null> {
+    return this.http.get<ApiResponse<UserProfile>>(`${this.base}/users/profile`).pipe(
+      map(r => r.data),
+      catchError(() => of(null))
+    );
+  }
+
+  changePassword(id: number | string, currentPassword: string, newPassword: string): Observable<boolean> {
+    return this.http.patch<void>(`${this.base}/users/${id}/password`, { currentPassword, newPassword }).pipe(
+      map(() => true),
+      catchError(() => of(false))
+    );
+  }
+
+  // ── Devices ───────────────────────────────────────────────────────────────────
+  getDevices(): Observable<Device[]> {
+    return unwrap(this.http.get<ApiResponse<Device[]>>(`${this.base}/devices`), []);
+  }
+
+  createDevice(data: CreateDevicePayload): Observable<Device | null> {
+    return this.http.post<ApiResponse<Device>>(`${this.base}/devices`, data).pipe(
+      map(r => r.data),
+      catchError(() => of(null))
+    );
+  }
+
+  updateDevice(id: number | string, data: CreateDevicePayload): Observable<Device | null> {
+    return this.http.put<ApiResponse<Device>>(`${this.base}/devices/${id}`, data).pipe(
+      map(r => r.data),
+      catchError(() => of(null))
+    );
+  }
+
+  deleteDevice(id: number | string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/devices/${id}`).pipe(
+      catchError(() => of(undefined as void))
+    );
+  }
+
+  // ── Alarms ────────────────────────────────────────────────────────────────────
+  getAlarmsCrud(): Observable<AlarmItem[]> {
+    return unwrap(this.http.get<ApiResponse<AlarmItem[]>>(`${this.base}/alarms`), []);
+  }
+
+  createAlarm(data: CreateAlarmPayload): Observable<AlarmItem | null> {
+    return this.http.post<ApiResponse<AlarmItem>>(`${this.base}/alarms`, data).pipe(
+      map(r => r.data),
+      catchError(() => of(null))
+    );
+  }
+
+  resolveAlarm(id: number | string): Observable<AlarmItem | null> {
+    return this.http.patch<ApiResponse<AlarmItem>>(`${this.base}/alarms/${id}/resolve`, {}).pipe(
+      map(r => r.data),
+      catchError(() => of(null))
+    );
+  }
+
+  deleteAlarm(id: number | string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/alarms/${id}`).pipe(
+      catchError(() => of(undefined as void))
+    );
+  }
+
+  // ── Radiation Map ─────────────────────────────────────────────────────────────
+  getRadiationMap(): Observable<RadiationPoint[]> {
+    return unwrap(this.http.get<ApiResponse<RadiationPoint[]>>(`${this.base}/radiation-map`), []);
+  }
+
+  getRadiationMapByClient(): Observable<ClientRadiationPoint[]> {
+    return unwrap(this.http.get<ApiResponse<ClientRadiationPoint[]>>(`${this.base}/radiation-map/by-client`), []);
+  }
+
+  getWorkOrderById(id: number | string): Observable<WorkOrderDetail | null> {
+    return this.http.get<ApiResponse<WorkOrderDetail>>(`${this.base}/work-orders/${id}`).pipe(
+      map(r => r.data),
+      catchError(() => of(null))
+    );
+  }
+
+  updateWorkOrder(id: number | string, data: UpdateWorkOrderPayload): Observable<WorkOrder | null> {
+    return this.http.put<ApiResponse<WorkOrder>>(`${this.base}/work-orders/${id}`, data).pipe(
+      map(r => r.data),
+      catchError(() => of(null))
+    );
+  }
+
+  cancelWorkOrder(id: number | string, reason: string): Observable<void> {
+    return this.http.patch<void>(`${this.base}/work-orders/${id}/cancel`, { reason }).pipe(
+      catchError(() => of(undefined as void))
+    );
+  }
+
+  getHistoryById(id: number | string): Observable<HistoryDetail | null> {
+    return this.http.get<ApiResponse<HistoryDetail>>(`${this.base}/history/${id}`).pipe(
+      map(r => r.data),
+      catchError(() => of(null))
+    );
+  }
+
+  getClients(): Observable<User[]> {
+    return this.getUsers('Client');
+  }
+
+  // ── Tech History Paged ────────────────────────────────────────────────────────
+  getTechHistoryPaged(status?: string, search?: string, page = 0, size = 10): Observable<PageResponse<HistoryItem>> {
+    let url = `${this.base}/tech/history/paged`;
+    const params: string[] = [`page=${page}`, `size=${size}`];
+    if (status) params.push(`status=${status}`);
+    if (search) params.push(`search=${encodeURIComponent(search)}`);
+    url += '?' + params.join('&');
+    return this.http.get<ApiResponse<PageResponse<HistoryItem>>>(url).pipe(
+      map(r => r.data),
+      catchError(() => of({ content: [], page: 0, size: 10, totalElements: 0, totalPages: 0, last: true }))
     );
   }
 }

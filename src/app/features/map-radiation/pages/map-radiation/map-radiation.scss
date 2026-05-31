@@ -1,0 +1,397 @@
+:host { display: block; }
+
+.map-radiation {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Header ──────────────────────────────────────── */
+.map-radiation__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.map-radiation__title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0 0 4px;
+}
+
+.map-radiation__subtitle {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* ── Stats row ───────────────────────────────────── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px 22px;
+  box-shadow: var(--shadow-card);
+}
+
+.stat-card__icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  i { font-size: 22px; }
+
+  .stat-card--safe &    { background: rgba(22, 163, 74, 0.1);  i { color: #16a34a; } }
+  .stat-card--caution & { background: rgba(217, 119, 6, 0.1);  i { color: #d97706; } }
+  .stat-card--danger &  { background: rgba(220, 38, 38, 0.1);  i { color: #dc2626; } }
+}
+
+.stat-card__value {
+  font-size: 32px;
+  font-weight: 800;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--color-text-primary);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-card__label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+}
+
+.stat-card__range {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* ── Map card ────────────────────────────────────── */
+.map-card {
+  background: var(--color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  isolation: isolate; /* Contain Leaflet z-indexes so they don't overlap the topbar */
+}
+
+.map-card__header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.map-card__title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.map-hint {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-left: auto;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    opacity: 0.6;
+  }
+}
+
+.map-container {
+  height: 420px;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* ── Pagination ──────────────────────────────────── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-color);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pagination__info {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.pagination__pages {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.page-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-button);
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 140ms ease;
+
+  &.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+  }
+
+  &:hover:not(.active):not(:disabled) {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+/* ── Legend ──────────────────────────────────────── */
+.legend-card {
+  background: var(--color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 18px 22px;
+  box-shadow: var(--shadow-card);
+}
+
+.legend-card__title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+  margin: 0 0 14px;
+}
+
+.legend-items {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+
+  &--safe    { background: #16a34a; }
+  &--caution { background: #d97706; }
+  &--danger  { background: #dc2626; }
+}
+
+.legend-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.legend-range {
+  font-size: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-alt);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.legend-desc {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* ── Table wrap ──────────────────────────────────── */
+.table-wrap {
+  background: var(--color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+/* ── Loading ─────────────────────────────────────── */
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 40px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  justify-content: center;
+  i { font-size: 20px; }
+}
+
+/* ── Table ───────────────────────────────────────── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  thead tr {
+    background: var(--color-surface-alt, #f9fafb);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+  }
+
+  td {
+    padding: 14px 16px;
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(26, 110, 255, 0.02); }
+}
+
+/* ── Device name cell ────────────────────────────── */
+.device-name {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: 13px;
+}
+
+/* ── Sensor cell ─────────────────────────────────── */
+.sensor-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sensor-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  i { font-size: 15px; }
+
+  &--safe    { background: rgba(22, 163, 74, 0.1);  i { color: #16a34a; } }
+  &--caution { background: rgba(217, 119, 6, 0.1);  i { color: #d97706; } }
+  &--danger  { background: rgba(220, 38, 38, 0.1);  i { color: #dc2626; } }
+}
+
+.sensor-id {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* ── Radiation value ─────────────────────────────── */
+.radiation-value {
+  font-size: 14px;
+  font-weight: 700;
+
+  &--safe    { color: #16a34a; }
+  &--caution { color: #d97706; }
+  &--danger  { color: #dc2626; }
+}
+
+.unit {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+/* ── Status badge ────────────────────────────────── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &--safe    { color: #16a34a; .dot { background: #16a34a; } }
+  &--caution { color: #d97706; .dot { background: #d97706; } }
+  &--danger  { color: #dc2626; .dot { background: #dc2626; } }
+}
+
+/* ── Utility ─────────────────────────────────────── */
+.text-sec { color: var(--color-text-secondary); font-size: 13px; }
+.mono { font-family: 'IBM Plex Mono', monospace; }
+
+/* ── Empty state ─────────────────────────────────── */
+.empty-row { padding: 40px 16px !important; }
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  i { font-size: 48px; opacity: 0.35; }
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 900px) {
+  .stats-row { grid-template-columns: 1fr; }
+  .legend-items { gap: 16px; flex-direction: column; }
+}

@@ -3,9 +3,9 @@
     <div>
       <p class="breadcrumb">
         <a routerLink="/admin/users">{{ 'nav_users' | t }}</a>
-        › {{ 'admin_title' | t }}
+        › {{ isEditMode() ? ('admin_editTitle' | t) : ('admin_title' | t) }}
       </p>
-      <h2 class="new-user__title">{{ 'admin_title' | t }}</h2>
+      <h2 class="new-user__title">{{ isEditMode() ? ('admin_editTitle' | t) : ('admin_title' | t) }}</h2>
     </div>
     <a routerLink="/admin/users" class="btn btn--back">
       {{ 'btn_backToList' | t }}
@@ -111,6 +111,16 @@
             <span class="error-msg">Passwords do not match.</span>
           }
         </div>
+      </div>
+
+      <!-- Status checkbox -->
+      <div class="field-group">
+        <label class="checkbox-label">
+          <input type="checkbox" class="checkbox-input" formControlName="isActive" />
+          <span class="checkbox-custom"></span>
+          <span class="checkbox-text">{{ 'form_statusActive' | t }}</span>
+        </label>
+        <span class="field-hint">{{ 'form_statusHint' | t }}</span>
       </div>
 
       <!-- Notes -->

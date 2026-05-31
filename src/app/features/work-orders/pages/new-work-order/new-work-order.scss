@@ -302,6 +302,217 @@
   }
 }
 
+/* ── Location row (input + map button) ───────────── */
+.location-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.location-input-wrap {
+  flex: 1;
+  position: relative;
+}
+
+.btn-map-picker {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 140ms ease;
+
+  i { font-size: 18px; }
+
+  &:hover {
+    background: rgba(26, 110, 255, 0.07);
+    border-color: var(--color-primary);
+  }
+}
+
+/* ── Map picker modal ────────────────────────────── */
+.map-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.55);
+  backdrop-filter: blur(3px);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 150ms ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.map-modal {
+  background: var(--color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUp 170ms ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(10px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.map-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  gap: 12px;
+}
+
+.map-modal__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  i {
+    font-size: 20px;
+    color: var(--color-primary);
+  }
+}
+
+.map-modal__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.map-modal__close {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 130ms ease;
+  flex-shrink: 0;
+
+  &:hover { background: var(--color-surface-alt); color: var(--color-text-primary); }
+  i { font-size: 17px; }
+}
+
+.map-picker-hint {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 20px;
+  background: rgba(26, 110, 255, 0.05);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+
+  i { font-size: 15px; color: var(--color-primary); }
+}
+
+.map-picker-map {
+  height: 380px;
+  width: 100%;
+}
+
+.map-modal__footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.map-addr-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  flex: 1;
+  min-width: 0;
+
+  i { font-size: 15px; color: var(--color-primary); flex-shrink: 0; }
+  span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+.map-addr-placeholder {
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.map-modal__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Address autocomplete ─────────────────────────── */
+.address-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-button);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  z-index: 100;
+  list-style: none;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 2px;
+}
+
+.address-suggestion {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: var(--color-surface-alt); }
+
+  i {
+    font-size: 14px;
+    color: var(--color-primary);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+}
+
+.field-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
 /* ── Responsive ──────────────────────────────────── */
 @media (max-width: 640px) {
   .form-row--2col {

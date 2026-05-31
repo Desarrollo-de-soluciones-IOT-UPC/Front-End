@@ -1,74 +1,86 @@
-import { Component, inject, HostListener, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, HostListener, signal, OnInit } from '@angular/core';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { LanguageService } from '../../../../core/services/language.service';
 import { DataService, WorkOrder } from '../../../../core/services/data.service';
-import { ConfirmService } from '../../../../core/services/confirm.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { ActivityService } from '../../../../core/services/activity.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-work-orders',
-  imports: [NgApexchartsModule, TranslatePipe, RouterLink],
+  imports: [NgApexchartsModule, TranslatePipe, RouterLink, FormsModule],
   templateUrl: './work-orders.html',
   styleUrl: './work-orders.scss',
 })
 export class WorkOrders implements OnInit {
   protected lang    = inject(LanguageService);
   private data      = inject(DataService);
-  private confirm   = inject(ConfirmService);
   private toast     = inject(ToastService);
+  private activity  = inject(ActivityService);
+  private router    = inject(Router);
 
-  // Source data (writable so we can update after delete)
-  private _allOrders = signal<WorkOrder[]>([]);
+  orders = signal<WorkOrder[]>([]);
   loading = signal(true);
 
   // Filter signals
-  searchQuery  = signal('');
+  searchQuery    = signal('');
   selectedType   = signal('all');
   selectedStatus = signal('all');
 
-  // Filtered computed list
-  orders = computed(() => {
-    let list = this._allOrders();
-    const q = this.searchQuery().toLowerCase().trim();
-    const t = this.selectedType();
-    const s = this.selectedStatus();
-
-    if (q) {
-      list = list.filter(o =>
-        o.client.toLowerCase().includes(q) ||
-        o.technician.toLowerCase().includes(q) ||
-        o.orderId.toLowerCase().includes(q) ||
-        o.location.toLowerCase().includes(q)
-      );
-    }
-    if (t !== 'all') {
-      list = list.filter(o => o.type.toLowerCase() === t.toLowerCase());
-    }
-    if (s !== 'all') {
-      list = list.filter(o => o.status === s);
-    }
-    return list;
-  });
+  // Pagination signals
+  currentPage    = signal(0);
+  totalPages     = signal(0);
+  totalElements  = signal(0);
+  readonly pageSize = 10;
 
   openMenuIndex: number | null = null;
 
+  // Cancel modal
+  showCancelModal  = signal(false);
+  cancelOrderId: number | string | null = null;
+  cancelReason = '';
+
+  // Delete confirm modal
+  showDeleteModal  = signal(false);
+  deleteOrderId: number | string | null = null;
+
   ngOnInit(): void {
     this.loadOrders();
-    this.data.getChartData().subscribe(c => {
-      if (!c) return;
-      this.regionalSeries = [{ name: 'Orders', data: c.regional.series }];
-      this.regionalXAxis  = { ...this.regionalXAxis, categories: c.regional.categories };
-    });
   }
 
   loadOrders(): void {
     this.loading.set(true);
-    this.data.getWorkOrders().subscribe(orders => {
-      this._allOrders.set(orders);
+    const status = this.selectedStatus() !== 'all' ? this.selectedStatus() : undefined;
+    const type   = this.selectedType()   !== 'all' ? this.selectedType()   : undefined;
+    const search = this.searchQuery().trim() || undefined;
+    this.data.getWorkOrdersPaged(status, type, search, this.currentPage(), this.pageSize).subscribe(response => {
+      this.orders.set(response.content);
+      this.totalPages.set(response.totalPages);
+      this.totalElements.set(response.totalElements);
       this.loading.set(false);
     });
+  }
+
+  applyFilters(): void {
+    this.currentPage.set(0);
+    this.loadOrders();
+  }
+
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.totalPages()) {
+      this.currentPage.set(page);
+      this.loadOrders();
+    }
+  }
+
+  getPagesArray(): number[] {
+    return Array.from({ length: this.totalPages() }, (_, i) => i);
+  }
+
+  min(a: number, b: number): number {
+    return Math.min(a, b);
   }
 
   @HostListener('document:click')
@@ -81,21 +93,62 @@ export class WorkOrders implements OnInit {
     this.openMenuIndex = this.openMenuIndex === index ? null : index;
   }
 
-  deleteOrder(id: number | string, event: Event): void {
+  editOrder(id: number | string, event: Event): void {
     event.stopPropagation();
-    if (!this.confirm.confirm('Are you sure you want to delete this work order?')) return;
-    this.data.deleteWorkOrder(id).subscribe(() => {
-      this._allOrders.update(list => list.filter(o => String(o.id) !== String(id)));
-      this.toast.success('Work order deleted successfully');
-    });
+    this.openMenuIndex = null;
+    this.router.navigate(['/admin/work-orders/edit', id]);
+  }
+
+  openCancelModal(id: number | string, event: Event): void {
+    event.stopPropagation();
+    this.cancelOrderId = id;
+    this.cancelReason = '';
+    this.showCancelModal.set(true);
     this.openMenuIndex = null;
   }
 
-  // ── Charts ────────────────────────────────────────────────────
-  regionalSeries: { name: string; data: number[] }[] = [{ name: 'Orders', data: [] }];
+  closeCancelModal(): void {
+    this.showCancelModal.set(false);
+    this.cancelOrderId = null;
+  }
+
+  confirmCancel(): void {
+    if (!this.cancelOrderId || !this.cancelReason) return;
+    this.data.cancelWorkOrder(this.cancelOrderId, this.cancelReason).subscribe(() => {
+      this.activity.log('Work order cancelled', `Reason: ${this.cancelReason}`);
+      this.toast.success(this.lang.t('wo_cancelSuccess'));
+      this.closeCancelModal();
+      this.loadOrders();
+    });
+  }
+
+  openDeleteModal(id: number | string, event: Event): void {
+    event.stopPropagation();
+    this.deleteOrderId = id;
+    this.showDeleteModal.set(true);
+    this.openMenuIndex = null;
+  }
+
+  closeDeleteModal(): void {
+    this.showDeleteModal.set(false);
+    this.deleteOrderId = null;
+  }
+
+  confirmDelete(): void {
+    if (!this.deleteOrderId) return;
+    this.data.deleteWorkOrder(this.deleteOrderId).subscribe(() => {
+      this.activity.log('Work order deleted');
+      this.toast.success('Work order deleted successfully');
+      this.closeDeleteModal();
+      this.loadOrders();
+    });
+  }
+
+  // ── Regional chart — hardcoded Peru cities ─────────────────
+  regionalSeries: { name: string; data: number[] }[] = [{ name: 'Orders', data: [38, 24, 18, 14, 10] }];
   regionalChart  = { type: 'bar', height: 130, toolbar: { show: false }, background: 'transparent' } as const;
   regionalXAxis: { categories: string[]; labels: object; axisBorder: object; axisTicks: object } = {
-    categories: [],
+    categories: ['Lima', 'Arequipa', 'Trujillo', 'Cusco', 'Piura'],
     labels: { style: { colors: '#6b7280', fontSize: '12px', fontFamily: 'Manrope, sans-serif' } },
     axisBorder: { show: false },
     axisTicks:  { show: false },

@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { DecimalPipe } from '@angular/common';
@@ -16,43 +17,101 @@ import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 export class Dashboard implements OnInit {
   protected lang = inject(LanguageService);
   private data = inject(DataService);
+  private platformId = inject(PLATFORM_ID);
 
-  // Data from db.json via json-server
   stats = toSignal(this.data.getStats());
   latestOrders = toSignal(this.data.getLatestWorkOrders());
   alerts = toSignal(this.data.getAlerts());
 
-  // System Activity chart — Last 30 Days
-  systemActivitySeries: { name: string; data: number[] }[] = [{ name: 'Work Orders', data: [] }];
-  systemActivityChart = { type: 'line', height: 260, toolbar: { show: false }, zoom: { enabled: false }, background: 'transparent' } as const;
-  systemActivityXAxis: { categories: string[]; labels: object; axisBorder: object; axisTicks: object } = {
+  // Service History chart — grouped bar (3 series)
+  serviceHistorySeries: { name: string; data: number[] }[] = [
+    { name: 'Installation', data: [] },
+    { name: 'Maintenance',  data: [] },
+    { name: 'Collection',   data: [] },
+  ];
+  serviceHistoryChart = { type: 'bar', height: 260, toolbar: { show: false }, background: 'transparent' } as const;
+  serviceHistoryXAxis: { categories: string[]; labels: object; axisBorder: object; axisTicks: object } = {
     categories: [],
-    labels: { style: { colors: '#6b7280', fontSize: '12px' } },
+    labels: { style: { colors: '#6b7280', fontSize: '11px' } },
     axisBorder: { show: false },
     axisTicks: { show: false },
   };
-  systemActivityYAxis = { labels: { style: { colors: '#6b7280', fontSize: '12px' } } };
-  systemActivityStroke = { curve: 'smooth', width: 2.5 } as const;
-  systemActivityColors = ['#1a6eff'];
-  systemActivityGrid = { borderColor: '#f0f2f5', xaxis: { lines: { show: false } }, yaxis: { lines: { show: true } } };
-  systemActivityTooltip = { theme: 'light' };
+  serviceHistoryYAxis = { labels: { style: { colors: '#6b7280', fontSize: '12px' } } };
+  serviceHistoryPlotOptions = { bar: { borderRadius: 3, columnWidth: '65%', grouped: true } };
+  serviceHistoryColors = ['#1a6eff', '#d97706', '#16a34a'];
+  serviceHistoryGrid = { borderColor: '#f0f2f5', xaxis: { lines: { show: false } }, yaxis: { lines: { show: true } } };
+  serviceHistoryDataLabels = { enabled: false };
+  serviceHistoryTooltip = { theme: 'light' };
+  serviceHistoryLegend = { position: 'top', horizontalAlign: 'right', fontSize: '12px' } as const;
 
-  // Radiation Trends chart — green shades
-  radiationTrendsSeries: { name: string; data: number[] }[] = [{ name: 'Avg radiation (μSv/h)', data: [] }];
-  radiationTrendsChart = { type: 'bar', height: 200, toolbar: { show: false }, background: 'transparent' } as const;
+  // Radiation Trends chart — smooth area
+  radiationTrendsSeries: { name: string; data: number[] }[] = [{ name: 'μSv/h', data: [] }];
+  radiationTrendsChart = {
+    type: 'area',
+    height: 260,
+    toolbar: { show: false },
+    background: 'transparent',
+    zoom: { enabled: false },
+    selection: { enabled: false },
+    animations: { enabled: false },
+  } as const;
   radiationTrendsXAxis = { labels: { show: false }, axisBorder: { show: false }, axisTicks: { show: false } };
-  radiationTrendsPlotOptions = { bar: { borderRadius: 4, columnWidth: '60%', distributed: true } };
-  radiationTrendsColors = ['#bbf7d0', '#86efac', '#4ade80', '#22c55e', '#16a34a', '#15803d', '#166534', '#14532d'];
+  radiationTrendsYAxis = {
+    labels: {
+      style: { colors: '#6b7280', fontSize: '11px', fontFamily: "'IBM Plex Mono', monospace" },
+      formatter: (v: number) => v.toFixed(2),
+    },
+    tickAmount: 4,
+  };
+  radiationTrendsStroke = { curve: 'smooth' as const, width: 2 };
+  radiationTrendsFill = {
+    type: 'gradient',
+    gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.05, stops: [0, 100] },
+  };
+  radiationTrendsColors = ['#16a34a'];
   radiationTrendsGrid = { borderColor: '#f0f2f5', yaxis: { lines: { show: true } }, xaxis: { lines: { show: false } } };
   radiationTrendsDataLabels = { enabled: false };
-  radiationTrendsTooltip = { theme: 'light' };
+  radiationTrendsTooltip = {
+    theme: 'light',
+    y: { formatter: (v: number) => `${v.toFixed(3)} μSv/h` },
+  };
+  radiationTrendsMarkers = { size: 0 };
 
   ngOnInit(): void {
     this.data.getChartData().subscribe(c => {
       if (!c) return;
-      this.systemActivitySeries  = [{ name: 'Work Orders', data: c.systemActivity.series }];
-      this.systemActivityXAxis   = { ...this.systemActivityXAxis, categories: c.systemActivity.categories };
+      // Split single series into 3 proportionally: 45% install, 35% maint, 20% collect
+      const base = c.systemActivity.series;
+      this.serviceHistorySeries = [
+        { name: 'Installation', data: base.map(v => Math.round(v * 0.45)) },
+        { name: 'Maintenance',  data: base.map(v => Math.round(v * 0.35)) },
+        { name: 'Collection',   data: base.map(v => Math.round(v * 0.20)) },
+      ];
+      this.serviceHistoryXAxis = { ...this.serviceHistoryXAxis, categories: c.systemActivity.categories };
       this.radiationTrendsSeries = [{ name: 'Avg radiation (μSv/h)', data: c.radiationTrends.series }];
+    });
+  }
+
+  exportReport(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.data.getWorkOrders().subscribe(orders => {
+      if (!orders.length) return;
+      const headers = ['Order ID', 'Type', 'Client', 'Location', 'City', 'Date', 'Technician', 'Status'];
+      const csv = [
+        headers.join(','),
+        ...orders.map(o =>
+          [o.orderId, o.type, o.client, o.location, o.city, o.date, o.technician, o.status]
+            .map(v => `"${v ?? ''}"`)
+            .join(',')
+        ),
+      ].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = 'work-orders-report.csv';
+      a.click();
+      URL.revokeObjectURL(url);
     });
   }
 }

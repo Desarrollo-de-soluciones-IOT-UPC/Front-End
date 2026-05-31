@@ -34,6 +34,7 @@ export class NewTechnician implements OnInit {
     phone:           [''],
     password:        ['', [Validators.required, Validators.minLength(8)]],
     confirmPassword: ['', Validators.required],
+    isActive:        [true],
     notes:           [''],
   }, { validators: passwordsMatch });
 
@@ -104,6 +105,7 @@ export class NewTechnician implements OnInit {
         password: v.password ?? '',
         role:     'TECHNICIAN',
         phone:    v.phone    ?? undefined,
+        status:   v.isActive ? 'active' : 'inactive',
       }).subscribe({
         next: () => {
           this.saving.set(false);
