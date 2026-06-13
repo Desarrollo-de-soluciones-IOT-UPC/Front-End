@@ -144,7 +144,7 @@
 
       <div class="form-actions">
         <button class="btn btn--cancel" type="button" (click)="cancel()">{{ 'btn_cancel' | t }}</button>
-        <button class="btn btn--submit" type="submit">{{ 'btn_create' | t }}</button>
+        <button class="btn btn--submit" type="submit">{{ isEditMode() ? ('btn_update' | t) : ('btn_create' | t) }}</button>
       </div>
     </div>
   </form>

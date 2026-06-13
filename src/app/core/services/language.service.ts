@@ -78,10 +78,12 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     tech_detail_requiredTools: 'Required Tools',
     tech_detail_expectedSensors: 'Expected:',
     tech_detail_accessInstructions: 'Access Instructions',
+    tech_detail_locationMap: 'Location Map',
 
     // ── Common buttons ──────────────────────────────────────
     btn_cancel: 'Cancel',
     btn_create: 'Create',
+    btn_update: 'Save Changes',
     btn_save: 'Save Client',
     btn_submit: 'Submit',
     btn_edit: 'Edit',
@@ -477,6 +479,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     tech_detail_generalInfo: 'Información General',
     tech_detail_clientContact: 'Contacto del Cliente',
     tech_detail_serviceInfo: 'Info del Servicio',
+    tech_detail_locationMap: 'Mapa de Ubicación',
     tech_detail_sensorInstall: 'Instalación de Sensores (Requerido)',
     tech_detail_numSensors: 'Número de sensores instalados',
     tech_detail_sensorType: 'Tipo de Sensor',
@@ -497,6 +500,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     // ── Common buttons ──────────────────────────────────────
     btn_cancel: 'Cancelar',
     btn_create: 'Crear',
+    btn_update: 'Guardar cambios',
     btn_save: 'Guardar cliente',
     btn_submit: 'Enviar',
     btn_edit: 'Editar',

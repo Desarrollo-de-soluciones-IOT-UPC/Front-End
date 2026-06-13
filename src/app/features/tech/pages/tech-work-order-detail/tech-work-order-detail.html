@@ -162,6 +162,16 @@
           </div>
         </div>
 
+        <!-- Location map -->
+        <div class="card map-card">
+          <div class="card-header">
+            <i class="ph ph-map-pin" aria-hidden="true"></i>
+            <h3>{{ 'tech_detail_locationMap' | t }}</h3>
+            <span class="map-loc">{{ o.location }}</span>
+          </div>
+          <div #woMapEl class="wo-map"></div>
+        </div>
+
         <!-- Sensor check + notes -->
         <div class="inprogress-body">
           <div class="card sensor-card">
