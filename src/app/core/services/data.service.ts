@@ -72,6 +72,7 @@ export interface HistoryItem {
   technician: string;
   technicianInitials: string;
   status: 'completed' | 'cancelled';
+  workOrderId?: number;
 }
 
 export interface User {
@@ -82,6 +83,19 @@ export interface User {
   role: 'Admin' | 'Technician' | 'Client';
   email: string;
   status: 'active' | 'inactive';
+  phone?: string;
+  location?: string;
+  address?: string;
+  specialty?: string;
+  department?: string;
+  notes?: string;
+  clientType?: string;
+  taxId?: string;
+  industry?: string;
+  country?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
 }
 
 export interface TechSensor {
@@ -103,12 +117,21 @@ export interface ChartData {
   regional: { series: number[]; categories: string[] };
 }
 
+export interface MaintenanceActionItem {
+  id?: number;
+  deviceId?: number | null;
+  deviceName?: string;
+  action: string;
+  description?: string;
+}
+
 export interface TechWorkOrder {
   id: number;
   orderId: string;
   type: string;
-  status: 'completed' | 'in-progress' | 'pending';
+  status: 'completed' | 'in-progress' | 'pending' | 'cancelled';
   client: string;
+  clientId?: number;
   location: string;
   scheduledDate: string;
   scheduledTime: string;
@@ -125,7 +148,25 @@ export interface TechWorkOrder {
   assetId: string;
   sensors: TechSensor[];
   technicianNotes: string;
+  completedAt?: string;
+  cancellationReason?: string;
   activityLog: ActivityEntry[];
+  evidence?: string[];
+  maintenanceActions?: MaintenanceActionItem[];
+  clientDevices?: Device[];
+}
+
+// Body for the technician lifecycle PATCH (status, devices, actions, evidence).
+export interface PatchTechWorkOrderBody {
+  status?: string;
+  technicianNotes?: string;
+  cancellationReason?: string;
+  sensors?: { sensorId: string; location: string; status: string }[];
+  activityLogEntry?: { event: string; time: string };
+  newDevices?: { name: string; type: string; serialNumber: string }[];
+  deviceUpdates?: { deviceId: number; status: string; observation?: string }[];
+  maintenanceActions?: { deviceId?: number | null; deviceName?: string; action: string; description?: string }[];
+  evidence?: string[];
 }
 
 export interface PageResponse<T> {
@@ -140,6 +181,7 @@ export interface PageResponse<T> {
 export interface CreateWorkOrderPayload {
   type: string;
   client: string;
+  clientId?: number;
   location: string;
   city?: string;
   scheduledDate?: string;
@@ -152,6 +194,7 @@ export interface CreateWorkOrderPayload {
 export interface UpdateWorkOrderPayload {
   type?: string;
   client?: string;
+  clientId?: number;
   location?: string;
   city?: string;
   scheduledDate?: string;
@@ -166,6 +209,7 @@ export interface WorkOrderDetail {
   orderId: string;
   type: string;
   client: string;
+  clientId?: number;
   location: string;
   city?: string;
   date: string;
@@ -211,6 +255,7 @@ export interface CreateUserPayload {
   specialty?: string;
   department?: string;
   status?: string;
+  notes?: string;
 }
 
 export interface UpdateUserPayload {
@@ -221,6 +266,15 @@ export interface UpdateUserPayload {
   specialty?: string;
   department?: string;
   status?: string;
+  notes?: string;
+  address?: string;
+  clientType?: string;
+  taxId?: string;
+  industry?: string;
+  country?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
 }
 
 export interface Device {
@@ -256,6 +310,9 @@ export interface AlarmItem {
   time: string;
   resolved: boolean;
   resolvedAt: string | null;
+  recipientType?: string;
+  clientName?: string;
+  sensor?: string;
 }
 
 export interface CreateAlarmPayload {
@@ -263,6 +320,9 @@ export interface CreateAlarmPayload {
   icon?: string;
   title: string;
   description?: string;
+  recipientType?: 'all' | 'specific';
+  clientIds?: number[];
+  sensor?: string;
 }
 
 export interface RadiationPoint {
@@ -365,8 +425,11 @@ export class DataService {
     return unwrap(this.http.get<ApiResponse<User[]>>(url), []);
   }
 
-  deleteWorkOrder(id: number | string): Observable<void> {
-    return this.http.delete<void>(`${this.base}/work-orders/${id}`).pipe(
+  deleteWorkOrder(id: number | string, reason?: string): Observable<void> {
+    const url = reason
+      ? `${this.base}/work-orders/${id}?reason=${encodeURIComponent(reason)}`
+      : `${this.base}/work-orders/${id}`;
+    return this.http.delete<void>(url).pipe(
       catchError(() => of(undefined as void))
     );
   }
@@ -446,16 +509,25 @@ export class DataService {
     );
   }
 
-  getWorkOrdersPaged(status?: string, type?: string, search?: string, page = 0, size = 10): Observable<PageResponse<WorkOrder>> {
+  getWorkOrdersPaged(status?: string, type?: string, search?: string, page = 0, size = 10, sort?: string): Observable<PageResponse<WorkOrder>> {
     let url = `${this.base}/work-orders/paged`;
     const params: string[] = [`page=${page}`, `size=${size}`];
     if (status) params.push(`status=${status}`);
     if (type)   params.push(`type=${type}`);
     if (search) params.push(`search=${encodeURIComponent(search)}`);
+    if (sort)   params.push(`sort=${sort}`);
     url += '?' + params.join('&');
     return this.http.get<ApiResponse<PageResponse<WorkOrder>>>(url).pipe(
       map(r => r.data),
       catchError(() => of({ content: [], page: 0, size: 10, totalElements: 0, totalPages: 0, last: true }))
+    );
+  }
+
+  /** Full read-only work-order detail (admin) — used by the History detail view. */
+  getWorkOrderDetail(id: number | string): Observable<TechWorkOrder | null> {
+    return this.http.get<ApiResponse<TechWorkOrder>>(`${this.base}/work-orders/${id}/detail`).pipe(
+      map(r => r.data),
+      catchError(() => of(null))
     );
   }
 
@@ -473,7 +545,7 @@ export class DataService {
 
   patchTechWorkOrder(
     id: number | string,
-    body: { status?: string; technicianNotes?: string; sensors?: { sensorId: string; location: string; status: string }[]; activityLogEntry?: { event: string; time: string } }
+    body: PatchTechWorkOrderBody
   ): Observable<TechWorkOrder | null> {
     return this.http.patch<ApiResponse<TechWorkOrder>>(
       `${this.base}/tech/work-orders/${id}`, body
@@ -499,8 +571,11 @@ export class DataService {
   }
 
   // ── Devices ───────────────────────────────────────────────────────────────────
-  getDevices(): Observable<Device[]> {
-    return unwrap(this.http.get<ApiResponse<Device[]>>(`${this.base}/devices`), []);
+  getDevices(clientId?: number | string): Observable<Device[]> {
+    const url = clientId != null
+      ? `${this.base}/devices?clientId=${clientId}`
+      : `${this.base}/devices`;
+    return unwrap(this.http.get<ApiResponse<Device[]>>(url), []);
   }
 
   createDevice(data: CreateDevicePayload): Observable<Device | null> {

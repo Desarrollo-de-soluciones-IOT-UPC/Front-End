@@ -84,6 +84,17 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
+  /** Update the in-memory + persisted current user (e.g. after a profile edit). */
+  updateCurrentUser(partial: Partial<AuthUser>): void {
+    const current = this._user();
+    if (!current) return;
+    const updated = { ...current, ...partial };
+    this._user.set(updated);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    }
+  }
+
   private loadFromStorage(): AuthUser | null {
     if (!isPlatformBrowser(this.platformId)) return null;
     try {

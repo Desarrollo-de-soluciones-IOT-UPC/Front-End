@@ -60,7 +60,6 @@ export class EditClient implements OnInit, OnDestroy {
     taxId:        [''],
     industry:     [''],
     address:      ['', Validators.required],
-    city:         ['', Validators.required],
     country:      ['Perú'],
     contactName:  ['', Validators.required],
     contactEmail: ['', [Validators.required, Validators.email]],
@@ -73,7 +72,6 @@ export class EditClient implements OnInit, OnDestroy {
     fullName:     ['', Validators.required],
     docId:        [''],
     address:      ['', Validators.required],
-    city:         ['', Validators.required],
     country:      ['Perú'],
     contactName:  ['', Validators.required],
     contactEmail: ['', [Validators.required, Validators.email]],
@@ -95,16 +93,33 @@ export class EditClient implements OnInit, OnDestroy {
       this.userId = id;
       this.data.getUserById(id).subscribe(user => {
         if (!user) return;
-        this.individualForm.patchValue({
-          fullName:     user.name,
-          contactEmail: user.email,
-          statusActive: user.status === 'active',
-        });
+        const addr = user.address ?? user.location ?? '';
+        const active = user.status === 'active';
+        // Open the form matching how the client was registered.
+        this.clientType.set(user.clientType === 'individual' ? 'individual' : 'company');
+
         this.companyForm.patchValue({
           companyName:  user.name,
-          contactName:  user.name,
-          contactEmail: user.email,
-          statusActive: user.status === 'active',
+          taxId:        user.taxId ?? '',
+          industry:     user.industry ?? '',
+          address:      addr,
+          country:      user.country ?? 'Perú',
+          contactName:  user.contactName ?? '',
+          contactEmail: user.contactEmail ?? user.email,
+          contactPhone: user.contactPhone ?? user.phone ?? '',
+          statusActive: active,
+          notes:        user.notes ?? '',
+        });
+        this.individualForm.patchValue({
+          fullName:     user.name,
+          docId:        user.taxId ?? '',
+          address:      addr,
+          country:      user.country ?? 'Perú',
+          contactName:  user.contactName ?? '',
+          contactEmail: user.contactEmail ?? user.email,
+          contactPhone: user.contactPhone ?? user.phone ?? '',
+          statusActive: active,
+          notes:        user.notes ?? '',
         });
       });
     }
@@ -220,17 +235,29 @@ export class EditClient implements OnInit, OnDestroy {
   submit(): void {
     this.submitted = true;
     if (this.activeForm.invalid) return;
-    const v = this.activeForm.value;
+    const v = this.activeForm.value as Record<string, string | boolean | null>;
     this.saving.set(true);
-    const status = v.statusActive ? 'active' : 'inactive';
+    const status = v['statusActive'] ? 'active' : 'inactive';
+    const type   = this.clientType();
+    // Entity name = company name OR full name; tax id = RUC (company) OR doc id (individual).
+    const name   = (type === 'company' ? (v['companyName'] as string) : (v['fullName'] as string)) ?? '';
+    const taxId  = (type === 'company' ? (v['taxId'] as string) : (v['docId'] as string)) ?? '';
 
     if (this.userId) {
       this.data.updateUser(this.userId, {
-        name:   v.contactName ?? v.fullName ?? v.companyName ?? '',
-        email:  v.contactEmail ?? '',
-        phone:  v.contactPhone ?? '',
+        name,
+        phone:        (v['contactPhone'] as string) ?? '',
         status,
-        location: v.city ? `${v.city}, ${v.country ?? 'Perú'}` : undefined,
+        notes:        (v['notes'] as string) ?? '',
+        address:      (v['address'] as string) ?? '',
+        location:     (v['address'] as string) ?? '',
+        country:      (v['country'] as string) ?? '',
+        clientType:   type,
+        taxId,
+        industry:     (v['industry'] as string) ?? '',
+        contactName:  (v['contactName'] as string) ?? '',
+        contactEmail: (v['contactEmail'] as string) ?? '',
+        contactPhone: (v['contactPhone'] as string) ?? '',
       }).subscribe({
         next: () => {
           this.saving.set(false);
@@ -243,27 +270,10 @@ export class EditClient implements OnInit, OnDestroy {
         },
       });
     } else {
-      const name = v.contactName ?? v.fullName ?? v.companyName ?? '';
-      this.data.createUser({
-        name,
-        initials: name.split(' ').map((p: string) => p[0]).join('').toUpperCase().slice(0, 2),
-        email:    v.contactEmail ?? '',
-        password: 'changeme123',
-        role:     'CLIENT',
-        phone:    v.contactPhone ?? undefined,
-        status,
-        location: v.city ? `${v.city}, ${v.country ?? 'Perú'}` : undefined,
-      }).subscribe({
-        next: () => {
-          this.saving.set(false);
-          this.toast.success('Client created successfully');
-          this.router.navigate(['/admin/users']);
-        },
-        error: () => {
-          this.toast.error('Failed to create client');
-          this.saving.set(false);
-        },
-      });
+      // Client creation is disabled from the web — clients are edited only.
+      this.saving.set(false);
+      this.toast.error('Clients cannot be created from the web.');
+      this.router.navigate(['/admin/users']);
     }
   }
 

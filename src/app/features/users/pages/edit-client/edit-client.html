@@ -129,15 +129,9 @@
               </div>
               @if (isInvalid('address')) { <span class="error-msg">Required.</span> }
             </div>
-            <div class="form-row--2col">
-              <div class="field-group">
-                <label class="field-label">{{ 'client_city' | t }} <span class="required">*</span></label>
-                <input class="field-input" [class.field--error]="isInvalid('city')" type="text" formControlName="city" placeholder="Lima" />
-              </div>
-              <div class="field-group">
-                <label class="field-label">{{ 'client_country' | t }}</label>
-                <input class="field-input" type="text" formControlName="country" placeholder="Perú" />
-              </div>
+            <div class="field-group">
+              <label class="field-label">{{ 'client_country' | t }}</label>
+              <input class="field-input" type="text" formControlName="country" placeholder="Perú" />
             </div>
           </div>
         </div>
@@ -252,15 +246,9 @@
               </div>
               @if (isInvalid('address')) { <span class="error-msg">Required.</span> }
             </div>
-            <div class="form-row--2col">
-              <div class="field-group">
-                <label class="field-label">{{ 'client_city' | t }} <span class="required">*</span></label>
-                <input class="field-input" [class.field--error]="isInvalid('city')" type="text" formControlName="city" placeholder="Lima" />
-              </div>
-              <div class="field-group">
-                <label class="field-label">{{ 'client_country' | t }}</label>
-                <input class="field-input" type="text" formControlName="country" placeholder="Perú" />
-              </div>
+            <div class="field-group">
+              <label class="field-label">{{ 'client_country' | t }}</label>
+              <input class="field-input" type="text" formControlName="country" placeholder="Perú" />
             </div>
           </div>
         </div>

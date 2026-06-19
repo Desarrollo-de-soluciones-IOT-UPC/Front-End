@@ -215,6 +215,25 @@
   &:hover:not(:disabled) { background: var(--color-primary-dark); border-color: var(--color-primary-dark); }
 }
 
+/* ── Password field with show/hide toggle ────────── */
+.password-wrap {
+  position: relative;
+
+  .form-input { padding-right: 40px; width: 100%; }
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+
+  &:hover { color: var(--color-text-primary); }
+}
+
 /* ── Responsive ──────────────────────────────────── */
 @media (max-width: 900px) {
   .profile__grid { grid-template-columns: 1fr; }
