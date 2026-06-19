@@ -217,6 +217,10 @@ export class NewWorkOrder implements OnInit, OnDestroy {
         maxZoom: 18,
       }).addTo(this.pickerMap);
 
+      // In production CSS loads asynchronously; the container may have size 0 at
+      // init → blank tiles. Recompute size once layout/CSS settles.
+      [0, 200, 500].forEach(d => setTimeout(() => { if (this.pickerMap) this.pickerMap.invalidateSize(); }, d));
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       this.pickerMap.on('click', (e: any) => {
         const { lat, lng } = e.latlng;

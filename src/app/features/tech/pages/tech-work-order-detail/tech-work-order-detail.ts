@@ -282,6 +282,10 @@ export class TechWorkOrderDetail implements OnDestroy {
         maxZoom: 18,
       }).addTo(this.map);
 
+      // In production CSS loads asynchronously; the container may have size 0 at
+      // init → blank tiles. Recompute size once layout/CSS settles.
+      [0, 200, 500].forEach(d => setTimeout(() => { if (this.map) this.map.invalidateSize(); }, d));
+
       this.addrSvc.search(location).subscribe(results => {
         if (!this.map || results.length === 0) return;
         const lat = parseFloat(results[0].lat);
