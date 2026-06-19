@@ -38,15 +38,25 @@
         <i class="ph ph-users" aria-hidden="true"></i>
         <span>{{ 'nav_users' | t }}</span>
       </a>
+
+      <a routerLink="/admin/devices" routerLinkActive="active">
+        <i class="ph ph-cpu" aria-hidden="true"></i>
+        <span>{{ 'nav_devices' | t }}</span>
+      </a>
+
+      <a routerLink="/admin/map-radiation" routerLinkActive="active">
+        <i class="ph ph-map-pin" aria-hidden="true"></i>
+        <span>{{ 'nav_mapRadiation' | t }}</span>
+      </a>
+
+      <a routerLink="/admin/alarms" routerLinkActive="active">
+        <i class="ph ph-bell" aria-hidden="true"></i>
+        <span>{{ 'nav_alarms' | t }}</span>
+      </a>
     </nav>
   </div>
 
   <div class="sidebar__bottom">
-    <a class="bottom-link" href="#" (click)="$event.preventDefault()">
-      <i class="ph ph-headset" aria-hidden="true"></i>
-      <span>{{ 'nav_support' | t }}</span>
-    </a>
-
     <a class="bottom-link bottom-link--danger" href="#" (click)="$event.preventDefault(); auth.logout()">
       <i class="ph ph-sign-out" aria-hidden="true"></i>
       <span>{{ 'nav_logout' | t }}</span>

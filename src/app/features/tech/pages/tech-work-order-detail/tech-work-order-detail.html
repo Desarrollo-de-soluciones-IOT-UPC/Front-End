@@ -24,11 +24,8 @@
           </button>
         }
         @if (o.status === 'in-progress') {
-          <button class="btn-secondary" type="button" [disabled]="saving()" (click)="saveChanges()">
-            @if (saving()) { <span class="spinner spinner--dark"></span> }
-            {{ 'tech_detail_saveChanges' | t }}
-          </button>
-          <button class="btn-primary" type="button" [disabled]="saving()" (click)="markCompleted()">
+          <button class="btn-primary" type="button" [disabled]="saving() || !canComplete()" (click)="markCompleted()">
+            @if (saving()) { <span class="spinner"></span> }
             <i class="ph ph-check-circle" aria-hidden="true"></i>
             {{ 'tech_detail_markCompleted' | t }}
           </button>
@@ -36,214 +33,206 @@
       </div>
     </div>
 
-    <!-- ── PENDING view ─────────────────────────────────────────────────────── -->
-    @if (o.status === 'pending') {
-      <div class="pending-layout">
-        <div class="pending-main">
-          <!-- Sensor Installation card -->
+    <div class="detail-grid">
+      <div class="detail-main">
+
+        <!-- General info (map + type + notes) -->
+        <ng-container [ngTemplateOutlet]="generalInfo"></ng-container>
+
+        <!-- ── PENDING: device context per service type ────────────────────── -->
+        @if (o.status === 'pending') {
+          @if (o.type === 'Maintenance') {
+            <div class="card">
+              <div class="card-header">
+                <i class="ph ph-wrench" aria-hidden="true"></i>
+                <h3>{{ 'tech_detail_devicesRequiring' | t }}</h3>
+              </div>
+              <ng-container [ngTemplateOutlet]="deviceListTpl"
+                            [ngTemplateOutletContext]="{ $implicit: requiresMaintenanceDevices() }"></ng-container>
+            </div>
+          }
+          @if (o.type === 'Collection') {
+            <div class="card">
+              <div class="card-header">
+                <i class="ph ph-package" aria-hidden="true"></i>
+                <h3>{{ 'tech_detail_clientDevices' | t }}</h3>
+              </div>
+              <ng-container [ngTemplateOutlet]="deviceListTpl"
+                            [ngTemplateOutletContext]="{ $implicit: clientDevices() }"></ng-container>
+            </div>
+          }
+        }
+
+        <!-- ── IN-PROGRESS: editing cards per service type ─────────────────── -->
+        @if (o.status === 'in-progress') {
+
+          @if (o.type === 'Installation') {
+            <div class="card">
+              <div class="card-header">
+                <i class="ph ph-monitor" aria-hidden="true"></i>
+                <h3>{{ 'tech_detail_sensorInstall' | t }}</h3>
+                <button class="add-btn" type="button" (click)="addDevice()" aria-label="Add device">
+                  <i class="ph ph-plus" aria-hidden="true"></i>
+                </button>
+              </div>
+              @for (d of newDevices(); track $index) {
+                <div class="device-edit-row">
+                  <input class="d-input" type="text" [placeholder]="'tech_detail_deviceName' | t" [(ngModel)]="d.name" />
+                  <select class="d-input" [(ngModel)]="d.type">
+                    @for (st of sensorTypes; track st) { <option [value]="st">{{ st }}</option> }
+                  </select>
+                  <input class="d-input d-input--req" type="text" [placeholder]="('tech_detail_serial' | t) + ' *'" [(ngModel)]="d.serialNumber" />
+                  <button class="trash-btn" type="button" (click)="removeDevice($index)" aria-label="Remove">
+                    <i class="ph ph-trash" aria-hidden="true"></i>
+                  </button>
+                </div>
+              } @empty {
+                <p class="no-devices">{{ 'tech_detail_addDeviceHint' | t }}</p>
+              }
+              <ng-container [ngTemplateOutlet]="uploadTpl"></ng-container>
+            </div>
+          }
+
+          @if (o.type === 'Maintenance') {
+            <div class="card">
+              <div class="card-header">
+                <i class="ph ph-wrench" aria-hidden="true"></i>
+                <h3>{{ 'tech_detail_deviceCheck' | t }}</h3>
+                <span class="required-chip">REQUIRED</span>
+              </div>
+              @for (d of deviceChecks(); track d.deviceId) {
+                <div class="device-check-row">
+                  <div class="dc-info">
+                    <span class="dc-name">{{ d.name }}</span>
+                    <span class="dc-type">{{ d.type }}</span>
+                  </div>
+                  <select class="d-input" [(ngModel)]="d.status">
+                    @for (st of deviceStatuses; track st) { <option [value]="st">{{ deviceStatusLabel(st) }}</option> }
+                  </select>
+                  <input class="d-input" type="text" [placeholder]="'tech_detail_observation' | t" [(ngModel)]="d.observation" />
+                </div>
+              } @empty {
+                <p class="no-devices">{{ 'tech_detail_noDevices' | t }}</p>
+              }
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <i class="ph ph-list-checks" aria-hidden="true"></i>
+                <h3>{{ 'tech_detail_maintActions' | t }}</h3>
+                <button class="add-btn" type="button" (click)="addAction()" aria-label="Add action">
+                  <i class="ph ph-plus" aria-hidden="true"></i>
+                </button>
+              </div>
+              @for (a of actions(); track $index) {
+                <div class="device-edit-row">
+                  <input class="d-input" type="text" [placeholder]="'tech_detail_action' | t" [(ngModel)]="a.action" />
+                  <select class="d-input" [(ngModel)]="a.deviceId">
+                    <option [ngValue]="null">{{ 'tech_detail_device' | t }}</option>
+                    @for (d of requiresMaintenanceDevices(); track d.id) {
+                      <option [ngValue]="d.id">{{ d.name }}</option>
+                    }
+                  </select>
+                  <input class="d-input" type="text" [placeholder]="'tech_detail_description' | t" [(ngModel)]="a.description" />
+                  <button class="trash-btn" type="button" (click)="removeAction($index)" aria-label="Remove">
+                    <i class="ph ph-trash" aria-hidden="true"></i>
+                  </button>
+                </div>
+              }
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <i class="ph ph-camera" aria-hidden="true"></i>
+                <h3>{{ 'tech_detail_uploadEvidence' | t }}</h3>
+              </div>
+              <ng-container [ngTemplateOutlet]="uploadTpl"></ng-container>
+            </div>
+          }
+
+          @if (o.type === 'Collection') {
+            <div class="card">
+              <div class="card-header">
+                <i class="ph ph-package" aria-hidden="true"></i>
+                <h3>{{ 'tech_detail_deviceRemoval' | t }}</h3>
+              </div>
+              @for (r of removals(); track r.deviceId) {
+                <div class="device-check-row">
+                  <div class="dc-info">
+                    <span class="dc-name">{{ r.name }}</span>
+                    <span class="dc-type">{{ r.type }}</span>
+                  </div>
+                  <label class="removed-check">
+                    <input type="checkbox" [(ngModel)]="r.removed" />
+                    <span>{{ 'tech_detail_removed' | t }}</span>
+                  </label>
+                  <input class="d-input" type="text" [placeholder]="'tech_detail_observation' | t" [(ngModel)]="r.observation" />
+                </div>
+              } @empty {
+                <p class="no-devices">{{ 'tech_detail_noDevices' | t }}</p>
+              }
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <i class="ph ph-camera" aria-hidden="true"></i>
+                <h3>{{ 'tech_detail_uploadEvidence' | t }}</h3>
+              </div>
+              <ng-container [ngTemplateOutlet]="uploadTpl"></ng-container>
+            </div>
+          }
+
+          <!-- Technician notes -->
           <div class="card">
-            <div class="card-header">
-              <i [class]="'ph ' + typeIcon(o.type)" aria-hidden="true"></i>
-              <h3>{{ 'tech_detail_sensorInstall' | t }}</h3>
-              <span class="expected-badge">{{ 'tech_detail_expectedSensors' | t }} {{ o.expectedSensors }}</span>
-            </div>
-            <div class="install-fields">
-              <div class="field-group">
-                <label>{{ 'tech_detail_numSensors' | t }}</label>
-                <input type="number" [ngModel]="numSensors()" (ngModelChange)="numSensors.set($event)" min="0" />
+            <h3>{{ 'tech_detail_techNotes' | t }}</h3>
+            <textarea
+              class="notes-textarea"
+              placeholder="Enter notes here..."
+              [ngModel]="techNotes()"
+              (ngModelChange)="techNotes.set($event)"
+              rows="4"
+            ></textarea>
+          </div>
+        }
+
+        <!-- ── COMPLETED: read-only summaries ──────────────────────────────── -->
+        @if (o.status === 'completed') {
+          @if (o.type === 'Installation') {
+            <div class="card">
+              <div class="card-header">
+                <i class="ph ph-monitor" aria-hidden="true"></i>
+                <h3>{{ 'tech_detail_sensorInfo' | t }}</h3>
               </div>
-              <div class="field-group">
-                <label>{{ 'tech_detail_sensorType' | t }}</label>
-                <select [ngModel]="sensorType()" (ngModelChange)="sensorType.set($event)">
-                  <option value="">Select Type...</option>
-                  <option value="EM-A1">EM-A1</option>
-                  <option value="EM-B2">EM-B2</option>
-                  <option value="EM-C3">EM-C3</option>
-                </select>
+              <ng-container [ngTemplateOutlet]="deviceListTpl"
+                            [ngTemplateOutletContext]="{ $implicit: clientDevices(), serial: true }"></ng-container>
+            </div>
+          } @else {
+            <div class="card">
+              <div class="card-header">
+                <i [class]="'ph ' + typeIcon(o.type)" aria-hidden="true"></i>
+                <h3>{{ 'tech_detail_clientDevices' | t }}</h3>
               </div>
+              <ng-container [ngTemplateOutlet]="deviceListTpl"
+                            [ngTemplateOutletContext]="{ $implicit: clientDevices() }"></ng-container>
             </div>
-            <div class="upload-zone">
-              <i class="ph ph-camera" aria-hidden="true"></i>
-              <p>{{ 'tech_detail_uploadProof' | t }}</p>
-              <span>{{ 'tech_detail_dragDrop' | t }}</span>
-            </div>
-          </div>
+          }
 
-          <!-- General Info -->
-          <div class="card info-grid">
-            <h3>{{ 'tech_detail_generalInfo' | t }}</h3>
-            <div class="info-row">
-              <span class="info-label">Location</span>
-              <span class="info-value">{{ o.location }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">{{ 'tech_detail_scheduledDate' | t }}</span>
-              <span class="info-value mono">{{ o.scheduledDate }} &bull; {{ o.scheduledTime }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Service Info sidebar -->
-        <div class="pending-sidebar">
-          <div class="card">
-            <h3>{{ 'tech_detail_serviceInfo' | t }}</h3>
-            <div class="info-row">
-              <span class="info-label">{{ 'tech_detail_scheduledDate' | t }}</span>
-              <span class="info-value mono">{{ o.scheduledDate }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">{{ 'tech_detail_priority' | t }}</span>
-              <span class="priority-chip" [class.priority-chip--high]="o.priority === 'High Priority'">{{ o.priority }}</span>
-            </div>
-            <div class="info-row tools-row">
-              <span class="info-label">{{ 'tech_detail_requiredTools' | t }}</span>
-              <div class="tools-wrap">
-                @for (tool of o.requiredTools; track tool) {
-                  <span class="tool-chip">{{ tool }}</span>
-                }
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <h3>{{ 'tech_detail_clientContact' | t }}</h3>
-            <div class="contact-avatar">
-              <span>{{ o.contactName.split(' ').map(n => n[0]).join('') }}</span>
-            </div>
-            <p class="contact-name">{{ o.contactName }}</p>
-            <p class="contact-role">{{ o.contactRole }}</p>
-            <div class="contact-btns">
-              <button class="contact-btn" type="button">
-                <i class="ph ph-phone" aria-hidden="true"></i>
-                {{ 'tech_detail_callClient' | t }}
-              </button>
-              <button class="contact-btn" type="button">
-                <i class="ph ph-envelope" aria-hidden="true"></i>
-                {{ 'tech_detail_emailClient' | t }}
-              </button>
-            </div>
-            @if (o.accessInstructions) {
-              <div class="access-note">
-                <i class="ph ph-info" aria-hidden="true"></i>
-                <p>{{ o.accessInstructions }}</p>
-              </div>
-            }
-          </div>
-        </div>
-      </div>
-    }
-
-    <!-- ── IN-PROGRESS view ──────────────────────────────────────────────────── -->
-    @if (o.status === 'in-progress') {
-      <div class="inprogress-layout">
-
-        <!-- Info cards row -->
-        <div class="info-cards-row">
-          <div class="info-mini-card">
-            <i class="ph ph-map-pin" aria-hidden="true"></i>
-            <div>
-              <span class="info-mini-label">Location</span>
-              <p>{{ o.location }}</p>
-            </div>
-          </div>
-          <div class="info-mini-card">
-            <i class="ph ph-user" aria-hidden="true"></i>
-            <div>
-              <span class="info-mini-label">{{ 'tech_detail_clientContact' | t }}</span>
-              <p>{{ o.contactName }}</p>
-            </div>
-          </div>
-          <div class="info-mini-card info-mini-card--highlight">
-            <i class="ph ph-info" aria-hidden="true"></i>
-            <div>
-              <span class="info-mini-label">{{ 'tech_detail_serviceInfo' | t }}</span>
-              <p>{{ o.type }} &mdash; {{ o.priority }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sensor check + notes -->
-        <div class="inprogress-body">
-          <div class="card sensor-card">
-            <div class="card-header">
-              <h3>{{ 'tech_detail_sensorCheck' | t }}</h3>
-              <span class="required-chip">REQUIRED</span>
-            </div>
-            @if (o.sensors && o.sensors.length > 0) {
-              <div class="sensor-list">
-                @for (sensor of o.sensors; track sensor.id) {
-                  <div class="sensor-row">
-                    <i class="ph ph-broadcast sensor-icon" aria-hidden="true"></i>
-                    <div class="sensor-info">
-                      <span class="sensor-id">{{ sensor.id }}</span>
-                      <span class="sensor-loc">{{ sensor.location }}</span>
+          @if (o.type === 'Maintenance' && o.maintenanceActions && o.maintenanceActions.length > 0) {
+            <div class="card">
+              <h3>{{ 'tech_detail_maintActions' | t }}</h3>
+              <div class="device-list">
+                @for (a of o.maintenanceActions; track a.id) {
+                  <div class="device-list-row">
+                    <div class="dc-info">
+                      <span class="dc-name">{{ a.action }}</span>
+                      <span class="dc-type">{{ a.deviceName }}</span>
                     </div>
-                    <button
-                      class="sensor-toggle"
-                      [class]="sensorStatusClass(sensor.status)"
-                      type="button"
-                      (click)="toggleSensor(sensor)"
-                    >
-                      {{ sensor.status === 'ok' ? 'OK' : 'Requires Maintenance' }}
-                    </button>
+                    <span class="dc-obs">{{ a.description }}</span>
                   </div>
                 }
               </div>
-            } @else {
-              <p class="no-sensors">No sensors registered for this order.</p>
-            }
-          </div>
-
-          <div class="card notes-status-card">
-            <div class="notes-section">
-              <h3>{{ 'tech_detail_techNotes' | t }}</h3>
-              <textarea
-                class="notes-textarea"
-                [placeholder]="'Enter notes here...'"
-                [ngModel]="techNotes()"
-                (ngModelChange)="techNotes.set($event)"
-                rows="5"
-              ></textarea>
             </div>
-
-            <div class="status-section">
-              <h3>{{ 'tech_detail_updateStatus' | t }}</h3>
-              <div class="status-select-wrap">
-                <select class="status-select">
-                  <option value="in-progress" selected>In Progress</option>
-                  <option value="pending">Pending</option>
-                </select>
-              </div>
-              <p class="status-hint">All sensor checks must be marked OK or 'Maintenance' before closing.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    }
-
-    <!-- ── COMPLETED view ────────────────────────────────────────────────────── -->
-    @if (o.status === 'completed') {
-      <div class="completed-layout">
-        <div class="completed-main">
-          <!-- Summary card -->
-          <div class="card">
-            <div class="card-header">
-              <i [class]="'ph ' + typeIcon(o.type)" aria-hidden="true"></i>
-              <h3>Service Summary</h3>
-            </div>
-            <div class="info-row">
-              <span class="info-label">{{ 'tech_detail_serviceInfo' | t }}</span>
-              <span class="info-value">{{ o.type }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">{{ 'tech_detail_priority' | t }}</span>
-              <span class="info-value">{{ o.priority }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">{{ 'th_date' | t }}</span>
-              <span class="info-value mono">{{ o.scheduledDate }}</span>
-            </div>
-          </div>
+          }
 
           <!-- Technician notes (read only) -->
           <div class="card">
@@ -254,45 +243,155 @@
               <p class="no-notes">No notes recorded.</p>
             }
           </div>
-        </div>
 
-        <div class="completed-sidebar">
-          <!-- General Info -->
-          <div class="card">
-            <h3>GENERAL INFO</h3>
-            <div class="info-row"><span class="info-label">Status</span><span class="info-value" style="color:var(--color-success);font-weight:700">Completed</span></div>
-            <div class="info-row"><span class="info-label">Asset ID</span><span class="info-value mono">{{ o.assetId }}</span></div>
-          </div>
-
-          <!-- Client contact -->
-          <div class="card">
-            <h3>{{ 'tech_detail_clientContact' | t }}</h3>
-            <div class="contact-row">
-              <span class="location-chip">{{ o.client }}</span>
-              <span class="contact-name-small">{{ o.contactName }}</span>
-            </div>
-          </div>
-
-          <!-- Activity log -->
-          @if (o.activityLog && o.activityLog.length > 0) {
+          <!-- Evidence images -->
+          @if (o.evidence && o.evidence.length > 0) {
             <div class="card">
-              <h3>{{ 'tech_detail_activityLog' | t }}</h3>
-              <div class="activity-list">
-                @for (entry of o.activityLog; track entry.event) {
-                  <div class="activity-item">
-                    <span class="activity-dot"></span>
-                    <div>
-                      <p class="activity-event">{{ entry.event }}</p>
-                      <span class="activity-time mono">{{ entry.time }}</span>
-                    </div>
-                  </div>
+              <h3>{{ 'tech_detail_evidence' | t }}</h3>
+              <div class="evidence-gallery">
+                @for (img of o.evidence; track $index) {
+                  <img class="evidence-img" [src]="img" alt="Evidence" />
                 }
               </div>
             </div>
           }
+        }
+      </div>
+
+      <!-- Sidebar: service info + client contact -->
+      <div class="detail-sidebar">
+        <ng-container [ngTemplateOutlet]="serviceInfo"></ng-container>
+        <ng-container [ngTemplateOutlet]="clientContact"></ng-container>
+        @if (o.status === 'completed' && o.activityLog && o.activityLog.length > 0) {
+          <div class="card">
+            <h3>{{ 'tech_detail_activityLog' | t }}</h3>
+            <div class="activity-list">
+              @for (entry of o.activityLog; track entry.event) {
+                <div class="activity-item">
+                  <span class="activity-dot"></span>
+                  <div>
+                    <p class="activity-event">{{ entry.event }}</p>
+                    <span class="activity-time mono">{{ entry.time }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ═══ Reusable templates ═══ -->
+
+    <ng-template #generalInfo>
+      <div class="card map-card">
+        <div class="card-header">
+          <i class="ph ph-map-pin" aria-hidden="true"></i>
+          <h3>{{ 'tech_detail_generalInfo' | t }}</h3>
+          <span class="map-loc">{{ o.location }}</span>
+        </div>
+        <div #woMapEl class="wo-map"></div>
+        <div class="info-row">
+          <span class="info-label">{{ 'th_serviceType' | t }}</span>
+          <span class="info-value">{{ o.type }}</span>
+        </div>
+        @if (o.status === 'completed' && o.completedAt) {
+          <div class="info-row">
+            <span class="info-label">{{ 'tech_detail_completionDate' | t }}</span>
+            <span class="info-value mono">{{ o.completedAt }}</span>
+          </div>
+        }
+        <div class="info-row info-row--col">
+          <span class="info-label">Notes</span>
+          <span class="info-value">{{ o.technicianNotes || o.accessInstructions || '—' }}</span>
         </div>
       </div>
-    }
+    </ng-template>
+
+    <ng-template #serviceInfo>
+      <div class="card">
+        <h3>{{ 'tech_detail_serviceInfo' | t }}</h3>
+        <div class="info-row">
+          <span class="info-label">{{ 'tech_detail_scheduledDate' | t }}</span>
+          <span class="info-value mono">{{ o.scheduledDate }} &bull; {{ o.scheduledTime }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">{{ 'tech_detail_priority' | t }}</span>
+          <span class="priority-chip" [class.priority-chip--high]="o.priority === 'Urgent' || o.priority === 'High Priority'">{{ o.priority }}</span>
+        </div>
+        <div class="info-row tools-row">
+          <span class="info-label">{{ 'tech_detail_requiredTools' | t }}</span>
+          <div class="tools-wrap">
+            @for (tool of o.requiredTools; track tool) {
+              <span class="tool-chip">{{ tool }}</span>
+            }
+          </div>
+        </div>
+      </div>
+    </ng-template>
+
+    <ng-template #clientContact>
+      <div class="card">
+        <h3>{{ 'tech_detail_clientContact' | t }}</h3>
+        <div class="contact-avatar"><span>{{ initials(o.contactName) }}</span></div>
+        <p class="contact-name">{{ o.contactName }}</p>
+        <p class="contact-role">{{ o.contactRole || o.client }}</p>
+        <div class="contact-btns">
+          <a class="contact-btn" [href]="'tel:' + o.contactPhone">
+            <i class="ph ph-phone" aria-hidden="true"></i>
+            {{ 'tech_detail_callClient' | t }}
+          </a>
+          <a class="contact-btn" [href]="'mailto:' + o.contactEmail">
+            <i class="ph ph-envelope" aria-hidden="true"></i>
+            {{ 'tech_detail_emailClient' | t }}
+          </a>
+        </div>
+        @if (o.accessInstructions) {
+          <div class="access-note">
+            <i class="ph ph-info" aria-hidden="true"></i>
+            <p>{{ o.accessInstructions }}</p>
+          </div>
+        }
+      </div>
+    </ng-template>
+
+    <ng-template #deviceListTpl let-devices let-serial="serial">
+      @if (devices.length > 0) {
+        <div class="device-list">
+          @for (d of devices; track d.id) {
+            <div class="device-list-row">
+              <div class="dc-info">
+                <span class="dc-name">{{ d.name }}</span>
+                <span class="dc-type">{{ d.type }}@if (serial) { &bull; {{ d.serialNumber }} }</span>
+              </div>
+              <span class="device-status device-status--{{ d.status }}">{{ deviceStatusLabel(d.status) }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="no-devices">{{ 'tech_detail_noDevices' | t }}</p>
+      }
+    </ng-template>
+
+    <ng-template #uploadTpl>
+      <label class="upload-zone">
+        <i class="ph ph-camera" aria-hidden="true"></i>
+        <p>{{ 'tech_detail_uploadProof' | t }}</p>
+        <input type="file" accept="image/*" multiple hidden (change)="onEvidenceSelected($event)" />
+      </label>
+      @if (evidence().length > 0) {
+        <div class="evidence-gallery">
+          @for (img of evidence(); track $index) {
+            <div class="evidence-thumb">
+              <img [src]="img" alt="Evidence" />
+              <button class="evidence-remove" type="button" (click)="removeEvidence($index)" aria-label="Remove">
+                <i class="ph ph-x" aria-hidden="true"></i>
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </ng-template>
 
   </div>
 } @else {

@@ -19,16 +19,12 @@
       <div class="stat-value">{{ totalUsers() | number }}<span class="stat-delta stat-delta--up">↗ 2%</span></div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">{{ 'users_activeNow' | t }}</div>
-      <div class="stat-value stat-value--green">{{ activeNow() }}<span class="stat-sub">{{ 'users_activeSub' | t }}</span></div>
+      <div class="stat-label">{{ 'users_activeClients' | t }}</div>
+      <div class="stat-value stat-value--green">{{ activeClientCount() }}<span class="stat-sub">{{ 'users_activeClientsSub' | t }}</span></div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">{{ 'users_pendingApproval' | t }}</div>
-      <div class="stat-value">{{ pendingCount() }}<span class="stat-sub stat-sub--danger">{{ 'users_pendingSub' | t }}</span></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">{{ 'users_systemHealth' | t }}</div>
-      <div class="stat-value stat-value--green">99.9%<span class="stat-sub">{{ 'users_healthSub' | t }}</span></div>
+      <div class="stat-label">{{ 'users_inactiveClients' | t }}</div>
+      <div class="stat-value">{{ inactiveClientCount() }}</div>
     </div>
   </div>
 
@@ -47,16 +43,31 @@
         class="search-input"
         type="text"
         [placeholder]="'users_searchPlaceholder' | t"
-        (input)="searchQuery.set($any($event.target).value)"
+        [value]="searchQuery()"
+        (input)="onSearch($any($event.target).value)"
       />
-      <button class="filter-btn" type="button" aria-label="Filter">
-        <i class="ph ph-funnel" aria-hidden="true"></i>
+      <button
+        class="filter-btn"
+        type="button"
+        [class.filter-btn--active]="hasActiveFilters()"
+        [disabled]="!hasActiveFilters()"
+        (click)="clearFilters()"
+        [title]="'users_clearFilters' | t"
+        aria-label="Clear filters"
+      >
+        <i class="ph ph-funnel-x" aria-hidden="true"></i>
       </button>
     </div>
   </div>
 
   <!-- Table -->
   <div class="table-wrap">
+    @if (loading()) {
+      <div class="loading-state">
+        <i class="ph ph-circle-notch ph-spin"></i>
+        <span>Loading...</span>
+      </div>
+    }
     <table class="table" aria-label="Users table">
       <thead>
         <tr>
@@ -64,11 +75,11 @@
           <th>{{ 'th_role' | t }}</th>
           <th>{{ 'th_email' | t }}</th>
           <th>{{ 'th_status' | t }}</th>
-          <th>{{ 'th_actions' | t }}</th>
+          <th class="table__actions">{{ 'th_actions' | t }}</th>
         </tr>
       </thead>
       <tbody>
-        @for (user of filteredUsers(); track user.id) {
+        @for (user of pagedUsers(); track user.id) {
           <tr>
             <td>
               <div class="user-cell">
@@ -103,6 +114,16 @@
 
                 @if (openMenuId === user.id) {
                   <div class="dropdown">
+                    @if (user.role === 'Client') {
+                      <button
+                        class="dropdown-item"
+                        type="button"
+                        (click)="viewClient(user)"
+                      >
+                        <i class="ph ph-eye" aria-hidden="true"></i>
+                        {{ 'users_viewClient' | t }}
+                      </button>
+                    }
                     <button
                       class="dropdown-item"
                       type="button"
@@ -133,16 +154,22 @@
     </table>
 
     <div class="pagination">
-      <span class="pagination__info">Showing 1 - {{ filteredUsers().length }} of {{ totalUsers() }} users</span>
-      <div class="pagination__pages">
-        <button class="page-btn" type="button" aria-label="Previous">
-          <i class="ph ph-caret-left"></i>
-        </button>
-        <button class="page-btn active" type="button">1</button>
-        <button class="page-btn" type="button" aria-label="Next">
-          <i class="ph ph-caret-right"></i>
-        </button>
-      </div>
+      <span class="pagination__info">
+        Showing {{ filteredUsers().length === 0 ? 0 : currentPage() * pageSize + 1 }}-{{ min(currentPage() * pageSize + pageSize, filteredUsers().length) }} of {{ filteredUsers().length }} users
+      </span>
+      @if (totalPages() > 1) {
+        <div class="pagination__pages">
+          <button class="page-btn" type="button" aria-label="Previous" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">
+            <i class="ph ph-caret-left"></i>
+          </button>
+          @for (page of getPagesArray(); track page) {
+            <button class="page-btn" type="button" [class.active]="page === currentPage()" (click)="goToPage(page)">{{ page + 1 }}</button>
+          }
+          <button class="page-btn" type="button" aria-label="Next" [disabled]="currentPage() === totalPages() - 1" (click)="goToPage(currentPage() + 1)">
+            <i class="ph ph-caret-right"></i>
+          </button>
+        </div>
+      }
     </div>
   </div>
 </section>
@@ -181,14 +208,6 @@
           </div>
           <span class="user-type-btn__label">{{ 'users_addTechnician' | t }}</span>
           <span class="user-type-btn__desc">{{ 'users_addTechDesc' | t }}</span>
-        </button>
-
-        <button class="user-type-btn" type="button" (click)="addUser('Client')">
-          <div class="user-type-btn__icon user-type-btn__icon--client">
-            <i class="ph ph-buildings" aria-hidden="true"></i>
-          </div>
-          <span class="user-type-btn__label">{{ 'users_addClient' | t }}</span>
-          <span class="user-type-btn__desc">{{ 'users_addClientDesc' | t }}</span>
         </button>
       </div>
     </div>

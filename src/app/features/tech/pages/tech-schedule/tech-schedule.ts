@@ -4,7 +4,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { LanguageService } from '../../../../core/services/language.service';
 import { DataService, TechWorkOrder } from '../../../../core/services/data.service';
-import { AuthService } from '../../../../core/services/auth.service';
 
 const DAY_NAMES_EN  = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 const MONTH_EN = ['January','February','March','April','May','June','July',
@@ -36,11 +35,9 @@ type ServiceKey  = 'Installation' | 'Maintenance' | 'Collection';
 })
 export class TechSchedule {
   private data  = inject(DataService);
-  private auth  = inject(AuthService);
   protected lang = inject(LanguageService);
 
   private allOrders = toSignal(this.data.getTechWorkOrders(), { initialValue: [] as TechWorkOrder[] });
-  private techId    = computed(() => this.auth.currentUser()?.technicianId ?? '');
 
   // ── Navigation ──────────────────────────────────────────────────────────────
   private readonly _today = new Date();
@@ -105,9 +102,8 @@ export class TechSchedule {
   }
 
   // ── Data helpers ─────────────────────────────────────────────────────────────
-  private myOrders = computed(() =>
-    this.allOrders().filter(o => o.technicianId === this.techId())
-  );
+  // Backend already filters work orders by the JWT token — allOrders contains only this tech's orders
+  private myOrders = computed(() => this.allOrders());
 
   protected ordersForDay(day: Date): TechWorkOrder[] {
     const sf = this.statusFilters();

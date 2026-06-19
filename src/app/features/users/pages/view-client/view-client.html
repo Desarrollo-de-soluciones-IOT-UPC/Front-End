@@ -1,0 +1,86 @@
+<section class="view-client">
+  <div class="vc-header">
+    <div>
+      <p class="breadcrumb">
+        <a routerLink="/admin/users">{{ 'nav_users' | t }}</a>
+        › {{ 'vc_title' | t }}
+      </p>
+      <h2 class="vc-title">{{ client()?.name ?? ('vc_title' | t) }}</h2>
+    </div>
+    <a routerLink="/admin/users" class="btn btn--back">{{ 'btn_backToList' | t }}</a>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state"><i class="ph ph-circle-notch ph-spin"></i><span>Loading...</span></div>
+  } @else if (client(); as c) {
+
+    <!-- Client info -->
+    <div class="vc-card">
+      <div class="vc-card__head">
+        <div class="vc-avatar">{{ initials(c.name) }}</div>
+        <div>
+          <h3 class="vc-name">{{ c.name }}</h3>
+          <span class="vc-type">{{ c.clientType === 'individual' ? ('client_individual' | t) : ('client_company' | t) }}</span>
+        </div>
+        <span class="status-dot status-dot--{{ c.status }}">
+          <span class="dot"></span>
+          {{ c.status === 'active' ? ('status_active' | t) : ('status_inactive' | t) }}
+        </span>
+      </div>
+
+      <div class="vc-grid">
+        <div class="vc-cell"><span class="vc-k">{{ 'th_email' | t }}</span><span class="vc-v">{{ c.email }}</span></div>
+        <div class="vc-cell"><span class="vc-k">{{ 'client_ruc' | t }}</span><span class="vc-v">{{ c.taxId || '—' }}</span></div>
+        <div class="vc-cell"><span class="vc-k">{{ 'client_industry' | t }}</span><span class="vc-v">{{ c.industry || '—' }}</span></div>
+        <div class="vc-cell"><span class="vc-k">{{ 'client_address' | t }}</span><span class="vc-v">{{ c.address || c.location || '—' }}</span></div>
+        <div class="vc-cell"><span class="vc-k">{{ 'client_country' | t }}</span><span class="vc-v">{{ c.country || '—' }}</span></div>
+        <div class="vc-cell"><span class="vc-k">{{ 'client_contactName' | t }}</span><span class="vc-v">{{ c.contactName || '—' }}</span></div>
+        <div class="vc-cell"><span class="vc-k">{{ 'client_contactEmail' | t }}</span><span class="vc-v">{{ c.contactEmail || '—' }}</span></div>
+        <div class="vc-cell"><span class="vc-k">{{ 'client_contactPhone' | t }}</span><span class="vc-v">{{ c.contactPhone || c.phone || '—' }}</span></div>
+      </div>
+
+      @if (c.notes) {
+        <div class="vc-notes">
+          <span class="vc-k">{{ 'client_internalNotes' | t }}</span>
+          <p>{{ c.notes }}</p>
+        </div>
+      }
+    </div>
+
+    <!-- Devices -->
+    <div class="vc-card">
+      <h3 class="vc-section-title">{{ 'vc_devices' | t }} ({{ devices().length }})</h3>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>{{ 'dev_name' | t }}</th>
+              <th>{{ 'dev_type' | t }}</th>
+              <th>{{ 'client_location' | t }}</th>
+              <th>{{ 'dev_serial' | t }}</th>
+              <th>{{ 'th_status' | t }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of devices(); track d.id) {
+              <tr>
+                <td>{{ d.name }}</td>
+                <td>{{ d.type }}</td>
+                <td>{{ d.location }}</td>
+                <td class="mono">{{ d.serialNumber }}</td>
+                <td>
+                  <span class="device-status device-status--{{ d.status }}">{{ deviceStatusLabel(d.status) }}</span>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="empty-row">{{ 'vc_noDevices' | t }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  } @else {
+    <div class="vc-card"><p class="empty-row">{{ 'vc_notFound' | t }}</p></div>
+  }
+</section>

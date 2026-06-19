@@ -3,28 +3,41 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { map, catchError, of } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface AuthUser {
-  id: string;
+  id: number;
   email: string;
   name: string;
   initials: string;
   role: 'admin' | 'technician';
-  technicianId?: string;
+  technicianId?: number;
 }
 
-interface Credential extends AuthUser {
-  password: string;
+interface LoginResponse {
+  token: string;
+  email: string;
+  name: string;
+  initials: string;
+  role: string;
+  userId: number;
+  technicianId: number | null;
 }
 
-const STORAGE_KEY = 'emsafe_user';
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+}
+
+const STORAGE_KEY  = 'emsafe_user';
+const TOKEN_KEY    = 'emsafe_token';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private http         = inject(HttpClient);
-  private router       = inject(Router);
-  private platformId   = inject(PLATFORM_ID);
-  private base         = 'http://localhost:3000';
+  private http       = inject(HttpClient);
+  private router     = inject(Router);
+  private platformId = inject(PLATFORM_ID);
+  private base       = environment.apiUrl;
 
   private _user = signal<AuthUser | null>(this.loadFromStorage());
   readonly currentUser = this._user.asReadonly();
@@ -32,14 +45,33 @@ export class AuthService {
   get isLoggedIn(): boolean { return this._user() !== null; }
   get role(): 'admin' | 'technician' | null { return this._user()?.role ?? null; }
 
+  getToken(): string | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
+    return localStorage.getItem(TOKEN_KEY);
+  }
+
   login(email: string, password: string) {
-    return this.http.get<Credential[]>(`${this.base}/credentials`).pipe(
-      map(list => {
-        const found = list.find(u => u.email === email && u.password === password);
-        if (!found) return false;
-        const { password: _pw, ...user } = found;
+    return this.http.post<ApiResponse<LoginResponse>>(
+      `${this.base}/auth/login`,
+      { email, password }
+    ).pipe(
+      map(res => {
+        const lr = res.data;
+        const role = lr.role as 'admin' | 'technician';
+
+        if (role !== 'admin' && role !== 'technician') return false;
+
+        const user: AuthUser = {
+          id:           lr.userId,
+          email:        lr.email,
+          name:         lr.name,
+          initials:     lr.initials,
+          role,
+          technicianId: lr.technicianId ?? undefined,
+        };
+
         this._user.set(user);
-        this.saveToStorage(user);
+        this.saveToStorage(user, lr.token);
         return true;
       }),
       catchError(() => of(false)),
@@ -52,6 +84,17 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
+  /** Update the in-memory + persisted current user (e.g. after a profile edit). */
+  updateCurrentUser(partial: Partial<AuthUser>): void {
+    const current = this._user();
+    if (!current) return;
+    const updated = { ...current, ...partial };
+    this._user.set(updated);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    }
+  }
+
   private loadFromStorage(): AuthUser | null {
     if (!isPlatformBrowser(this.platformId)) return null;
     try {
@@ -62,13 +105,15 @@ export class AuthService {
     }
   }
 
-  private saveToStorage(user: AuthUser): void {
+  private saveToStorage(user: AuthUser, token: string): void {
     if (!isPlatformBrowser(this.platformId)) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+    localStorage.setItem(TOKEN_KEY, token);
   }
 
   private clearStorage(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(TOKEN_KEY);
   }
 }

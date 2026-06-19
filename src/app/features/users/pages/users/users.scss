@@ -163,6 +163,14 @@
 
   &:hover { background: var(--color-surface-alt); color: var(--color-text-primary); }
   i { font-size: 17px; }
+
+  &:disabled { opacity: 0.45; cursor: default; }
+}
+
+.filter-btn--active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: rgba(26, 110, 255, 0.08);
 }
 
 /* ── Buttons ─────────────────────────────────────── */
@@ -239,7 +247,8 @@
   tbody tr:hover { background: rgba(26, 110, 255, 0.02); }
 }
 
-.table__actions { text-align: right; }
+.table__actions { text-align: center; }
+.table__actions .actions-wrap { margin: 0 auto; }
 
 /* ── User cell ───────────────────────────────────── */
 .user-cell {

@@ -3,24 +3,33 @@ import { Router, RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { DataService, User } from '../../../../core/services/data.service';
+import { ConfirmService } from '../../../../core/services/confirm.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 type RoleFilter = 'all' | 'Admin' | 'Technician' | 'Client';
 
 @Component({
   selector: 'app-users',
-  imports: [TranslatePipe, RouterLink, DecimalPipe],
+  imports: [TranslatePipe, DecimalPipe],
   templateUrl: './users.html',
   styleUrl: './users.scss',
 })
 export class Users implements OnInit {
-  private data   = inject(DataService);
-  private router = inject(Router);
+  private data    = inject(DataService);
+  private router  = inject(Router);
+  private confirm = inject(ConfirmService);
+  private toast   = inject(ToastService);
 
   private _allUsers = signal<User[]>([]);
+  loading      = signal(true);
   searchQuery  = signal('');
   activeTab    = signal<RoleFilter>('all');
   openMenuId: number | string | null = null;
   showAddModal = signal(false);
+
+  // Pagination (10 users per page)
+  currentPage = signal(0);
+  readonly pageSize = 10;
 
   filteredUsers = computed(() => {
     let list = this._allUsers();
@@ -39,16 +48,54 @@ export class Users implements OnInit {
     return list;
   });
 
-  totalUsers   = computed(() => this._allUsers().length);
-  activeNow    = computed(() => this._allUsers().filter(u => u.status === 'active').length);
-  pendingCount = computed(() => this._allUsers().filter(u => u.status === 'inactive').length);
+  totalPages = computed(() => Math.max(1, Math.ceil(this.filteredUsers().length / this.pageSize)));
+
+  pagedUsers = computed(() => {
+    const start = this.currentPage() * this.pageSize;
+    return this.filteredUsers().slice(start, start + this.pageSize);
+  });
+
+  hasActiveFilters = computed(() => this.activeTab() !== 'all' || this.searchQuery().trim().length > 0);
+
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.totalPages()) this.currentPage.set(page);
+  }
+
+  getPagesArray(): number[] {
+    return Array.from({ length: this.totalPages() }, (_, i) => i);
+  }
+
+  min(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
+  onSearch(value: string): void {
+    this.searchQuery.set(value);
+    this.currentPage.set(0);
+  }
+
+  clearFilters(): void {
+    this.activeTab.set('all');
+    this.searchQuery.set('');
+    this.currentPage.set(0);
+  }
+
+  totalUsers         = computed(() => this._allUsers().length);
+  activeNow          = computed(() => this._allUsers().filter(u => u.status === 'active').length);
+  pendingCount       = computed(() => this._allUsers().filter(u => u.status === 'inactive').length);
+  activeClientCount  = computed(() => this._allUsers().filter(u => u.role === 'Client' && u.status === 'active').length);
+  inactiveClientCount = computed(() => this._allUsers().filter(u => u.role === 'Client' && u.status === 'inactive').length);
 
   ngOnInit(): void {
-    this.data.getUsers().subscribe(users => this._allUsers.set(users));
+    this.data.getUsers().subscribe(users => {
+      this._allUsers.set(users);
+      this.loading.set(false);
+    });
   }
 
   setTab(tab: RoleFilter): void {
     this.activeTab.set(tab);
+    this.currentPage.set(0);
   }
 
   openAdd(): void {
@@ -79,6 +126,11 @@ export class Users implements OnInit {
     this.router.navigate([routes[user.role]]);
   }
 
+  viewClient(user: User): void {
+    this.openMenuId = null;
+    this.router.navigate([`/admin/users/view-client/${user.id}`]);
+  }
+
   toggleMenu(id: string | number, event: Event): void {
     event.stopPropagation();
     this.openMenuId = this.openMenuId === id ? null : id;
@@ -91,8 +143,10 @@ export class Users implements OnInit {
 
   deleteUser(id: number | string, event: Event): void {
     event.stopPropagation();
+    if (!this.confirm.confirm('Are you sure you want to delete this user?')) return;
     this.data.deleteUser(id).subscribe(() => {
       this._allUsers.update(list => list.filter(u => String(u.id) !== String(id)));
+      this.toast.success('User deleted successfully');
     });
     this.openMenuId = null;
   }

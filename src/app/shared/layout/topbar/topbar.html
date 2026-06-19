@@ -4,27 +4,124 @@
   </div>
 
   <div class="topbar__right">
+    <!-- Language toggle -->
     <button class="lang-toggle" type="button" (click)="lang.toggle()" [title]="lang.lang() === 'en' ? 'Switch to Spanish' : 'Cambiar a inglés'">
       <i class="ph ph-translate" aria-hidden="true"></i>
       <span>{{ lang.lang() === 'en' ? 'ES' : 'EN' }}</span>
     </button>
 
-    <div class="icon-actions" aria-label="Quick actions">
-      <button class="icon-btn" type="button" aria-label="Notifications">
+    <!-- Bell button with hover panel -->
+    <div class="bell-wrap" (mouseenter)="openBell($event)" (mouseleave)="closeBell()">
+      <button class="icon-btn" type="button" aria-label="Notifications" (click)="$event.stopPropagation()">
         <i class="ph ph-bell" aria-hidden="true"></i>
+        @if (activity.records().length > 0) {
+          <span class="bell-dot"></span>
+        }
       </button>
 
-      <button class="icon-btn" type="button" aria-label="Settings">
-        <i class="ph ph-gear" aria-hidden="true"></i>
-      </button>
+      @if (showBellPanel()) {
+        <div class="bell-panel" (click)="$event.stopPropagation()">
+          <div class="bell-panel__header">{{ 'topbar_recentActivity' | t }}</div>
+          @if (activity.records().length === 0) {
+            <div class="bell-panel__empty">
+              <i class="ph ph-bell-slash" aria-hidden="true"></i>
+              <span>{{ 'topbar_noActivity' | t }}</span>
+            </div>
+          } @else {
+            <ul class="bell-panel__list">
+              @for (rec of activity.records(); track rec.time) {
+                <li class="bell-item">
+                  <div class="bell-item__dot"></div>
+                  <div class="bell-item__body">
+                    <span class="bell-item__title">{{ rec.title }}</span>
+                    @if (rec.description) {
+                      <span class="bell-item__desc">{{ rec.description }}</span>
+                    }
+                    <span class="bell-item__time">{{ activity.formatTime(rec.time) }}</span>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      }
     </div>
 
-    <div class="profile">
-      <div class="profile__meta">
-        <h3>{{ auth.currentUser()?.name ?? 'User' }}</h3>
-        <span>{{ auth.currentUser()?.role === 'admin' ? ('topbar_role' | t) : ('topbar_role_tech' | t) }}</span>
+    <!-- Profile dropdown -->
+    <div class="profile-wrap" (click)="toggleProfileMenu($event)">
+      <div class="profile">
+        <div class="profile__meta">
+          <h3>{{ auth.currentUser()?.name ?? 'User' }}</h3>
+          <span>{{ auth.currentUser()?.role === 'admin' ? ('topbar_role' | t) : ('topbar_role_tech' | t) }}</span>
+        </div>
+        <div class="avatar" aria-hidden="true">{{ auth.currentUser()?.initials ?? '?' }}</div>
+        <i class="ph ph-caret-down profile-caret" [class.rotated]="showProfileMenu()" aria-hidden="true"></i>
       </div>
-      <div class="avatar" aria-hidden="true">{{ auth.currentUser()?.initials ?? '?' }}</div>
+
+      @if (showProfileMenu()) {
+        <div class="profile-menu" (click)="$event.stopPropagation()">
+          <!-- My Profile link -->
+          <a class="profile-menu__item" [routerLink]="profileRoute" (click)="showProfileMenu.set(false)">
+            <i class="ph ph-user-circle" aria-hidden="true"></i>
+            <span>{{ 'topbar_myProfile' | t }}</span>
+          </a>
+
+          <div class="profile-menu__divider"></div>
+
+          <!-- Preferences section -->
+          <div class="profile-menu__section">{{ 'topbar_preferences' | t }}</div>
+
+          <!-- Dark mode toggle -->
+          <div class="profile-menu__item profile-menu__item--toggle">
+            <i class="ph ph-moon" aria-hidden="true"></i>
+            <span>{{ 'topbar_darkMode' | t }}</span>
+            <button
+              class="toggle-switch"
+              [class.toggle-switch--on]="theme.darkMode()"
+              type="button"
+              (click)="toggleDark($event)"
+              aria-label="Toggle dark mode"
+            >
+              <span class="toggle-switch__thumb"></span>
+            </button>
+          </div>
+
+          <!-- Font size -->
+          <div class="profile-menu__item profile-menu__item--fonts">
+            <i class="ph ph-text-aa" aria-hidden="true"></i>
+            <span>{{ 'topbar_fontSize' | t }}</span>
+            <div class="font-btns">
+              <button
+                class="font-btn"
+                [class.font-btn--active]="theme.fontSize() === 'small'"
+                type="button"
+                (click)="setFontSize('small', $event)"
+              >S</button>
+              <button
+                class="font-btn"
+                [class.font-btn--active]="theme.fontSize() === 'medium'"
+                type="button"
+                (click)="setFontSize('medium', $event)"
+              >M</button>
+              <button
+                class="font-btn"
+                [class.font-btn--active]="theme.fontSize() === 'large'"
+                type="button"
+                (click)="setFontSize('large', $event)"
+              >L</button>
+            </div>
+          </div>
+
+          <!-- Language shortcut -->
+          <div class="profile-menu__item profile-menu__item--toggle">
+            <i class="ph ph-translate" aria-hidden="true"></i>
+            <span>{{ lang.lang() === 'en' ? 'English' : 'Español' }}</span>
+            <button class="toggle-lang" type="button" (click)="lang.toggle(); $event.stopPropagation()">
+              {{ lang.lang() === 'en' ? 'ES' : 'EN' }}
+            </button>
+          </div>
+        </div>
+      }
     </div>
   </div>
 </div>

@@ -18,12 +18,12 @@
       <div class="date-inputs">
         <div class="date-input-wrap">
           <i class="ph ph-calendar-blank" aria-hidden="true"></i>
-          <input type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event)" [placeholder]="'hist_from' | t" />
+          <input type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event); applyFilters()" [placeholder]="'hist_from' | t" />
         </div>
         <span class="date-sep">—</span>
         <div class="date-input-wrap">
           <i class="ph ph-calendar-blank" aria-hidden="true"></i>
-          <input type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event)" [placeholder]="'hist_to' | t" />
+          <input type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event); applyFilters()" [placeholder]="'hist_to' | t" />
         </div>
         @if (dateFrom() || dateTo()) {
           <button class="clear-btn" type="button" (click)="clearDates()">{{ 'hist_clearDates' | t }}</button>
@@ -33,7 +33,7 @@
 
     <div class="select-group">
       <label>{{ 'hist_type' | t }}</label>
-      <select [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event)">
+      <select [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event); applyFilters()">
         <option value="all">{{ 'hist_allTypes' | t }}</option>
         <option value="Installation">Installation</option>
         <option value="Maintenance">Maintenance</option>
@@ -42,12 +42,11 @@
     </div>
 
     <div class="select-group">
-      <label>{{ 'hist_technician' | t }}</label>
-      <select [ngModel]="techFilter()" (ngModelChange)="techFilter.set($event)">
-        <option value="all">{{ 'hist_allPersonnel' | t }}</option>
-        @for (tech of technicians(); track tech) {
-          <option [value]="tech">{{ tech }}</option>
-        }
+      <label>{{ 'th_status' | t }}</label>
+      <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event); applyFilters()">
+        <option value="all">{{ 'filter_all' | t }}</option>
+        <option value="completed">{{ 'status_completed' | t }}</option>
+        <option value="cancelled">{{ 'status_cancelled' | t }}</option>
       </select>
     </div>
 
@@ -97,8 +96,8 @@
               </span>
             </td>
             <td>
-              <button class="action-btn" type="button">
-                <i class="ph ph-dots-three-vertical" aria-hidden="true"></i>
+              <button class="action-btn" type="button" (click)="openDetail(item)" aria-label="View detail">
+                <i class="ph ph-eye" aria-hidden="true"></i>
               </button>
             </td>
           </tr>
@@ -115,13 +114,37 @@
     </table>
 
     <div class="table-footer">
-      <span class="showing">Showing 1 - {{ filtered().length }} of {{ filtered().length }} results</span>
-      <div class="pagination">
-        <button class="page-btn" type="button" disabled><i class="ph ph-caret-left"></i></button>
-        <button class="page-btn page-btn--active" type="button">1</button>
-        <button class="page-btn" type="button" disabled><i class="ph ph-caret-right"></i></button>
-      </div>
+      <span class="showing">Showing {{ totalElements() === 0 ? 0 : currentPage() * pageSize + 1 }}-{{ min(currentPage() * pageSize + pageSize, totalElements()) }} of {{ totalElements() }}</span>
+      @if (totalPages() > 1) {
+        <div class="pagination">
+          <button class="page-btn" type="button" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">
+            <i class="ph ph-caret-left"></i>
+          </button>
+          @for (page of getPagesArray(); track page) {
+            <button class="page-btn" type="button" [class.page-btn--active]="page === currentPage()" (click)="goToPage(page)">
+              {{ page + 1 }}
+            </button>
+          }
+          <button class="page-btn" type="button" [disabled]="currentPage() === totalPages() - 1" (click)="goToPage(currentPage() + 1)">
+            <i class="ph ph-caret-right"></i>
+          </button>
+        </div>
+      }
     </div>
   </div>
 
 </div>
+
+<!-- ── Detail Modal (shared full read-only detail, same as admin History) ───── -->
+@if (showDetailModal()) {
+  @if (detailLoading()) {
+    <div class="modal-overlay">
+      <div class="loading-state">
+        <i class="ph ph-circle-notch ph-spin"></i>
+        <span>Loading...</span>
+      </div>
+    </div>
+  } @else if (detailOrder()) {
+    <app-work-order-detail-modal [order]="detailOrder()!" (close)="closeDetail()" />
+  }
+}

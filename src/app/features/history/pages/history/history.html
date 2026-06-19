@@ -23,7 +23,7 @@
             class="date-input"
             type="date"
             [value]="dateFrom()"
-            (change)="dateFrom.set($any($event.target).value)"
+            (change)="dateFrom.set($any($event.target).value); applyFilters()"
             [attr.aria-label]="'hist_from' | t"
           />
         </div>
@@ -34,7 +34,7 @@
             class="date-input"
             type="date"
             [value]="dateTo()"
-            (change)="dateTo.set($any($event.target).value)"
+            (change)="dateTo.set($any($event.target).value); applyFilters()"
             [attr.aria-label]="'hist_to' | t"
           />
         </div>
@@ -52,7 +52,7 @@
       <div class="select-wrap">
         <select
           class="field-select"
-          (change)="selectedType.set($any($event.target).value)"
+          (change)="selectedType.set($any($event.target).value); applyFilters()"
           aria-label="Filter by type"
         >
           <option value="all">{{ 'hist_allTypes' | t }}</option>
@@ -64,13 +64,30 @@
       </div>
     </div>
 
+    <!-- Status -->
+    <div class="filter-group">
+      <label class="filter-label">{{ 'th_status' | t }}</label>
+      <div class="select-wrap">
+        <select
+          class="field-select"
+          (change)="selectedStatus.set($any($event.target).value); applyFilters()"
+          aria-label="Filter by status"
+        >
+          <option value="all">{{ 'filter_all' | t }}</option>
+          <option value="completed">{{ 'status_completed' | t }}</option>
+          <option value="cancelled">{{ 'status_cancelled' | t }}</option>
+        </select>
+        <i class="ph ph-caret-down select-caret" aria-hidden="true"></i>
+      </div>
+    </div>
+
     <!-- Technician -->
     <div class="filter-group">
       <label class="filter-label">{{ 'hist_technician' | t }}</label>
       <div class="select-wrap">
         <select
           class="field-select"
-          (change)="selectedTechnician.set($any($event.target).value)"
+          (change)="selectedTechnician.set($any($event.target).value); applyFilters()"
           aria-label="Filter by technician"
         >
           <option value="all">{{ 'hist_allPersonnel' | t }}</option>
@@ -96,6 +113,12 @@
 
   <!-- Table -->
   <div class="table-wrap">
+    @if (loading()) {
+      <div class="loading-state">
+        <i class="ph ph-circle-notch ph-spin"></i>
+        <span>Loading...</span>
+      </div>
+    }
     <table class="table" aria-label="Work orders history table">
       <thead>
         <tr>
@@ -105,7 +128,7 @@
           <th>{{ 'th_serviceType' | t }}</th>
           <th>{{ 'th_leadTech' | t }}</th>
           <th>{{ 'th_status' | t }}</th>
-          <th>{{ 'th_actions' | t }}</th>
+          <th class="table__actions">{{ 'th_actions' | t }}</th>
         </tr>
       </thead>
       <tbody>
@@ -151,8 +174,8 @@
               </span>
             </td>
             <td class="table__actions">
-              <button class="btn btn--icon" type="button" aria-label="Actions">
-                <i class="ph ph-dots-three-vertical" aria-hidden="true"></i>
+              <button class="btn btn--icon" type="button" (click)="openDetail(item)" [title]="'hist_view' | t">
+                <i class="ph ph-eye" aria-hidden="true"></i>
               </button>
             </td>
           </tr>
@@ -165,20 +188,36 @@
     </table>
 
     <div class="pagination">
-      <span class="pagination__info">Showing {{ items().length }} results</span>
-      <div class="pagination__pages">
-        <button class="page-btn" type="button" aria-label="Previous">
-          <i class="ph ph-caret-left"></i>
-        </button>
-        <button class="page-btn active" type="button">1</button>
-        <button class="page-btn" type="button">2</button>
-        <button class="page-btn" type="button">3</button>
-        <span class="page-dots">…</span>
-        <button class="page-btn" type="button">10</button>
-        <button class="page-btn" type="button" aria-label="Next">
-          <i class="ph ph-caret-right"></i>
-        </button>
-      </div>
+      <span class="pagination__info">Showing {{ currentPage() * pageSize + 1 }}-{{ min(currentPage() * pageSize + pageSize, totalElements()) }} of {{ totalElements() }}</span>
+      @if (totalPages() > 1) {
+        <div class="pagination__pages">
+          <button class="page-btn" type="button" aria-label="Previous" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">
+            <i class="ph ph-caret-left"></i>
+          </button>
+          @for (page of getPagesArray(); track page) {
+            <button class="page-btn" type="button" [class.active]="page === currentPage()" (click)="goToPage(page)">
+              {{ page + 1 }}
+            </button>
+          }
+          <button class="page-btn" type="button" aria-label="Next" [disabled]="currentPage() === totalPages() - 1" (click)="goToPage(currentPage() + 1)">
+            <i class="ph ph-caret-right"></i>
+          </button>
+        </div>
+      }
     </div>
   </div>
 </section>
+
+<!-- ── Detail Modal (shared full read-only detail) ─────────────── -->
+@if (showDetailModal()) {
+  @if (detailLoading()) {
+    <div class="modal-overlay">
+      <div class="loading-state">
+        <i class="ph ph-circle-notch ph-spin"></i>
+        <span>Loading...</span>
+      </div>
+    </div>
+  } @else if (detailOrder()) {
+    <app-work-order-detail-modal [order]="detailOrder()!" (close)="closeDetail()" />
+  }
+}

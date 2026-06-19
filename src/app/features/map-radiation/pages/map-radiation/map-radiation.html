@@ -1,0 +1,148 @@
+<section class="map-radiation">
+  <div class="map-radiation__header">
+    <div>
+      <h2 class="map-radiation__title">{{ 'map_title' | t }}</h2>
+      <p class="map-radiation__subtitle">{{ 'map_subtitle' | t }}</p>
+    </div>
+  </div>
+
+  <!-- Stats row — count of clients by max-reading level -->
+  <div class="stats-row">
+    <div class="stat-card stat-card--safe">
+      <div class="stat-card__icon">
+        <i class="ph ph-check-circle" aria-hidden="true"></i>
+      </div>
+      <div class="stat-card__body">
+        <div class="stat-card__value">{{ safeCount() }}</div>
+        <div class="stat-card__label">{{ 'map_safe' | t }}</div>
+        <div class="stat-card__range">&lt; 0.10 μSv/h</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--caution">
+      <div class="stat-card__icon">
+        <i class="ph ph-warning" aria-hidden="true"></i>
+      </div>
+      <div class="stat-card__body">
+        <div class="stat-card__value">{{ cautionCount() }}</div>
+        <div class="stat-card__label">{{ 'map_caution' | t }}</div>
+        <div class="stat-card__range">0.10 – 0.30 μSv/h</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--danger">
+      <div class="stat-card__icon">
+        <i class="ph ph-warning-circle" aria-hidden="true"></i>
+      </div>
+      <div class="stat-card__body">
+        <div class="stat-card__value">{{ dangerCount() }}</div>
+        <div class="stat-card__label">{{ 'map_danger' | t }}</div>
+        <div class="stat-card__range">&ge; 0.30 μSv/h</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map -->
+  <div class="map-card">
+    <div class="map-card__header">
+      <h4 class="map-card__title">{{ 'map_legend' | t }}</h4>
+      <div class="legend-items">
+        <div class="legend-item">
+          <span class="legend-dot legend-dot--safe"></span>
+          <span class="legend-label">{{ 'map_safe' | t }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot legend-dot--caution"></span>
+          <span class="legend-label">{{ 'map_caution' | t }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot legend-dot--danger"></span>
+          <span class="legend-label">{{ 'map_danger' | t }}</span>
+        </div>
+      </div>
+      <span class="map-hint">{{ 'map_clickHint' | t }}</span>
+    </div>
+    <div #mapContainer class="map-container"></div>
+  </div>
+
+  <!-- Devices table — all linked devices across all clients -->
+  <div class="table-wrap">
+    @if (loading()) {
+      <div class="loading-state">
+        <i class="ph ph-circle-notch ph-spin"></i>
+        <span>Loading...</span>
+      </div>
+    }
+
+    <table class="table" aria-label="Radiation readings table">
+      <thead>
+        <tr>
+          <th>{{ 'map_client' | t }}</th>
+          <th>{{ 'dev_name' | t }}</th>
+          <th>{{ 'map_zone' | t }}</th>
+          <th>{{ 'map_value' | t }}</th>
+          <th>{{ 'th_status' | t }}</th>
+          <th>{{ 'map_date' | t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of pagedRows(); track row.deviceId) {
+          <tr>
+            <td class="text-sec">{{ row.clientName }}</td>
+            <td>
+              <span class="mono device-name">{{ row.deviceName }}</span>
+            </td>
+            <td class="text-sec">{{ row.deviceLocation }}</td>
+            <td>
+              <span class="mono radiation-value radiation-value--{{ levelForValue(row.latestValue) }}">
+                {{ formatValue(row.latestValue) }} <span class="unit">μSv/h</span>
+              </span>
+            </td>
+            <td>
+              <span class="status-badge status-badge--{{ levelForValue(row.latestValue) }}">
+                <span class="dot"></span>
+                {{ getStatusLabelKey(levelForValue(row.latestValue)) | t }}
+              </span>
+            </td>
+            <td class="text-sec">{{ formatDate(row.readingDate) }}</td>
+          </tr>
+        } @empty {
+          @if (!loading()) {
+            <tr>
+              <td colspan="6" class="empty-row">
+                <div class="empty-state">
+                  <i class="ph ph-wave-sine" aria-hidden="true"></i>
+                  <span>{{ 'map_noData' | t }}</span>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    @if (allDeviceReadings().length > 0) {
+      <div class="pagination">
+        <span class="pagination__info">
+          Showing {{ mapCurrentPage() * mapPageSize + 1 }}-{{ mapMin(mapCurrentPage() * mapPageSize + mapPageSize, allDeviceReadings().length) }} of {{ allDeviceReadings().length }}
+        </span>
+        @if (mapTotalPages() > 1) {
+          <div class="pagination__pages">
+            <button class="page-btn" type="button" [disabled]="mapCurrentPage() === 0" (click)="mapGoToPage(mapCurrentPage() - 1)">
+              <i class="ph ph-caret-left"></i>
+            </button>
+            @for (page of mapPagesArray(); track page) {
+              <button class="page-btn" type="button" [class.active]="page === mapCurrentPage()" (click)="mapGoToPage(page)">
+                {{ page + 1 }}
+              </button>
+            }
+            <button class="page-btn" type="button" [disabled]="mapCurrentPage() === mapTotalPages() - 1" (click)="mapGoToPage(mapCurrentPage() + 1)">
+              <i class="ph ph-caret-right"></i>
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>

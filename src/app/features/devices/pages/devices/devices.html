@@ -1,0 +1,324 @@
+<section class="devices">
+  <div class="devices__header">
+    <div>
+      <h2 class="devices__title">{{ 'dev_title' | t }}</h2>
+      <p class="devices__subtitle">{{ 'dev_subtitle' | t }}</p>
+    </div>
+  </div>
+
+  <!-- Toolbar: search + filters -->
+  <div class="toolbar">
+    <div class="toolbar__search">
+      <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+      <input
+        class="toolbar__input"
+        type="text"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearchChange()"
+        [placeholder]="'dev_searchPlaceholder' | t"
+      />
+    </div>
+    <div class="toolbar__filters">
+      <div class="filter-group">
+        <span class="filter-group__label">{{ 'dev_type' | t }}</span>
+        <select class="filter-select" [(ngModel)]="filterType" (ngModelChange)="onFilterChange()">
+          <option value="all">{{ 'filter_all' | t }}</option>
+          @for (ty of deviceTypes; track ty) {
+            <option [value]="ty">{{ ty }}</option>
+          }
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-group__label">{{ 'th_status' | t }}</span>
+        <select class="filter-select" [(ngModel)]="filterStatus" (ngModelChange)="onFilterChange()">
+          <option value="all">{{ 'filter_all' | t }}</option>
+          <option value="active">{{ 'dev_active' | t }}</option>
+          <option value="inactive">{{ 'dev_inactive' | t }}</option>
+          <option value="in-maintenance">{{ 'dev_inMaintenance' | t }}</option>
+          <option value="requires-maintenance">{{ 'dev_requiresMaintenance' | t }}</option>
+          <option value="collecting">{{ 'dev_collecting' | t }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    @if (loading()) {
+      <div class="loading-state">
+        <i class="ph ph-circle-notch ph-spin"></i>
+        <span>Loading...</span>
+      </div>
+    }
+
+    <table class="table" aria-label="Devices table">
+      <thead>
+        <tr>
+          <th>{{ 'dev_name' | t }}</th>
+          <th>{{ 'dev_type' | t }}</th>
+          <th>{{ 'dev_client' | t }}</th>
+          <th>{{ 'client_location' | t }}</th>
+          <th>{{ 'th_status' | t }}</th>
+          <th>{{ 'dev_serial' | t }}</th>
+          <th>{{ 'dev_installDate' | t }}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (device of pagedItems(); track device.id) {
+          <tr>
+            <td>
+              <div class="device-cell">
+                <div class="device-icon">
+                  <i class="ph ph-cpu" aria-hidden="true"></i>
+                </div>
+                <span class="device-name">{{ device.name }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="type-badge type-badge--{{ device.type | lowercase }}">{{ device.type }}</span>
+            </td>
+            <td class="text-sec">{{ device.clientName || device.client || '—' }}</td>
+            <td class="text-sec">{{ device.location || '—' }}</td>
+            <td>
+              <span class="status-badge status-badge--{{ statusClass(device.status) }}">
+                <span class="dot"></span>
+                {{ statusKey(device.status) | t }}
+              </span>
+            </td>
+            <td class="mono text-sec">{{ device.serialNumber || '—' }}</td>
+            <td class="text-sec">{{ formatDate(device.installDate) }}</td>
+            <td class="table__actions">
+              <div class="menu-wrap">
+                <button
+                  class="btn btn--icon menu-trigger"
+                  type="button"
+                  (click)="toggleMenu(device.id, $event)"
+                  aria-label="Options"
+                >
+                  <i class="ph ph-dots-three-vertical" aria-hidden="true"></i>
+                </button>
+
+                @if (openMenuId() === device.id) {
+                  <div class="dropdown-menu" (click)="$event.stopPropagation()">
+                    <button class="dropdown-item" type="button" (click)="openEdit(device)">
+                      <i class="ph ph-pencil-simple" aria-hidden="true"></i>
+                      {{ 'btn_edit' | t }}
+                    </button>
+                    @if (device.status === 'requires-maintenance') {
+                      <button class="dropdown-item" type="button" (click)="createWorkOrder(device)">
+                        <i class="ph ph-wrench" aria-hidden="true"></i>
+                        {{ 'dev_createWorkOrder' | t }}
+                      </button>
+                    }
+                    @if (device.clientId != null) {
+                      <button class="dropdown-item" type="button" (click)="viewClient(device)">
+                        <i class="ph ph-user" aria-hidden="true"></i>
+                        {{ 'dev_viewClient' | t }}
+                      </button>
+                    }
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item dropdown-item--danger" type="button" (click)="openDeleteConfirm(device.id)">
+                      <i class="ph ph-trash" aria-hidden="true"></i>
+                      {{ 'btn_delete' | t }}
+                    </button>
+                  </div>
+                }
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          @if (!loading()) {
+            <tr>
+              <td colspan="8" class="empty-row">
+                <div class="empty-state">
+                  <i class="ph ph-cpu" aria-hidden="true"></i>
+                  <span>{{ 'dev_noDevices' | t }}</span>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1 || filtered().length > 0) {
+      <div class="pagination">
+        <span class="pagination__info">
+          Showing {{ currentPage() * pageSize + 1 }}-{{ min(currentPage() * pageSize + pageSize, filtered().length) }} of {{ filtered().length }}
+        </span>
+        @if (totalPages() > 1) {
+          <div class="pagination__pages">
+            <button class="page-btn" type="button" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">
+              <i class="ph ph-caret-left"></i>
+            </button>
+            @for (page of pagesArray(); track page) {
+              <button class="page-btn" type="button" [class.active]="page === currentPage()" (click)="goToPage(page)">
+                {{ page + 1 }}
+              </button>
+            }
+            <button class="page-btn" type="button" [disabled]="currentPage() === totalPages() - 1" (click)="goToPage(currentPage() + 1)">
+              <i class="ph ph-caret-right"></i>
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<!-- ── Create / Edit Modal ──────────────────────── -->
+@if (showModal()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="modal__header">
+        <div class="modal__title-wrap">
+          <div class="modal__icon">
+            <i class="ph ph-cpu" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h3 class="modal__title">
+              @if (editingDevice()) { {{ 'dev_editDevice' | t }} }
+              @else { {{ 'dev_addDevice' | t }} }
+            </h3>
+            <p class="modal__desc">{{ 'dev_subtitle' | t }}</p>
+          </div>
+        </div>
+        <button class="modal__close" type="button" (click)="closeModal()" aria-label="Close">
+          <i class="ph ph-x" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <form class="form" (ngSubmit)="saveDevice()">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">{{ 'dev_name' | t }} *</label>
+              <input
+                class="form-input"
+                type="text"
+                [(ngModel)]="formName"
+                name="formName"
+                [placeholder]="'dev_name' | t"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">{{ 'dev_type' | t }}</label>
+              <select class="form-input" [(ngModel)]="formType" name="formType">
+                <option value="Sensor">{{ 'dev_sensor' | t }}</option>
+                <option value="Gateway">{{ 'dev_gateway' | t }}</option>
+                <option value="Monitor">{{ 'dev_monitor' | t }}</option>
+                <option value="Controller">{{ 'dev_controller' | t }}</option>
+                <option value="Plug">{{ 'dev_plug' | t }}</option>
+                <option value="Actuator">{{ 'dev_actuator' | t }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">{{ 'dev_client' | t }}</label>
+              <select class="form-input" [(ngModel)]="formClient" name="formClient">
+                <option value="">— {{ 'dev_filterByClient' | t }} —</option>
+                @for (c of clients(); track c.id) {
+                  <option [value]="c.name">{{ c.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">{{ 'client_location' | t }}</label>
+              <input
+                class="form-input"
+                type="text"
+                [(ngModel)]="formLocation"
+                name="formLocation"
+                [placeholder]="'client_location' | t"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">{{ 'th_status' | t }}</label>
+              <select class="form-input" [(ngModel)]="formStatus" name="formStatus">
+                <option value="active">{{ 'dev_active' | t }}</option>
+                <option value="inactive">{{ 'dev_inactive' | t }}</option>
+                <option value="in-maintenance">{{ 'dev_inMaintenance' | t }}</option>
+                <option value="requires-maintenance">{{ 'dev_requiresMaintenance' | t }}</option>
+                <option value="collecting">{{ 'dev_collecting' | t }}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">{{ 'dev_installDate' | t }}</label>
+              <input
+                class="form-input"
+                type="date"
+                [(ngModel)]="formInstallDate"
+                name="formInstallDate"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">{{ 'dev_serial' | t }}</label>
+              <input
+                class="form-input"
+                type="text"
+                [(ngModel)]="formSerial"
+                name="formSerial"
+                [placeholder]="'dev_serial' | t"
+              />
+            </div>
+          </div>
+
+          <div class="modal__footer">
+            <button class="btn btn--ghost" type="button" (click)="closeModal()">
+              {{ 'btn_cancel' | t }}
+            </button>
+            <button class="btn btn--primary" type="submit">
+              <i class="ph ph-floppy-disk" aria-hidden="true"></i>
+              {{ (editingDevice() ? 'btn_saveChanges' : 'dev_createDevice') | t }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Delete Confirm Modal ──────────────────────── -->
+@if (showDeleteModal()) {
+  <div class="modal-overlay" (click)="closeDeleteConfirm()">
+    <div class="modal modal--sm" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="modal__header">
+        <div class="modal__title-wrap">
+          <div class="modal__icon modal__icon--danger">
+            <i class="ph ph-trash" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h3 class="modal__title">{{ 'dev_confirmDelete' | t }}</h3>
+            <p class="modal__desc">{{ 'btn_delete' | t }}</p>
+          </div>
+        </div>
+        <button class="modal__close" type="button" (click)="closeDeleteConfirm()" aria-label="Close">
+          <i class="ph ph-x" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal__footer modal__footer--standalone">
+        <button class="btn btn--ghost" type="button" (click)="closeDeleteConfirm()">
+          {{ 'btn_cancel' | t }}
+        </button>
+        <button class="btn btn--danger" type="button" (click)="confirmDelete()">
+          <i class="ph ph-trash" aria-hidden="true"></i>
+          {{ 'btn_delete' | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

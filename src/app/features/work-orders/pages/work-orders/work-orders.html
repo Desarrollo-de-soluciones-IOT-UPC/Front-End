@@ -21,41 +21,67 @@
         class="field__input"
         type="text"
         [placeholder]="'wo_searchPlaceholder' | t"
-        (input)="searchQuery.set($any($event.target).value)"
+        (input)="searchQuery.set($any($event.target).value); applyFilters()"
       />
     </div>
 
-    <div class="select-wrap">
-      <select
-        class="field-select"
-        aria-label="Filter by type"
-        (change)="selectedType.set($any($event.target).value)"
-      >
-        <option value="all">{{ 'wo_typeAll' | t }}</option>
-        <option value="Installation">{{ 'wo_installation' | t }}</option>
-        <option value="Maintenance">{{ 'wo_maintenance' | t }}</option>
-        <option value="Collection">{{ 'wo_collection' | t }}</option>
-      </select>
-      <i class="ph ph-caret-down select-caret"></i>
+    <div class="filter-group">
+      <span class="filter-group__label">{{ 'th_type' | t }}</span>
+      <div class="select-wrap">
+        <select
+          class="field-select"
+          aria-label="Filter by type"
+          (change)="selectedType.set($any($event.target).value); applyFilters()"
+        >
+          <option value="all">{{ 'filter_all' | t }}</option>
+          <option value="Installation">{{ 'wo_installation' | t }}</option>
+          <option value="Maintenance">{{ 'wo_maintenance' | t }}</option>
+          <option value="Collection">{{ 'wo_collection' | t }}</option>
+        </select>
+        <i class="ph ph-caret-down select-caret"></i>
+      </div>
     </div>
 
-    <div class="select-wrap">
-      <select
-        class="field-select"
-        aria-label="Filter by status"
-        (change)="selectedStatus.set($any($event.target).value)"
-      >
-        <option value="all">{{ 'wo_statusAll' | t }}</option>
-        <option value="completed">{{ 'status_completed' | t }}</option>
-        <option value="in-progress">{{ 'status_inProgress' | t }}</option>
-        <option value="pending">{{ 'status_pending' | t }}</option>
-      </select>
-      <i class="ph ph-caret-down select-caret"></i>
+    <div class="filter-group">
+      <span class="filter-group__label">{{ 'th_status' | t }}</span>
+      <div class="select-wrap">
+        <select
+          class="field-select"
+          aria-label="Filter by status"
+          (change)="selectedStatus.set($any($event.target).value); applyFilters()"
+        >
+          <option value="all">{{ 'filter_all' | t }}</option>
+          <option value="pending">{{ 'status_pending' | t }}</option>
+          <option value="in-progress">{{ 'status_inProgress' | t }}</option>
+        </select>
+        <i class="ph ph-caret-down select-caret"></i>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-group__label">{{ 'wo_sortBy' | t }}</span>
+      <div class="select-wrap">
+        <select
+          class="field-select"
+          aria-label="Sort by"
+          (change)="sortBy.set($any($event.target).value); applyFilters()"
+        >
+          <option value="date">{{ 'wo_sortDate' | t }}</option>
+          <option value="created">{{ 'wo_sortCreated' | t }}</option>
+        </select>
+        <i class="ph ph-caret-down select-caret"></i>
+      </div>
     </div>
   </div>
 
   <!-- Table -->
   <div class="table-wrap">
+    @if (loading()) {
+      <div class="loading-state">
+        <i class="ph ph-circle-notch ph-spin"></i>
+        <span>Loading...</span>
+      </div>
+    }
     <table class="table" aria-label="Work orders table">
       <thead>
         <tr>
@@ -101,6 +127,7 @@
               <span class="status status--{{ order.status }}">
                 @if (order.status === 'completed') { {{ 'status_completed' | t }} }
                 @else if (order.status === 'in-progress') { {{ 'status_inProgress' | t }} }
+                @else if (order.status === 'cancelled') { {{ 'status_cancelled' | t }} }
                 @else { {{ 'status_pending' | t }} }
               </span>
             </td>
@@ -117,18 +144,22 @@
 
                 @if (openMenuIndex === i) {
                   <div class="dropdown">
-                    <button class="dropdown-item" type="button">
-                      <i class="ph ph-pencil-simple" aria-hidden="true"></i>
-                      {{ 'btn_edit' | t }}
-                    </button>
-                    <button
-                      class="dropdown-item dropdown-item--danger"
-                      type="button"
-                      (click)="deleteOrder(order.id, $event)"
-                    >
-                      <i class="ph ph-trash" aria-hidden="true"></i>
-                      {{ 'btn_delete' | t }}
-                    </button>
+                    @if (order.status === 'pending') {
+                      <button class="dropdown-item" type="button" (click)="editOrder(order.id, $event)">
+                        <i class="ph ph-pencil-simple" aria-hidden="true"></i>
+                        {{ 'wo_edit' | t }}
+                      </button>
+                    }
+                    @if (order.status === 'pending' || order.status === 'in-progress') {
+                      <button
+                        class="dropdown-item dropdown-item--danger"
+                        type="button"
+                        (click)="openDeleteModal(order.id, $event)"
+                      >
+                        <i class="ph ph-trash" aria-hidden="true"></i>
+                        {{ 'btn_delete' | t }}
+                      </button>
+                    }
                   </div>
                 }
               </div>
@@ -143,32 +174,30 @@
     </table>
 
     <div class="pagination">
-      <span>{{ orders().length }} results</span>
-      <div class="pagination__pages">
-        <button class="page-btn" type="button" aria-label="Previous">
-          <i class="ph ph-caret-left"></i>
-        </button>
-        <button class="page-btn active" type="button">1</button>
-        <button class="page-btn" type="button">2</button>
-        <button class="page-btn" type="button">3</button>
-        <button class="page-btn" type="button" aria-label="Next">
-          <i class="ph ph-caret-right"></i>
-        </button>
-      </div>
+      <span class="pagination__info">
+        Showing {{ currentPage() * pageSize + 1 }}-{{ min(currentPage() * pageSize + pageSize, totalElements()) }} of {{ totalElements() }}
+      </span>
+      @if (totalPages() > 1) {
+        <div class="pagination__pages">
+          <button class="page-btn" type="button" aria-label="Previous" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">
+            <i class="ph ph-caret-left"></i>
+          </button>
+          @for (page of getPagesArray(); track page) {
+            <button class="page-btn" type="button" [class.active]="page === currentPage()" (click)="goToPage(page)">
+              {{ page + 1 }}
+            </button>
+          }
+          <button class="page-btn" type="button" aria-label="Next" [disabled]="currentPage() === totalPages() - 1" (click)="goToPage(currentPage() + 1)">
+            <i class="ph ph-caret-right"></i>
+          </button>
+        </div>
+      }
     </div>
   </div>
 
-  <!-- Bottom Charts -->
+  <!-- Bottom Chart — Regional Activity only -->
   <div class="work-orders__bottom">
-    <div class="stat-card">
-      <div class="stat-card__label">{{ 'wo_avgTime' | t }}</div>
-      <div class="stat-card__value">4.2 Hours</div>
-      <div class="avg-bar-wrap">
-        <div class="avg-bar" style="width: 52.5%"></div>
-      </div>
-    </div>
-
-    <div class="stat-card">
+    <div class="stat-card stat-card--full">
       <div class="stat-card__label">{{ 'wo_regional' | t }}</div>
       <apx-chart
         [series]="regionalSeries"
@@ -184,3 +213,44 @@
     </div>
   </div>
 </section>
+
+<!-- ── Delete Confirm Modal (captures cancellation reason) ──────────────── -->
+@if (showDeleteModal()) {
+  <div class="modal-overlay" (click)="closeDeleteModal()">
+    <div class="modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="modal__header">
+        <div class="modal__title-wrap">
+          <div class="modal__icon modal__icon--danger">
+            <i class="ph ph-trash" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h3 class="modal__title">{{ 'btn_delete' | t }}</h3>
+            <p class="modal__desc">{{ 'wo_deleteConfirm' | t }}</p>
+          </div>
+        </div>
+        <button class="modal__close" type="button" (click)="closeDeleteModal()" aria-label="Close">
+          <i class="ph ph-x" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal__body">
+        <div class="form-group">
+          <label class="form-label">{{ 'wo_cancelReason' | t }} *</label>
+          <select class="form-input" [(ngModel)]="deleteReason" name="deleteReason">
+            <option value="">— {{ 'wo_selectReason' | t }} —</option>
+            <option value="Equipment issue">{{ 'wo_cancelReasonEquip' | t }}</option>
+            <option value="Client request">{{ 'wo_cancelReasonClient' | t }}</option>
+            <option value="Weather conditions">{{ 'wo_cancelReasonWeather' | t }}</option>
+            <option value="Other">{{ 'wo_cancelReasonOther' | t }}</option>
+          </select>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--ghost" type="button" (click)="closeDeleteModal()">{{ 'btn_cancel' | t }}</button>
+          <button class="btn btn--danger" type="button" (click)="confirmDelete()" [disabled]="!deleteReason">
+            <i class="ph ph-trash" aria-hidden="true"></i>
+            {{ 'btn_delete' | t }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

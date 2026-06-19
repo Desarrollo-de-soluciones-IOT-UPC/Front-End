@@ -4,9 +4,9 @@
     <p class="breadcrumb">
       <a routerLink="/admin/work-orders">{{ 'nav_workOrders' | t }}</a>
       <span> › </span>
-      <span>{{ 'wo_createNew' | t }}</span>
+      <span>{{ isEditMode() ? ('wo_new_editBreadcrumb' | t) : ('wo_createNew' | t) }}</span>
     </p>
-    <h2 class="new-wo__title">{{ 'wo_new_title' | t }}</h2>
+    <h2 class="new-wo__title">{{ isEditMode() ? ('wo_new_editTitle' | t) : ('wo_new_title' | t) }}</h2>
     <p class="new-wo__subtitle">{{ 'wo_new_subtitle' | t }}</p>
   </div>
 
@@ -43,33 +43,57 @@
 
         <div class="field-group">
           <label class="field-label">{{ 'wo_new_clientName' | t }} <span class="required">*</span></label>
-          <div class="input-icon-wrap" [class.field--error]="isInvalid('client')">
-            <i class="ph ph-magnifying-glass input-icon" aria-hidden="true"></i>
-            <input
-              type="text"
-              class="field-input field-input--with-icon"
-              formControlName="client"
-              [placeholder]="'wo_new_searchClient' | t"
-            />
+          <div class="select-wrap" [class.field--error]="isInvalid('clientId')">
+            <select formControlName="clientId" class="field-select"
+                    (change)="onClientChange($any($event.target).value)">
+              <option [value]="null">{{ 'wo_new_searchClient' | t }}</option>
+              @for (client of clients(); track client.id) {
+                <option [value]="client.id">{{ client.name }}</option>
+              }
+            </select>
+            <i class="ph ph-user select-caret" aria-hidden="true"></i>
           </div>
-          @if (isInvalid('client')) {
+          @if (isInvalid('clientId')) {
             <span class="error-msg">{{ 'wo_new_clientName' | t }} is required</span>
           }
         </div>
       </div>
 
-      <!-- Row 2: Location (full width) -->
+      <!-- Row 2: Location (full width) with autocomplete + map picker -->
       <div class="form-row">
         <div class="field-group">
           <label class="field-label">{{ 'wo_new_location' | t }} <span class="required">*</span></label>
-          <div class="input-icon-wrap" [class.field--error]="isInvalid('location')">
-            <i class="ph ph-map-pin input-icon" aria-hidden="true"></i>
-            <input
-              type="text"
-              class="field-input field-input--with-icon"
-              formControlName="location"
-              [placeholder]="'wo_new_locationPlaceholder' | t"
-            />
+          <div class="location-row">
+            <div class="input-icon-wrap location-input-wrap" [class.field--error]="isInvalid('location')">
+              <i class="ph ph-map-pin input-icon" aria-hidden="true"></i>
+              <input
+                type="text"
+                class="field-input field-input--with-icon"
+                [value]="f.location.value ?? ''"
+                (input)="onAddressInput($any($event.target).value)"
+                (blur)="hideSuggestions()"
+                [placeholder]="'wo_new_locationPlaceholder' | t"
+                autocomplete="off"
+              />
+              @if (showSuggestions() && addressSuggestions().length > 0) {
+                <ul class="address-suggestions">
+                  @for (s of addressSuggestions(); track s.display_name) {
+                    <li class="address-suggestion" (mousedown)="selectAddress(s)">
+                      <i class="ph ph-map-pin" aria-hidden="true"></i>
+                      {{ s.display_name }}
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+            <button
+              class="btn-map-picker"
+              type="button"
+              (click)="openMapPicker()"
+              title="Pick location on map"
+            >
+              <i class="ph ph-map-trifold" aria-hidden="true"></i>
+            </button>
           </div>
           @if (isInvalid('location')) {
             <span class="error-msg">{{ 'wo_new_location' | t }} is required</span>
@@ -77,12 +101,12 @@
         </div>
       </div>
 
-      <!-- Row 3: Date + Technician -->
+      <!-- Row 3: Date + Time -->
       <div class="form-row form-row--2col">
         <div class="field-group">
           <label class="field-label">{{ 'wo_new_scheduledDate' | t }} <span class="required">*</span></label>
           <input
-            type="datetime-local"
+            type="date"
             class="field-input"
             formControlName="scheduledDate"
             [class.field--error]="isInvalid('scheduledDate')"
@@ -93,31 +117,63 @@
         </div>
 
         <div class="field-group">
-          <label class="field-label">{{ 'wo_new_assignedTech' | t }} <span class="required">*</span></label>
-          <div class="select-wrap select-wrap--icon" [class.field--error]="isInvalid('technician')">
-            <select formControlName="technician" class="field-select">
-              <option value="">{{ 'wo_new_selectTech' | t }}</option>
-              @for (tech of technicians(); track tech.id) {
-                <option [value]="tech.name">{{ tech.name }}</option>
-              }
-            </select>
-            <i class="ph ph-user-gear select-icon-right" aria-hidden="true"></i>
-          </div>
-          @if (isInvalid('technician')) {
-            <span class="error-msg">{{ 'wo_new_assignedTech' | t }} is required</span>
+          <label class="field-label">{{ 'wo_new_scheduledTime' | t }} <span class="required">*</span></label>
+          <input
+            type="time"
+            class="field-input"
+            formControlName="scheduledTime"
+            [class.field--error]="isInvalid('scheduledTime')"
+          />
+          @if (isInvalid('scheduledTime')) {
+            <span class="error-msg">{{ 'wo_new_scheduledTime' | t }} is required</span>
           }
         </div>
       </div>
 
-      <!-- Row 4: Notes (full width) -->
+      <!-- Row 4: Technician + Priority -->
+      <div class="form-row form-row--2col">
+        <div class="field-group">
+          <label class="field-label">{{ 'wo_new_assignedTech' | t }} <span class="required">*</span></label>
+          <div class="select-wrap select-wrap--icon" [class.field--error]="isInvalid('technicianId')">
+            <select formControlName="technicianId" class="field-select">
+              <option [value]="null">{{ 'wo_new_selectTech' | t }}</option>
+              @for (tech of technicians(); track tech.id) {
+                <option [value]="tech.id">{{ tech.name }}</option>
+              }
+            </select>
+            <i class="ph ph-user-gear select-icon-right" aria-hidden="true"></i>
+          </div>
+          @if (isInvalid('technicianId')) {
+            <span class="error-msg">{{ 'wo_new_assignedTech' | t }} is required</span>
+          }
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Priority <span class="required">*</span></label>
+          <div class="select-wrap" [class.field--error]="isInvalid('priority')">
+            <select formControlName="priority" class="field-select">
+              <option value="">{{ 'wo_new_selectType' | t }}</option>
+              <option value="Standard">Standard</option>
+              <option value="High">High</option>
+              <option value="Urgent">Urgent</option>
+            </select>
+            <i class="ph ph-caret-down select-caret" aria-hidden="true"></i>
+          </div>
+          @if (isInvalid('priority')) {
+            <span class="error-msg">Priority is required</span>
+          }
+        </div>
+      </div>
+
+      <!-- Row 5: Notes (full width, optional) -->
       <div class="form-row">
         <div class="field-group">
           <label class="field-label">{{ 'wo_new_notes' | t }}</label>
           <textarea
-            class="field-textarea"
+            class="field-input field-textarea"
             formControlName="notes"
             [placeholder]="'wo_new_notesPlaceholder' | t"
-            rows="5"
+            rows="3"
           ></textarea>
         </div>
       </div>
@@ -139,3 +195,55 @@
     </form>
   </div>
 </section>
+
+<!-- ── Map Picker Modal ──────────────────────────── -->
+@if (showMapPicker()) {
+  <div class="map-modal-overlay" (click)="closeMapPicker()">
+    <div class="map-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="map-modal__header">
+        <div class="map-modal__title-wrap">
+          <i class="ph ph-map-trifold" aria-hidden="true"></i>
+          <h3 class="map-modal__title">{{ 'wo_new_pickLocation' | t }}</h3>
+        </div>
+        <button class="map-modal__close" type="button" (click)="closeMapPicker()" aria-label="Close">
+          <i class="ph ph-x" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div class="map-picker-hint">
+        <i class="ph ph-cursor-click" aria-hidden="true"></i>
+        <span>{{ 'wo_new_pickLocationHint' | t }}</span>
+      </div>
+
+      <div #mapPickerEl class="map-picker-map"></div>
+
+      <div class="map-modal__footer">
+        <div class="map-addr-preview">
+          @if (mapPickerLoading()) {
+            <i class="ph ph-circle-notch ph-spin" aria-hidden="true"></i>
+            <span>Loading address...</span>
+          } @else if (mapPickedAddr()) {
+            <i class="ph ph-map-pin" aria-hidden="true"></i>
+            <span>{{ mapPickedAddr() }}</span>
+          } @else {
+            <span class="map-addr-placeholder">{{ 'wo_new_noLocationSelected' | t }}</span>
+          }
+        </div>
+        <div class="map-modal__actions">
+          <button class="btn btn--cancel" type="button" (click)="closeMapPicker()">
+            {{ 'btn_cancel' | t }}
+          </button>
+          <button
+            class="btn btn--submit"
+            type="button"
+            [disabled]="!mapPickedAddr() || mapPickerLoading()"
+            (click)="confirmMapLocation()"
+          >
+            <i class="ph ph-check" aria-hidden="true"></i>
+            {{ 'wo_new_confirmLocation' | t }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

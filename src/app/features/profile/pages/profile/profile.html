@@ -1,0 +1,171 @@
+<section class="profile">
+  <div class="profile__header">
+    <div>
+      <h2 class="profile__title">{{ 'profile_title' | t }}</h2>
+      <p class="profile__subtitle">{{ 'profile_subtitle' | t }}</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <i class="ph ph-circle-notch ph-spin"></i>
+      <span>Loading...</span>
+    </div>
+  }
+
+  @if (!loading() && profile()) {
+    <div class="profile__grid">
+
+      <!-- ── Personal Information ─────────────────────── -->
+      <div class="content-card">
+        <div class="card__header">
+          <div class="card__icon">
+            <i class="ph ph-user-circle" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h3 class="card__title">{{ 'profile_personalInfo' | t }}</h3>
+            <p class="card__desc">{{ 'profile_subtitle' | t }}</p>
+          </div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-row">
+            <span class="info-label">{{ 'th_email' | t }}</span>
+            <span class="info-value">{{ profile()!.email }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ 'th_role' | t }}</span>
+            <span class="role-badge role-badge--{{ profile()!.role.toLowerCase() }}">{{ profile()!.role }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ 'users_joinDate' | t }}</span>
+            <span class="info-value">{{ formatJoinDate(profile()!.joinDate) }}</span>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <form class="form" (ngSubmit)="saveProfile()">
+          <div class="form-group">
+            <label class="form-label">{{ 'form_fullName' | t }}</label>
+            <input
+              class="form-input"
+              type="text"
+              [(ngModel)]="editName"
+              name="editName"
+              [placeholder]="'form_fullName' | t"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">{{ 'form_phone' | t }}</label>
+            <input
+              class="form-input"
+              type="tel"
+              [(ngModel)]="editPhone"
+              name="editPhone"
+              [placeholder]="'form_phone' | t"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">{{ 'client_location' | t }}</label>
+            <input
+              class="form-input"
+              type="text"
+              [(ngModel)]="editLocation"
+              name="editLocation"
+              [placeholder]="'client_location' | t"
+            />
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn--primary" type="submit" [disabled]="saving()">
+              @if (saving()) {
+                <i class="ph ph-circle-notch ph-spin"></i>
+              } @else {
+                <i class="ph ph-floppy-disk"></i>
+              }
+              <span>{{ 'btn_saveProfile' | t }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── Security ────────────────────────────────── -->
+      <div class="content-card">
+        <div class="card__header">
+          <div class="card__icon card__icon--security">
+            <i class="ph ph-lock-key" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h3 class="card__title">{{ 'profile_security' | t }}</h3>
+            <p class="card__desc">{{ 'profile_changePassword' | t }}</p>
+          </div>
+        </div>
+
+        <form class="form" (ngSubmit)="changePassword()">
+          <div class="form-group">
+            <label class="form-label">{{ 'profile_currentPassword' | t }}</label>
+            <div class="password-wrap">
+              <input
+                class="form-input"
+                [type]="showCurrentPw ? 'text' : 'password'"
+                [(ngModel)]="currentPassword"
+                name="currentPassword"
+                [placeholder]="'profile_currentPassword' | t"
+                required
+              />
+              <i class="ph password-toggle" [ngClass]="showCurrentPw ? 'ph-eye-slash' : 'ph-eye'"
+                 (click)="showCurrentPw = !showCurrentPw" aria-hidden="true"></i>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">{{ 'profile_newPassword' | t }}</label>
+            <div class="password-wrap">
+              <input
+                class="form-input"
+                [type]="showNewPw ? 'text' : 'password'"
+                [(ngModel)]="newPassword"
+                name="newPassword"
+                [placeholder]="'profile_newPassword' | t"
+                required
+              />
+              <i class="ph password-toggle" [ngClass]="showNewPw ? 'ph-eye-slash' : 'ph-eye'"
+                 (click)="showNewPw = !showNewPw" aria-hidden="true"></i>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">{{ 'profile_confirmNew' | t }}</label>
+            <div class="password-wrap">
+              <input
+                class="form-input"
+                [type]="showConfirmPw ? 'text' : 'password'"
+                [(ngModel)]="confirmNewPassword"
+                name="confirmNewPassword"
+                [placeholder]="'profile_confirmNew' | t"
+                required
+              />
+              <i class="ph password-toggle" [ngClass]="showConfirmPw ? 'ph-eye-slash' : 'ph-eye'"
+                 (click)="showConfirmPw = !showConfirmPw" aria-hidden="true"></i>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn--primary" type="submit" [disabled]="changingPw()">
+              @if (changingPw()) {
+                <i class="ph ph-circle-notch ph-spin"></i>
+              } @else {
+                <i class="ph ph-lock-key"></i>
+              }
+              <span>{{ 'profile_changePassword' | t }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  }
+</section>
