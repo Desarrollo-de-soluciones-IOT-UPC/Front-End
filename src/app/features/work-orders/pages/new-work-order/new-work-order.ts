@@ -63,9 +63,9 @@ export class NewWorkOrder implements OnInit, OnDestroy {
     clientId:      [null as number | null, Validators.required],
     location:      ['', Validators.required],
     scheduledDate: ['', Validators.required],
-    scheduledTime: [''],
-    technicianId:  [null as number | null],
-    priority:      ['Standard'],
+    scheduledTime: ['', Validators.required],
+    technicianId:  [null as number | null, Validators.required],
+    priority:      ['Standard', Validators.required],
     notes:         [''],
   });
 
@@ -76,10 +76,23 @@ export class NewWorkOrder implements OnInit, OnDestroy {
     return !!(ctrl?.invalid && ctrl?.touched);
   }
 
+  // Pre-fill coming from the Devices page "Create Work Order" action.
+  private prefillClientId: number | null = null;
+
   ngOnInit(): void {
+    // Query params from Devices → Create Work Order (requires-maintenance device)
+    const qp = this.route.snapshot.queryParamMap;
+    const qpType = qp.get('type');
+    const qpClientId = qp.get('clientId');
+    const qpLocation = qp.get('location');
+
     this.data.getUsers().subscribe(users => {
       this.technicians.set(users.filter(u => u.role === 'Technician'));
       this.clients.set(users.filter(u => u.role === 'Client'));
+      // Resolve location for a pre-filled client once the client list is loaded.
+      if (this.prefillClientId != null && !this.form.controls.location.value) {
+        this.applyClientLocation(this.prefillClientId);
+      }
     });
 
     if (isPlatformBrowser(this.platformId)) {
@@ -99,10 +112,10 @@ export class NewWorkOrder implements OnInit, OnDestroy {
       this.editId = id;
       this.data.getWorkOrderById(id).subscribe(wo => {
         if (!wo) return;
-        const client = this.clients().find(c => c.name === wo.client);
+        const clientId = wo.clientId ?? this.clients().find(c => c.name === wo.client)?.id ?? null;
         this.form.patchValue({
           type:          wo.type,
-          clientId:      client?.id ?? null,
+          clientId,
           location:      wo.location,
           scheduledDate: wo.scheduledDate ?? '',
           scheduledTime: wo.scheduledTime ?? '',
@@ -111,7 +124,28 @@ export class NewWorkOrder implements OnInit, OnDestroy {
           notes:         wo.notes ?? '',
         });
       });
+    } else if (qpType || qpClientId || qpLocation) {
+      // Apply Devices pre-fill (Maintenance order for a specific client).
+      if (qpType) this.form.controls.type.setValue(qpType);
+      if (qpClientId) {
+        this.prefillClientId = Number(qpClientId);
+        this.form.controls.clientId.setValue(this.prefillClientId);
+      }
+      if (qpLocation) this.form.controls.location.setValue(qpLocation);
     }
+  }
+
+  /** Autocomplete the Location Address from the selected client's registered site. */
+  onClientChange(clientId: number | string | null): void {
+    if (clientId == null || clientId === '') return;
+    this.applyClientLocation(Number(clientId));
+  }
+
+  private applyClientLocation(clientId: number): void {
+    const client = this.clients().find(c => c.id === clientId);
+    if (!client) return;
+    const addr = client.address ?? client.location;
+    if (addr) this.form.controls.location.setValue(addr);
   }
 
   ngOnDestroy(): void {
@@ -225,6 +259,7 @@ export class NewWorkOrder implements OnInit, OnDestroy {
       const payload: UpdateWorkOrderPayload = {
         type:          typeMap[v.type ?? ''] ?? (v.type ?? '').toUpperCase(),
         client:        clientObj?.name ?? '',
+        clientId:      clientObj?.id ?? undefined,
         location:      v.location ?? '',
         scheduledDate: v.scheduledDate || undefined,
         scheduledTime: v.scheduledTime || undefined,
@@ -244,6 +279,7 @@ export class NewWorkOrder implements OnInit, OnDestroy {
       const payload: CreateWorkOrderPayload = {
         type:          typeMap[v.type ?? ''] ?? (v.type ?? '').toUpperCase(),
         client:        clientObj?.name ?? '',
+        clientId:      clientObj?.id ?? undefined,
         location:      v.location ?? '',
         scheduledDate: v.scheduledDate || undefined,
         scheduledTime: v.scheduledTime || undefined,

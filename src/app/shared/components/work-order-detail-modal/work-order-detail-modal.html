@@ -1,0 +1,140 @@
+@if (order(); as o) {
+  <div class="wod-overlay" (click)="close.emit()">
+    <div class="wod-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+
+      <!-- Header -->
+      <div class="wod-header">
+        <div class="wod-title-wrap">
+          <div class="wod-icon">
+            <i [class]="'ph ' + typeIcon(o.type)" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h3 class="wod-title">{{ 'wod_title' | t }} {{ o.orderId }}</h3>
+            <p class="wod-sub">{{ o.type }} &mdash; {{ o.client }}</p>
+          </div>
+        </div>
+        <div class="wod-head-right">
+          <span class="status-badge" [class]="statusClass(o.status)">{{ statusLabel(o.status) }}</span>
+          <button class="wod-close" type="button" (click)="close.emit()" aria-label="Close">
+            <i class="ph ph-x" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="wod-body">
+
+        <!-- Cancellation reason (cancelled only) -->
+        @if (o.status === 'cancelled') {
+          <div class="wod-cancel-banner">
+            <i class="ph ph-x-circle" aria-hidden="true"></i>
+            <div>
+              <span class="wod-cancel-label">{{ 'wo_cancelReason' | t }}</span>
+              <p class="wod-cancel-text">{{ o.cancellationReason || '—' }}</p>
+            </div>
+          </div>
+        }
+
+        <!-- Service info grid -->
+        <div class="wod-section">
+          <h4>{{ 'tech_detail_serviceInfo' | t }}</h4>
+          <div class="wod-grid">
+            <div class="wod-cell"><span class="wod-k">{{ 'th_client' | t }}</span><span class="wod-v">{{ o.client }}</span></div>
+            <div class="wod-cell"><span class="wod-k">{{ 'th_location' | t }}</span><span class="wod-v">{{ o.location }}</span></div>
+            <div class="wod-cell"><span class="wod-k">{{ 'th_serviceType' | t }}</span><span class="wod-v">{{ o.type }}</span></div>
+            <div class="wod-cell"><span class="wod-k">{{ 'tech_detail_priority' | t }}</span><span class="wod-v">{{ o.priority }}</span></div>
+            <div class="wod-cell"><span class="wod-k">{{ 'tech_detail_scheduledDate' | t }}</span><span class="wod-v mono">{{ o.scheduledDate }} &bull; {{ o.scheduledTime }}</span></div>
+            <div class="wod-cell"><span class="wod-k">{{ 'th_technician' | t }}</span><span class="wod-v">{{ o.contactName ? o.contactName : '—' }}</span></div>
+            @if (o.completedAt) {
+              <div class="wod-cell"><span class="wod-k">{{ 'tech_detail_completionDate' | t }}</span><span class="wod-v mono">{{ o.completedAt }}</span></div>
+            }
+          </div>
+          @if (o.requiredTools && o.requiredTools.length > 0) {
+            <div class="wod-tools">
+              @for (tool of o.requiredTools; track tool) { <span class="tool-chip">{{ tool }}</span> }
+            </div>
+          }
+        </div>
+
+        <!-- Devices -->
+        @if (o.clientDevices && o.clientDevices.length > 0) {
+          <div class="wod-section">
+            <h4>{{ o.type === 'Installation' ? ('tech_detail_sensorInfo' | t) : ('tech_detail_clientDevices' | t) }}</h4>
+            <div class="wod-device-list">
+              @for (d of o.clientDevices; track d.id) {
+                <div class="wod-device-row">
+                  <div class="wod-device-info">
+                    <span class="wod-device-name">{{ d.name }}</span>
+                    <span class="wod-device-type">{{ d.type }}@if (o.type === 'Installation' && d.serialNumber) { &bull; {{ d.serialNumber }} }</span>
+                  </div>
+                  <span class="device-status device-status--{{ d.status }}">{{ deviceStatusLabel(d.status) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Maintenance actions -->
+        @if (o.maintenanceActions && o.maintenanceActions.length > 0) {
+          <div class="wod-section">
+            <h4>{{ 'tech_detail_maintActions' | t }}</h4>
+            <div class="wod-device-list">
+              @for (a of o.maintenanceActions; track a.id) {
+                <div class="wod-device-row">
+                  <div class="wod-device-info">
+                    <span class="wod-device-name">{{ a.action }}</span>
+                    <span class="wod-device-type">{{ a.deviceName }}</span>
+                  </div>
+                  <span class="wod-device-desc">{{ a.description }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Technician / admin notes -->
+        <div class="wod-section">
+          <h4>{{ 'tech_detail_techNotes' | t }}</h4>
+          @if (o.technicianNotes) {
+            <p class="wod-notes">"{{ o.technicianNotes }}"</p>
+          } @else {
+            <p class="wod-empty">—</p>
+          }
+        </div>
+
+        <!-- Evidence -->
+        @if (o.evidence && o.evidence.length > 0) {
+          <div class="wod-section">
+            <h4>{{ 'tech_detail_evidence' | t }}</h4>
+            <div class="wod-evidence">
+              @for (img of o.evidence; track $index) {
+                <img class="wod-evidence-img" [src]="img" alt="Evidence" />
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Activity log -->
+        @if (o.activityLog && o.activityLog.length > 0) {
+          <div class="wod-section">
+            <h4>{{ 'tech_detail_activityLog' | t }}</h4>
+            <div class="wod-activity">
+              @for (entry of o.activityLog; track entry.event) {
+                <div class="wod-activity-item">
+                  <span class="wod-activity-dot"></span>
+                  <div>
+                    <p class="wod-activity-event">{{ entry.event }}</p>
+                    <span class="wod-activity-time mono">{{ entry.time }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="wod-footer">
+        <button class="btn btn--ghost" type="button" (click)="close.emit()">{{ 'btn_close' | t }}</button>
+      </div>
+    </div>
+  </div>
+}

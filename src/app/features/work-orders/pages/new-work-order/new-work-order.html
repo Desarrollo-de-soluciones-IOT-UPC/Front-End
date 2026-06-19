@@ -44,7 +44,8 @@
         <div class="field-group">
           <label class="field-label">{{ 'wo_new_clientName' | t }} <span class="required">*</span></label>
           <div class="select-wrap" [class.field--error]="isInvalid('clientId')">
-            <select formControlName="clientId" class="field-select">
+            <select formControlName="clientId" class="field-select"
+                    (change)="onClientChange($any($event.target).value)">
               <option [value]="null">{{ 'wo_new_searchClient' | t }}</option>
               @for (client of clients(); track client.id) {
                 <option [value]="client.id">{{ client.name }}</option>
@@ -116,20 +117,24 @@
         </div>
 
         <div class="field-group">
-          <label class="field-label">{{ 'wo_new_scheduledTime' | t }}</label>
+          <label class="field-label">{{ 'wo_new_scheduledTime' | t }} <span class="required">*</span></label>
           <input
             type="time"
             class="field-input"
             formControlName="scheduledTime"
+            [class.field--error]="isInvalid('scheduledTime')"
           />
+          @if (isInvalid('scheduledTime')) {
+            <span class="error-msg">{{ 'wo_new_scheduledTime' | t }} is required</span>
+          }
         </div>
       </div>
 
       <!-- Row 4: Technician + Priority -->
       <div class="form-row form-row--2col">
         <div class="field-group">
-          <label class="field-label">{{ 'wo_new_assignedTech' | t }}</label>
-          <div class="select-wrap select-wrap--icon">
+          <label class="field-label">{{ 'wo_new_assignedTech' | t }} <span class="required">*</span></label>
+          <div class="select-wrap select-wrap--icon" [class.field--error]="isInvalid('technicianId')">
             <select formControlName="technicianId" class="field-select">
               <option [value]="null">{{ 'wo_new_selectTech' | t }}</option>
               @for (tech of technicians(); track tech.id) {
@@ -138,18 +143,25 @@
             </select>
             <i class="ph ph-user-gear select-icon-right" aria-hidden="true"></i>
           </div>
+          @if (isInvalid('technicianId')) {
+            <span class="error-msg">{{ 'wo_new_assignedTech' | t }} is required</span>
+          }
         </div>
 
         <div class="field-group">
-          <label class="field-label">Priority</label>
-          <div class="select-wrap">
+          <label class="field-label">Priority <span class="required">*</span></label>
+          <div class="select-wrap" [class.field--error]="isInvalid('priority')">
             <select formControlName="priority" class="field-select">
+              <option value="">{{ 'wo_new_selectType' | t }}</option>
               <option value="Standard">Standard</option>
               <option value="High">High</option>
               <option value="Urgent">Urgent</option>
             </select>
             <i class="ph ph-caret-down select-caret" aria-hidden="true"></i>
           </div>
+          @if (isInvalid('priority')) {
+            <span class="error-msg">Priority is required</span>
+          }
         </div>
       </div>
 
