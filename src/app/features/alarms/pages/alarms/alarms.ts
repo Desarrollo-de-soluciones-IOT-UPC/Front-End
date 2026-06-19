@@ -49,6 +49,8 @@ export class Alarms implements OnInit {
   formDescription = '';
   formType: 'danger' | 'info' | 'success' | 'warning' = 'info';
   formRecipients: 'all' | 'specific' = 'all';
+  formSensor      = '';
+  formClientIds: string[] = [];
 
   ngOnInit(): void {
     this.loadAlarms();
@@ -78,6 +80,8 @@ export class Alarms implements OnInit {
     this.formDescription = '';
     this.formType        = 'info';
     this.formRecipients  = 'all';
+    this.formSensor      = '';
+    this.formClientIds   = [];
     this.showModal.set(true);
   }
 
@@ -90,11 +94,15 @@ export class Alarms implements OnInit {
       this.toast.error('Title is required');
       return;
     }
+    const specific = this.formRecipients === 'specific';
     this.data.createAlarm({
-      type:        this.formType,
-      title:       this.formTitle,
-      description: this.formDescription,
-      icon:        this.defaultIconForType(this.formType),
+      type:          this.formType,
+      title:         this.formTitle,
+      description:   this.formDescription,
+      icon:          this.defaultIconForType(this.formType),
+      recipientType: this.formRecipients,
+      clientIds:     specific ? this.formClientIds.map(id => Number(id)) : undefined,
+      sensor:        this.formSensor || undefined,
     }).subscribe(created => {
       if (created) {
         this.activity.log('Alarm created', this.formTitle);
