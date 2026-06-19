@@ -59,7 +59,9 @@ export class NewTechnician implements OnInit {
         this.form.patchValue({
           fullName: user.name,
           email:    user.email,
-          phone:    (user as any).phone ?? '',
+          phone:    user.phone ?? '',
+          isActive: user.status === 'active',
+          notes:    user.notes ?? '',
         });
       });
     }
@@ -84,8 +86,10 @@ export class NewTechnician implements OnInit {
     if (this.userId) {
       this.data.updateUser(this.userId, {
         name,
-        email: v.email ?? '',
-        phone: v.phone ?? '',
+        email:  v.email ?? '',
+        phone:  v.phone ?? '',
+        status: v.isActive ? 'active' : 'inactive',
+        notes:  v.notes ?? '',
       }).subscribe({
         next: () => {
           this.saving.set(false);
@@ -106,6 +110,7 @@ export class NewTechnician implements OnInit {
         role:     'TECHNICIAN',
         phone:    v.phone    ?? undefined,
         status:   v.isActive ? 'active' : 'inactive',
+        notes:    v.notes    ?? undefined,
       }).subscribe({
         next: () => {
           this.saving.set(false);

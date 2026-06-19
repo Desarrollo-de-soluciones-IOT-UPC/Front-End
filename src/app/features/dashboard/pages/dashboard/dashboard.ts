@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NgApexchartsModule } from 'ng-apexcharts';
@@ -23,13 +23,17 @@ export class Dashboard implements OnInit {
   latestOrders = toSignal(this.data.getLatestWorkOrders());
   alerts = toSignal(this.data.getAlerts());
 
+  // Charts only render once data has loaded — fixes blank charts when
+  // navigating back to the dashboard (the chart mounts with data present).
+  protected chartsReady = signal(false);
+
   // Service History chart — grouped bar (3 series)
   serviceHistorySeries: { name: string; data: number[] }[] = [
     { name: 'Installation', data: [] },
     { name: 'Maintenance',  data: [] },
     { name: 'Collection',   data: [] },
   ];
-  serviceHistoryChart = { type: 'bar', height: 260, toolbar: { show: false }, background: 'transparent' } as const;
+  serviceHistoryChart = { type: 'bar', height: 360, toolbar: { show: false }, background: 'transparent' } as const;
   serviceHistoryXAxis: { categories: string[]; labels: object; axisBorder: object; axisTicks: object } = {
     categories: [],
     labels: { style: { colors: '#6b7280', fontSize: '11px' } },
@@ -89,18 +93,20 @@ export class Dashboard implements OnInit {
       ];
       this.serviceHistoryXAxis = { ...this.serviceHistoryXAxis, categories: c.systemActivity.categories };
       this.radiationTrendsSeries = [{ name: 'Avg radiation (μSv/h)', data: c.radiationTrends.series }];
+      this.chartsReady.set(true);
     });
   }
 
+  // Exports the Work Orders History (the 'History' section), not the live orders.
   exportReport(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    this.data.getWorkOrders().subscribe(orders => {
-      if (!orders.length) return;
-      const headers = ['Order ID', 'Type', 'Client', 'Location', 'City', 'Date', 'Technician', 'Status'];
+    this.data.getHistory().subscribe(records => {
+      if (!records.length) return;
+      const headers = ['Order ID', 'Completion Date', 'Completion Time', 'Client', 'Site', 'Service Type', 'Technician', 'Status'];
       const csv = [
         headers.join(','),
-        ...orders.map(o =>
-          [o.orderId, o.type, o.client, o.location, o.city, o.date, o.technician, o.status]
+        ...records.map(h =>
+          [h.orderId, h.completionDate, h.completionTime, h.client, h.site, h.serviceType, h.technician, h.status]
             .map(v => `"${v ?? ''}"`)
             .join(',')
         ),
@@ -109,7 +115,7 @@ export class Dashboard implements OnInit {
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement('a');
       a.href     = url;
-      a.download = 'work-orders-report.csv';
+      a.download = 'work-orders-history.csv';
       a.click();
       URL.revokeObjectURL(url);
     });

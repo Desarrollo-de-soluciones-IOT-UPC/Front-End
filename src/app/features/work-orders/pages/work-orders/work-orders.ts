@@ -28,6 +28,8 @@ export class WorkOrders implements OnInit {
   searchQuery    = signal('');
   selectedType   = signal('all');
   selectedStatus = signal('all');
+  // Sort: 'date' = closest scheduled date first; 'created' = newest added first
+  sortBy         = signal('date');
 
   // Pagination signals
   currentPage    = signal(0);
@@ -37,14 +39,11 @@ export class WorkOrders implements OnInit {
 
   openMenuIndex: number | null = null;
 
-  // Cancel modal
-  showCancelModal  = signal(false);
-  cancelOrderId: number | string | null = null;
-  cancelReason = '';
-
-  // Delete confirm modal
+  // Delete confirm modal (now also captures the cancellation/deletion reason,
+  // which is recorded in History as a Cancelled entry by the backend).
   showDeleteModal  = signal(false);
   deleteOrderId: number | string | null = null;
+  deleteReason = '';
 
   ngOnInit(): void {
     this.loadOrders();
@@ -55,7 +54,7 @@ export class WorkOrders implements OnInit {
     const status = this.selectedStatus() !== 'all' ? this.selectedStatus() : undefined;
     const type   = this.selectedType()   !== 'all' ? this.selectedType()   : undefined;
     const search = this.searchQuery().trim() || undefined;
-    this.data.getWorkOrdersPaged(status, type, search, this.currentPage(), this.pageSize).subscribe(response => {
+    this.data.getWorkOrdersPaged(status, type, search, this.currentPage(), this.pageSize, this.sortBy()).subscribe(response => {
       this.orders.set(response.content);
       this.totalPages.set(response.totalPages);
       this.totalElements.set(response.totalElements);
@@ -99,32 +98,10 @@ export class WorkOrders implements OnInit {
     this.router.navigate(['/admin/work-orders/edit', id]);
   }
 
-  openCancelModal(id: number | string, event: Event): void {
-    event.stopPropagation();
-    this.cancelOrderId = id;
-    this.cancelReason = '';
-    this.showCancelModal.set(true);
-    this.openMenuIndex = null;
-  }
-
-  closeCancelModal(): void {
-    this.showCancelModal.set(false);
-    this.cancelOrderId = null;
-  }
-
-  confirmCancel(): void {
-    if (!this.cancelOrderId || !this.cancelReason) return;
-    this.data.cancelWorkOrder(this.cancelOrderId, this.cancelReason).subscribe(() => {
-      this.activity.log('Work order cancelled', `Reason: ${this.cancelReason}`);
-      this.toast.success(this.lang.t('wo_cancelSuccess'));
-      this.closeCancelModal();
-      this.loadOrders();
-    });
-  }
-
   openDeleteModal(id: number | string, event: Event): void {
     event.stopPropagation();
     this.deleteOrderId = id;
+    this.deleteReason = '';
     this.showDeleteModal.set(true);
     this.openMenuIndex = null;
   }
@@ -135,9 +112,10 @@ export class WorkOrders implements OnInit {
   }
 
   confirmDelete(): void {
-    if (!this.deleteOrderId) return;
-    this.data.deleteWorkOrder(this.deleteOrderId).subscribe(() => {
-      this.activity.log('Work order deleted');
+    if (!this.deleteOrderId || !this.deleteReason) return;
+    const reason = this.deleteReason;
+    this.data.deleteWorkOrder(this.deleteOrderId, reason).subscribe(() => {
+      this.activity.log('Work order deleted', `Reason: ${reason}`);
       this.toast.success('Work order deleted successfully');
       this.closeDeleteModal();
       this.loadOrders();

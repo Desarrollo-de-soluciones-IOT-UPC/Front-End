@@ -66,8 +66,21 @@
 
 .toolbar__filters {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-group__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
 }
 
 .filter-select {

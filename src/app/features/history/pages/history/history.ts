@@ -1,10 +1,11 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
-import { DataService, HistoryItem, HistoryDetail } from '../../../../core/services/data.service';
+import { DataService, HistoryItem, TechWorkOrder } from '../../../../core/services/data.service';
+import { WorkOrderDetailModal } from '../../../../shared/components/work-order-detail-modal/work-order-detail-modal';
 
 @Component({
   selector: 'app-history',
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, WorkOrderDetailModal],
   templateUrl: './history.html',
   styleUrl: './history.scss',
 })
@@ -15,6 +16,7 @@ export class History implements OnInit {
   loading = signal(true);
 
   selectedType       = signal('all');
+  selectedStatus     = signal('all');
   selectedTechnician = signal('all');
   dateFrom           = signal('');
   dateTo             = signal('');
@@ -49,10 +51,10 @@ export class History implements OnInit {
   loadItems(): void {
     this.loading.set(true);
     const type   = this.selectedType()       !== 'all' ? this.selectedType()       : undefined;
+    const status = this.selectedStatus()     !== 'all' ? this.selectedStatus()     : undefined;
     const tech   = this.selectedTechnician() !== 'all' ? this.selectedTechnician() : undefined;
-    // Pass type as status param if needed; backend paged endpoint accepts status/search
-    // We pass type as search context — for client-side tech filter we filter after load
-    this.data.getHistoryPaged(undefined, undefined, this.currentPage(), this.pageSize).subscribe(response => {
+    // Status is filtered server-side; type/tech/date are refined on the loaded page.
+    this.data.getHistoryPaged(status, undefined, this.currentPage(), this.pageSize).subscribe(response => {
       let content = response.content;
       // Apply client-side filters on the current page
       if (type !== undefined) {
@@ -104,30 +106,61 @@ export class History implements OnInit {
     this.applyFilters();
   }
 
-  // ── Detail modal ────────────────────────────────────────────
+  // ── Detail modal (full read-only work-order detail) ─────────
   showDetailModal = signal(false);
-  detailItem = signal<HistoryDetail | null>(null);
+  detailOrder = signal<TechWorkOrder | null>(null);
   detailLoading = signal(false);
 
-  openDetail(id: number | string): void {
-    // Build detail from the already-loaded list (backend has no /history/{id} endpoint)
-    const found = this.items().find(i => i.id == id);
-    if (found) {
-      this.detailItem.set(found as unknown as HistoryDetail);
-      this.detailLoading.set(false);
-    } else {
+  openDetail(item: HistoryItem): void {
+    this.detailOrder.set(null);
+    this.showDetailModal.set(true);
+    if (item.workOrderId) {
       this.detailLoading.set(true);
-      this.detailItem.set(null);
-      this.data.getHistoryById(id).subscribe(item => {
-        this.detailItem.set(item);
+      this.data.getWorkOrderDetail(item.workOrderId).subscribe(order => {
+        this.detailOrder.set(order ?? this.fallbackOrder(item));
         this.detailLoading.set(false);
       });
+    } else {
+      // Seeded history rows have no live work order — show the snapshot data.
+      this.detailOrder.set(this.fallbackOrder(item));
+      this.detailLoading.set(false);
     }
-    this.showDetailModal.set(true);
+  }
+
+  /** Minimal detail built from a history snapshot (for rows without a live order). */
+  private fallbackOrder(item: HistoryItem): TechWorkOrder {
+    return {
+      id: item.workOrderId ?? item.id,
+      orderId: item.orderId,
+      type: item.serviceType,
+      status: item.status,
+      client: item.client,
+      location: item.site,
+      scheduledDate: item.completionDate,
+      scheduledTime: item.completionTime,
+      technicianId: 0,
+      priority: '',
+      serviceType: item.serviceType,
+      contactName: item.technician,
+      contactRole: '',
+      contactPhone: '',
+      contactEmail: '',
+      accessInstructions: '',
+      requiredTools: [],
+      expectedSensors: 0,
+      assetId: '',
+      sensors: [],
+      technicianNotes: '',
+      activityLog: [],
+      clientDevices: [],
+      evidence: [],
+      maintenanceActions: [],
+    } as TechWorkOrder;
   }
 
   closeDetail(): void {
     this.showDetailModal.set(false);
+    this.detailOrder.set(null);
   }
 
   exportCsv(): void {

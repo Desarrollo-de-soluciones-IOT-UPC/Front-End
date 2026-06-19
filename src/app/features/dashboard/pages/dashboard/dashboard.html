@@ -18,12 +18,11 @@
 
   <!-- Metric Cards -->
   <div class="dashboard__metrics">
-    <div class="metric-card">
+    <div class="metric-card metric-card--link" routerLink="/admin/devices">
       <div class="metric-card__header">
         <div class="metric-card__icon metric-card__icon--blue">
           <i class="ph ph-broadcast" aria-hidden="true"></i>
         </div>
-        <span class="metric-badge metric-badge--success">{{ stats()?.sensorsDelta ?? '—' }}</span>
       </div>
       <div class="metric-card__label">{{ 'dash_totalDevices' | t }}</div>
       <div class="metric-card__value">{{ (stats()?.totalSensors ?? 0) | number }}</div>
@@ -32,12 +31,11 @@
       </div>
     </div>
 
-    <div class="metric-card">
+    <div class="metric-card metric-card--link" routerLink="/admin/users">
       <div class="metric-card__header">
         <div class="metric-card__icon metric-card__icon--green">
           <i class="ph ph-buildings" aria-hidden="true"></i>
         </div>
-        <span class="metric-badge metric-badge--success">{{ stats()?.clientsDelta ?? '—' }}</span>
       </div>
       <div class="metric-card__label">{{ 'dash_totalUsers' | t }}</div>
       <div class="metric-card__value">{{ stats()?.activeClients ?? 0 }}</div>
@@ -46,12 +44,11 @@
       </div>
     </div>
 
-    <div class="metric-card">
+    <div class="metric-card metric-card--link" routerLink="/admin/work-orders">
       <div class="metric-card__header">
         <div class="metric-card__icon metric-card__icon--purple">
           <i class="ph ph-clipboard-text" aria-hidden="true"></i>
         </div>
-        <span class="metric-badge metric-badge--neutral">{{ stats()?.tasksStatus ?? '—' }}</span>
       </div>
       <div class="metric-card__label">{{ 'dash_workOrders' | t }}</div>
       <div class="metric-card__value">{{ stats()?.pendingTasks ?? 0 }}</div>
@@ -60,12 +57,11 @@
       </div>
     </div>
 
-    <div class="metric-card">
+    <div class="metric-card metric-card--link" routerLink="/admin/alarms">
       <div class="metric-card__header">
         <div class="metric-card__icon metric-card__icon--red">
           <i class="ph ph-warning" aria-hidden="true"></i>
         </div>
-        <span class="metric-badge metric-badge--danger">{{ stats()?.alertsStatus ?? '—' }}</span>
       </div>
       <div class="metric-card__label">{{ 'dash_alarmsCount' | t }}</div>
       <div class="metric-card__value">{{ (stats()?.criticalAlerts ?? 0) | number:'2.0' }}</div>
@@ -86,20 +82,22 @@
         <span class="period-btn">{{ 'dash_last30Days' | t }}</span>
       </div>
       <div class="panel__body">
-        <apx-chart
-          class="chart"
-          [series]="serviceHistorySeries"
-          [chart]="serviceHistoryChart"
-          [xaxis]="serviceHistoryXAxis"
-          [yaxis]="serviceHistoryYAxis"
-          [plotOptions]="serviceHistoryPlotOptions"
-          [colors]="serviceHistoryColors"
-          [grid]="serviceHistoryGrid"
-          [dataLabels]="serviceHistoryDataLabels"
-          [tooltip]="serviceHistoryTooltip"
-          [legend]="serviceHistoryLegend"
-          type="bar"
-        ></apx-chart>
+        @if (chartsReady()) {
+          <apx-chart
+            class="chart"
+            [series]="serviceHistorySeries"
+            [chart]="serviceHistoryChart"
+            [xaxis]="serviceHistoryXAxis"
+            [yaxis]="serviceHistoryYAxis"
+            [plotOptions]="serviceHistoryPlotOptions"
+            [colors]="serviceHistoryColors"
+            [grid]="serviceHistoryGrid"
+            [dataLabels]="serviceHistoryDataLabels"
+            [tooltip]="serviceHistoryTooltip"
+            [legend]="serviceHistoryLegend"
+            type="bar"
+          ></apx-chart>
+        }
       </div>
     </div>
 
@@ -109,23 +107,24 @@
           <div class="panel__title">{{ 'dash_radiationTrends' | t }}</div>
           <div class="panel__hint">{{ 'dash_radiationHint' | t }}</div>
         </div>
-        <i class="ph ph-info panel__info-icon" aria-hidden="true"></i>
       </div>
       <div class="panel__body">
-        <apx-chart
-          class="chart"
-          [series]="radiationTrendsSeries"
-          [chart]="radiationTrendsChart"
-          [xaxis]="radiationTrendsXAxis"
-          [yaxis]="radiationTrendsYAxis"
-          [stroke]="radiationTrendsStroke"
-          [fill]="radiationTrendsFill"
-          [colors]="radiationTrendsColors"
-          [grid]="radiationTrendsGrid"
-          [dataLabels]="radiationTrendsDataLabels"
-          [tooltip]="radiationTrendsTooltip"
-          [markers]="radiationTrendsMarkers"
-        ></apx-chart>
+        @if (chartsReady()) {
+          <apx-chart
+            class="chart"
+            [series]="radiationTrendsSeries"
+            [chart]="radiationTrendsChart"
+            [xaxis]="radiationTrendsXAxis"
+            [yaxis]="radiationTrendsYAxis"
+            [stroke]="radiationTrendsStroke"
+            [fill]="radiationTrendsFill"
+            [colors]="radiationTrendsColors"
+            [grid]="radiationTrendsGrid"
+            [dataLabels]="radiationTrendsDataLabels"
+            [tooltip]="radiationTrendsTooltip"
+            [markers]="radiationTrendsMarkers"
+          ></apx-chart>
+        }
 
         <div class="radiation-stats">
           <div class="radiation-row">
@@ -150,7 +149,7 @@
     <div class="panel">
       <div class="panel__header">
         <div class="panel__title">{{ 'dash_latestOrders' | t }}</div>
-        <a class="view-all-link" href="#">{{ 'btn_viewAll' | t }}</a>
+        <a class="view-all-link" routerLink="/admin/work-orders">{{ 'btn_viewAll' | t }}</a>
       </div>
       <div class="panel__body">
         <div class="table-wrap">

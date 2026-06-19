@@ -27,6 +27,10 @@ export class Users implements OnInit {
   openMenuId: number | string | null = null;
   showAddModal = signal(false);
 
+  // Pagination (10 users per page)
+  currentPage = signal(0);
+  readonly pageSize = 10;
+
   filteredUsers = computed(() => {
     let list = this._allUsers();
     const tab = this.activeTab();
@@ -44,6 +48,38 @@ export class Users implements OnInit {
     return list;
   });
 
+  totalPages = computed(() => Math.max(1, Math.ceil(this.filteredUsers().length / this.pageSize)));
+
+  pagedUsers = computed(() => {
+    const start = this.currentPage() * this.pageSize;
+    return this.filteredUsers().slice(start, start + this.pageSize);
+  });
+
+  hasActiveFilters = computed(() => this.activeTab() !== 'all' || this.searchQuery().trim().length > 0);
+
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.totalPages()) this.currentPage.set(page);
+  }
+
+  getPagesArray(): number[] {
+    return Array.from({ length: this.totalPages() }, (_, i) => i);
+  }
+
+  min(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
+  onSearch(value: string): void {
+    this.searchQuery.set(value);
+    this.currentPage.set(0);
+  }
+
+  clearFilters(): void {
+    this.activeTab.set('all');
+    this.searchQuery.set('');
+    this.currentPage.set(0);
+  }
+
   totalUsers         = computed(() => this._allUsers().length);
   activeNow          = computed(() => this._allUsers().filter(u => u.status === 'active').length);
   pendingCount       = computed(() => this._allUsers().filter(u => u.status === 'inactive').length);
@@ -59,6 +95,7 @@ export class Users implements OnInit {
 
   setTab(tab: RoleFilter): void {
     this.activeTab.set(tab);
+    this.currentPage.set(0);
   }
 
   openAdd(): void {
@@ -87,6 +124,11 @@ export class Users implements OnInit {
       Client:     `/admin/users/edit-client/${user.id}`,
     };
     this.router.navigate([routes[user.role]]);
+  }
+
+  viewClient(user: User): void {
+    this.openMenuId = null;
+    this.router.navigate([`/admin/users/view-client/${user.id}`]);
   }
 
   toggleMenu(id: string | number, event: Event): void {

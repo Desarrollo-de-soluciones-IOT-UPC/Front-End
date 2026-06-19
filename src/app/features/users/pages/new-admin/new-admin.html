@@ -13,15 +13,17 @@
   </div>
 
   <form class="form-card" [formGroup]="form" (ngSubmit)="submit()">
-    <div class="form-card__header">
-      <div class="section-icon">
-        <i class="ph ph-user-gear" aria-hidden="true"></i>
+    @if (!isEditMode()) {
+      <div class="form-card__header">
+        <div class="section-icon">
+          <i class="ph ph-user-gear" aria-hidden="true"></i>
+        </div>
+        <div>
+          <div class="section-title">{{ 'admin_sectionTitle' | t }}</div>
+          <div class="section-desc">{{ 'admin_sectionDesc' | t }}</div>
+        </div>
       </div>
-      <div>
-        <div class="section-title">{{ 'admin_sectionTitle' | t }}</div>
-        <div class="section-desc">{{ 'admin_sectionDesc' | t }}</div>
-      </div>
-    </div>
+    }
 
     <div class="form-body">
       <!-- Full Name + Email -->
@@ -65,53 +67,55 @@
         />
       </div>
 
-      <!-- Password + Confirm -->
-      <div class="form-row--2col">
-        <div class="field-group">
-          <label class="field-label">{{ 'form_password' | t }} <span class="required">*</span></label>
+      <!-- Password + Confirm (creation only — admins change their own password from their profile) -->
+      @if (!isEditMode()) {
+        <div class="form-row--2col">
+          <div class="field-group">
+            <label class="field-label">{{ 'form_password' | t }} <span class="required">*</span></label>
 
-          <div class="password-wrap">
-            <input
-              class="field-input"
-              [class.field--error]="isInvalid('password')"
-              [type]="showPassword ? 'text' : 'password'"
-              formControlName="password"
-              placeholder="••••••••"
-            />
-            <i
-              class="ph"
-              [ngClass]="showPassword ? 'ph-eye-slash' : 'ph-eye'"
-              (click)="showPassword = !showPassword"
-            ></i>
+            <div class="password-wrap">
+              <input
+                class="field-input"
+                [class.field--error]="isInvalid('password')"
+                [type]="showPassword ? 'text' : 'password'"
+                formControlName="password"
+                placeholder="••••••••"
+              />
+              <i
+                class="ph"
+                [ngClass]="showPassword ? 'ph-eye-slash' : 'ph-eye'"
+                (click)="showPassword = !showPassword"
+              ></i>
+            </div>
+
+            @if (isInvalid('password')) {
+              <span class="error-msg">Password must be at least 8 characters.</span>
+            }
           </div>
+          <div class="field-group">
+            <label class="field-label">{{ 'form_confirmPassword' | t }} <span class="required">*</span></label>
 
-          @if (isInvalid('password')) {
-            <span class="error-msg">Password must be at least 8 characters.</span>
-          }
-        </div>
-        <div class="field-group">
-          <label class="field-label">{{ 'form_confirmPassword' | t }} <span class="required">*</span></label>
+            <div class="password-wrap">
+              <input
+                class="field-input"
+                [class.field--error]="isInvalid('confirmPassword') || passwordMismatch"
+                [type]="showConfirmPassword ? 'text' : 'password'"
+                formControlName="confirmPassword"
+                placeholder="••••••••"
+              />
+              <i
+                class="ph"
+                [ngClass]="showConfirmPassword ? 'ph-eye-slash' : 'ph-eye'"
+                (click)="showConfirmPassword = !showConfirmPassword"
+              ></i>
+            </div>
 
-          <div class="password-wrap">
-            <input
-              class="field-input"
-              [class.field--error]="isInvalid('confirmPassword') || passwordMismatch"
-              [type]="showConfirmPassword ? 'text' : 'password'"
-              formControlName="confirmPassword"
-              placeholder="••••••••"
-            />
-            <i
-              class="ph"
-              [ngClass]="showConfirmPassword ? 'ph-eye-slash' : 'ph-eye'"
-              (click)="showConfirmPassword = !showConfirmPassword"
-            ></i>
+            @if (passwordMismatch) {
+              <span class="error-msg">Passwords do not match.</span>
+            }
           </div>
-
-          @if (passwordMismatch) {
-            <span class="error-msg">Passwords do not match.</span>
-          }
         </div>
-      </div>
+      }
 
       <!-- Status checkbox -->
       <div class="field-group">
@@ -134,11 +138,13 @@
         ></textarea>
       </div>
 
-      <!-- Info banner -->
-      <div class="info-banner">
-        <i class="ph ph-info" aria-hidden="true"></i>
-        <span>{{ 'form_activationMsg' | t }}</span>
-      </div>
+      <!-- Info banner (creation only) -->
+      @if (!isEditMode()) {
+        <div class="info-banner">
+          <i class="ph ph-info" aria-hidden="true"></i>
+          <span>{{ 'form_activationMsg' | t }}</span>
+        </div>
+      }
 
       <div class="form-divider"></div>
 

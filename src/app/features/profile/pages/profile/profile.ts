@@ -1,5 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NgClass } from '@angular/common';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { DataService, UserProfile } from '../../../../core/services/data.service';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -7,7 +8,7 @@ import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-profile',
-  imports: [TranslatePipe, FormsModule],
+  imports: [TranslatePipe, FormsModule, NgClass],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
@@ -30,6 +31,11 @@ export class Profile implements OnInit {
   currentPassword    = '';
   newPassword        = '';
   confirmNewPassword = '';
+
+  // Password visibility toggles
+  showCurrentPw = false;
+  showNewPw     = false;
+  showConfirmPw = false;
 
   ngOnInit(): void {
     this.data.getUserProfile().subscribe(p => {
@@ -55,6 +61,9 @@ export class Profile implements OnInit {
       this.saving.set(false);
       if (updated) {
         this.profile.set({ ...p, name: this.editName, phone: this.editPhone, location: this.editLocation });
+        // Reflect the new name (and initials) in the topbar immediately.
+        const initials = this.editName.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+        this.auth.updateCurrentUser({ name: this.editName, initials });
         this.toast.success('Profile updated successfully');
       } else {
         this.toast.error('Failed to update profile');

@@ -234,7 +234,9 @@
 .service-badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
+  width: 130px;
   font-size: 12px;
   font-weight: 600;
   padding: 3px 10px;
@@ -269,7 +271,10 @@
 }
 
 .status-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 110px;
   padding: 3px 10px;
   border-radius: 20px;
   font-size: 12px;

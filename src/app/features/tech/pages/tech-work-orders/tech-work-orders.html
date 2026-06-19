@@ -9,60 +9,67 @@
           type="search"
           [placeholder]="'tech_wo_search' | t"
           [ngModel]="search()"
-          (ngModelChange)="search.set($event)"
+          (ngModelChange)="search.set($event); onFilterChange()"
         />
       </div>
 
       <div class="right-tools">
-        <select [ngModel]="serviceFilter()" (ngModelChange)="serviceFilter.set($event)" class="filter-select">
-          <option value="all">{{ 'tech_wo_serviceType' | t }}: All</option>
-          <option value="Installation">Installation</option>
-          <option value="Maintenance">Maintenance</option>
-          <option value="Collection">Collection</option>
-        </select>
+        <div class="filter-group">
+          <span class="filter-group__label">{{ 'tech_wo_serviceType' | t }}</span>
+          <select [ngModel]="serviceFilter()" (ngModelChange)="serviceFilter.set($event); onFilterChange()" class="filter-select">
+            <option value="all">{{ 'filter_all' | t }}</option>
+            <option value="Installation">{{ 'wo_installation' | t }}</option>
+            <option value="Maintenance">{{ 'wo_maintenance' | t }}</option>
+            <option value="Collection">{{ 'wo_collection' | t }}</option>
+          </select>
+        </div>
 
-        <button class="btn-export" type="button">
+        <div class="filter-group">
+          <span class="filter-group__label">{{ 'th_status' | t }}</span>
+          <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event); onFilterChange()" class="filter-select">
+            <option value="all">{{ 'filter_all' | t }}</option>
+            <option value="pending">{{ 'status_pending' | t }}</option>
+            <option value="in-progress">{{ 'status_inProgress' | t }}</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <span class="filter-group__label">{{ 'wo_sortBy' | t }}</span>
+          <select [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event); onFilterChange()" class="filter-select">
+            <option value="date">{{ 'wo_sortDate' | t }}</option>
+            <option value="created">{{ 'wo_sortCreated' | t }}</option>
+          </select>
+        </div>
+
+        <button class="btn-export" type="button" (click)="exportReport()">
           <i class="ph ph-export" aria-hidden="true"></i>
           {{ 'tech_wo_export' | t }}
         </button>
       </div>
     </div>
 
-    <!-- Status tabs -->
-    <div class="tabs">
-      <button class="tab" [class.tab--active]="activeTab() === 'all'"        type="button" (click)="setTab('all')">
-        {{ 'tech_wo_allOrders' | t }}
-      </button>
-      <button class="tab" [class.tab--active]="activeTab() === 'pending'"    type="button" (click)="setTab('pending')">
-        {{ 'status_pending' | t }}
-        <span class="tab-count">{{ tabCount('pending') }}</span>
-      </button>
-      <button class="tab" [class.tab--active]="activeTab() === 'in-progress'" type="button" (click)="setTab('in-progress')">
-        {{ 'status_inProgress' | t }}
-        <span class="tab-count">{{ tabCount('in-progress') }}</span>
-      </button>
-      <button class="tab" [class.tab--active]="activeTab() === 'completed'"  type="button" (click)="setTab('completed')">
-        {{ 'status_completed' | t }}
-        <span class="tab-count">{{ tabCount('completed') }}</span>
-      </button>
-    </div>
-
-    <!-- Table -->
+    <!-- Table (same design as the admin work-orders table) -->
     <div class="table-card">
       <table class="orders-table">
         <thead>
           <tr>
-            <th>{{ 'th_clientSite' | t }}</th>
+            <th>{{ 'th_type' | t }}</th>
+            <th>{{ 'th_client' | t }}</th>
             <th>{{ 'th_location' | t }}</th>
-            <th>{{ 'th_serviceType' | t }}</th>
             <th>{{ 'th_date' | t }}</th>
             <th>{{ 'th_status' | t }}</th>
             <th>{{ 'th_actions' | t }}</th>
           </tr>
         </thead>
         <tbody>
-          @for (order of filtered(); track order.id) {
+          @for (order of paged(); track order.id) {
             <tr>
+              <td>
+                <span class="service-badge">
+                  <i [class]="'ph ' + typeIcon(order.type)" aria-hidden="true"></i>
+                  {{ order.type }}
+                </span>
+              </td>
               <td>
                 <a class="order-link" [routerLink]="['/tech/work-orders', order.id]">{{ order.client }}</a>
                 <span class="order-id">{{ order.orderId }}</span>
@@ -71,12 +78,6 @@
                 <span class="location-wrap">
                   <i class="ph ph-map-pin" aria-hidden="true"></i>
                   {{ order.location }}
-                </span>
-              </td>
-              <td>
-                <span class="service-badge">
-                  <i [class]="'ph ' + typeIcon(order.type)" aria-hidden="true"></i>
-                  {{ order.type }}
                 </span>
               </td>
               <td class="mono">{{ order.scheduledDate }} &bull; {{ order.scheduledTime }}</td>
@@ -103,30 +104,46 @@
         </tbody>
       </table>
       <div class="table-footer">
-        <span class="showing-text">Showing {{ filtered().length }} of {{ myOrders().length }} work orders</span>
-        <div class="pagination">
-          <button class="page-btn" type="button" disabled><i class="ph ph-caret-left"></i></button>
-          <button class="page-btn page-btn--active" type="button">1</button>
-          <button class="page-btn" type="button" disabled><i class="ph ph-caret-right"></i></button>
-        </div>
+        <span class="showing-text">
+          Showing {{ filtered().length === 0 ? 0 : currentPage() * pageSize + 1 }}-{{ min(currentPage() * pageSize + pageSize, filtered().length) }} of {{ filtered().length }} work orders
+        </span>
+        @if (totalPages() > 1) {
+          <div class="pagination">
+            <button class="page-btn" type="button" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)"><i class="ph ph-caret-left"></i></button>
+            @for (page of getPagesArray(); track page) {
+              <button class="page-btn" type="button" [class.page-btn--active]="page === currentPage()" (click)="goToPage(page)">{{ page + 1 }}</button>
+            }
+            <button class="page-btn" type="button" [disabled]="currentPage() === totalPages() - 1" (click)="goToPage(currentPage() + 1)"><i class="ph ph-caret-right"></i></button>
+          </div>
+        }
       </div>
     </div>
   </div>
 
   <!-- Side summary -->
   <div class="side-panel">
-    @if (priorityTask(); as task) {
-      <div class="summary-card summary-card--priority">
-        <div class="s-icon">
-          <i class="ph ph-warning" aria-hidden="true"></i>
-        </div>
-        <div class="s-body">
-          <span class="s-label">{{ 'tech_sched_priorityTask' | t }}</span>
-          <h4>{{ task.client }}</h4>
-          <p>{{ task.location }} &bull; {{ task.scheduledDate }}</p>
-        </div>
+    <div class="summary-card summary-card--priority">
+      <div class="s-icon">
+        <i class="ph ph-warning" aria-hidden="true"></i>
       </div>
-    }
+      <div class="s-body">
+        <span class="s-label">{{ 'tech_sched_priorityTasks' | t }}</span>
+        @if (priorityTasks().length > 0) {
+          <ul class="priority-list">
+            @for (task of priorityTasks(); track task.id) {
+              <li>
+                <a class="priority-item" [routerLink]="['/tech/work-orders', task.id]">
+                  <span class="priority-item__client">{{ task.client }}</span>
+                  <span class="priority-item__meta">{{ task.location }} &bull; {{ task.scheduledDate }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="priority-empty">{{ 'tech_sched_noPriority' | t }}</p>
+        }
+      </div>
+    </div>
 
     <div class="summary-card summary-card--progress">
       <div class="s-icon s-icon--green">

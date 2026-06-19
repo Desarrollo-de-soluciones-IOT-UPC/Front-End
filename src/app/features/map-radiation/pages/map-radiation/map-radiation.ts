@@ -29,10 +29,10 @@ export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
   private mapReady   = false;
   private dataLoaded = false;
 
-  // Stats based on client max values
-  safeCount    = computed(() => this.clientPoints().filter(p => p.level === 'safe').length);
-  cautionCount = computed(() => this.clientPoints().filter(p => p.level === 'caution').length);
-  dangerCount  = computed(() => this.clientPoints().filter(p => p.level === 'danger').length);
+  // Stats based on individual sensor readings (one per device), classified by level.
+  safeCount    = computed(() => this.allDeviceReadings().filter(r => r.level === 'safe').length);
+  cautionCount = computed(() => this.allDeviceReadings().filter(r => r.level === 'caution').length);
+  dangerCount  = computed(() => this.allDeviceReadings().filter(r => r.level === 'danger').length);
 
   // Flatten all device readings for table
   allDeviceReadings = computed(() => {

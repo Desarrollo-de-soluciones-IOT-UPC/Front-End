@@ -127,26 +127,20 @@
           </span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">{{ 'th_status' | t }}</span>
-          @if (detailAlarm()!.resolved) {
-            <span class="resolved-badge"><i class="ph ph-check-circle"></i> {{ 'alarm_resolved' | t }}</span>
-          } @else {
-            <span class="unresolved-badge"><i class="ph ph-clock"></i> {{ 'alarm_unresolved' | t }}</span>
-          }
+          <span class="detail-label">{{ 'alarm_client' | t }}</span>
+          <span>{{ detailAlarm()!.clientName || ('alarm_allUsers' | t) }}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Time</span>
+          <span class="detail-label">{{ 'alarm_sensor' | t }}</span>
+          <span>{{ detailAlarm()!.sensor || '—' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">{{ 'alarm_time' | t }}</span>
           <span>{{ detailAlarm()!.time }}</span>
         </div>
       </div>
       <div class="modal__footer">
-        @if (!detailAlarm()!.resolved) {
-          <button class="btn btn--resolve" type="button" (click)="resolveAlarm(detailAlarm()!.id)">
-            <i class="ph ph-check" aria-hidden="true"></i>
-            {{ 'alarm_resolve' | t }}
-          </button>
-        }
-        <button class="btn btn--ghost" type="button" (click)="closeDetail()">{{ 'btn_cancel' | t }}</button>
+        <button class="btn btn--ghost" type="button" (click)="closeDetail()">{{ 'btn_close' | t }}</button>
       </div>
     </div>
   </div>
@@ -207,12 +201,35 @@
           </div>
 
           <div class="form-group">
+            <label class="form-label">{{ 'alarm_sensor' | t }}</label>
+            <input
+              class="form-input"
+              type="text"
+              [(ngModel)]="formSensor"
+              name="formSensor"
+              [placeholder]="'alarm_sensorPlaceholder' | t"
+            />
+          </div>
+
+          <div class="form-group">
             <label class="form-label">{{ 'alarm_recipients' | t }}</label>
             <select class="form-input" [(ngModel)]="formRecipients" name="formRecipients">
               <option value="all">{{ 'alarm_allUsers' | t }}</option>
               <option value="specific">{{ 'alarm_specificUsers' | t }}</option>
             </select>
           </div>
+
+          @if (formRecipients === 'specific') {
+            <div class="form-group">
+              <label class="form-label">{{ 'alarm_client' | t }}</label>
+              <select class="form-input" multiple [(ngModel)]="formClientIds" name="formClientIds" size="5">
+                @for (client of clients(); track client.id) {
+                  <option [value]="client.id">{{ client.name }}</option>
+                }
+              </select>
+              <span class="form-hint">{{ 'alarm_clientHint' | t }}</span>
+            </div>
+          }
 
           <div class="modal__footer">
             <button class="btn btn--ghost" type="button" (click)="closeModal()">

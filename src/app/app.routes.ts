@@ -14,6 +14,7 @@ import { Users }          from './features/users/pages/users/users';
 import { NewAdmin }       from './features/users/pages/new-admin/new-admin';
 import { NewTechnician }  from './features/users/pages/new-technician/new-technician';
 import { EditClient }     from './features/users/pages/edit-client/edit-client';
+import { ViewClient }     from './features/users/pages/view-client/view-client';
 
 import { TechSchedule }        from './features/tech/pages/tech-schedule/tech-schedule';
 import { TechWorkOrders }      from './features/tech/pages/tech-work-orders/tech-work-orders';
@@ -46,6 +47,7 @@ export const routes: Routes = [
       { path: 'users/edit-admin/:id',      component: NewAdmin },
       { path: 'users/edit-technician/:id', component: NewTechnician },
       { path: 'users/edit-client/:id',     component: EditClient },
+      { path: 'users/view-client/:id',     component: ViewClient },
       { path: 'profile',                   component: Profile },
       { path: 'devices',                   component: Devices },
       { path: 'alarms',                    component: Alarms },

@@ -64,6 +64,23 @@
       </div>
     </div>
 
+    <!-- Status -->
+    <div class="filter-group">
+      <label class="filter-label">{{ 'th_status' | t }}</label>
+      <div class="select-wrap">
+        <select
+          class="field-select"
+          (change)="selectedStatus.set($any($event.target).value); applyFilters()"
+          aria-label="Filter by status"
+        >
+          <option value="all">{{ 'filter_all' | t }}</option>
+          <option value="completed">{{ 'status_completed' | t }}</option>
+          <option value="cancelled">{{ 'status_cancelled' | t }}</option>
+        </select>
+        <i class="ph ph-caret-down select-caret" aria-hidden="true"></i>
+      </div>
+    </div>
+
     <!-- Technician -->
     <div class="filter-group">
       <label class="filter-label">{{ 'hist_technician' | t }}</label>
@@ -111,7 +128,7 @@
           <th>{{ 'th_serviceType' | t }}</th>
           <th>{{ 'th_leadTech' | t }}</th>
           <th>{{ 'th_status' | t }}</th>
-          <th>{{ 'th_actions' | t }}</th>
+          <th class="table__actions">{{ 'th_actions' | t }}</th>
         </tr>
       </thead>
       <tbody>
@@ -157,7 +174,7 @@
               </span>
             </td>
             <td class="table__actions">
-              <button class="btn btn--icon" type="button" (click)="openDetail(item.id)" [title]="'hist_view' | t">
+              <button class="btn btn--icon" type="button" (click)="openDetail(item)" [title]="'hist_view' | t">
                 <i class="ph ph-eye" aria-hidden="true"></i>
               </button>
             </td>
@@ -191,91 +208,16 @@
   </div>
 </section>
 
-<!-- ── Detail Modal ─────────────────────────────────── -->
+<!-- ── Detail Modal (shared full read-only detail) ─────────────── -->
 @if (showDetailModal()) {
-  <div class="modal-overlay" (click)="closeDetail()">
-    <div class="modal modal--detail" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
-      <div class="modal__header">
-        <div class="modal__title-wrap">
-          <div class="modal__icon">
-            <i class="ph ph-clipboard-text" aria-hidden="true"></i>
-          </div>
-          <div>
-            <h3 class="modal__title">{{ 'hist_detail_title' | t }}</h3>
-            @if (detailItem()) {
-              <p class="modal__desc">{{ detailItem()!.orderId }}</p>
-            }
-          </div>
-        </div>
-        <button class="modal__close" type="button" (click)="closeDetail()" aria-label="Close">
-          <i class="ph ph-x" aria-hidden="true"></i>
-        </button>
-      </div>
-
-      <div class="modal__body">
-        @if (detailLoading()) {
-          <div class="loading-state">
-            <i class="ph ph-circle-notch ph-spin"></i>
-            <span>Loading...</span>
-          </div>
-        } @else if (detailItem()) {
-          <div class="detail-grid">
-            <div class="detail-row">
-              <span class="detail-label">{{ 'th_client' | t }}</span>
-              <span class="detail-value">{{ detailItem()!.client }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">{{ 'th_location' | t }}</span>
-              <span class="detail-value">{{ detailItem()!.location ?? detailItem()!.site }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">{{ 'hist_detail_completedBy' | t }}</span>
-              <span class="detail-value">{{ detailItem()!.technician }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">{{ 'hist_detail_completionDate' | t }}</span>
-              <span class="detail-value">{{ detailItem()!.completionDate }} {{ detailItem()!.completionTime }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">{{ 'th_status' | t }}</span>
-              <span class="detail-value">
-                <span class="status status--{{ detailItem()!.status }}">
-                  @if (detailItem()!.status === 'completed') { {{ 'status_completed' | t }} }
-                  @else { {{ 'status_cancelled' | t }} }
-                </span>
-              </span>
-            </div>
-            @if (detailItem()!.status === 'cancelled' && detailItem()!.cancellationReason) {
-              <div class="detail-row detail-row--full">
-                <span class="detail-label">{{ 'hist_detail_cancellationReason' | t }}</span>
-                <span class="detail-value">{{ detailItem()!.cancellationReason }}</span>
-              </div>
-            }
-            @if (detailItem()!.notes) {
-              <div class="detail-row detail-row--full">
-                <span class="detail-label">{{ 'hist_detail_notes' | t }}</span>
-                <span class="detail-value">{{ detailItem()!.notes }}</span>
-              </div>
-            }
-            @if (detailItem()!.technicianNotes) {
-              <div class="detail-row detail-row--full">
-                <span class="detail-label">{{ 'hist_detail_techNotes' | t }}</span>
-                <span class="detail-value">{{ detailItem()!.technicianNotes }}</span>
-              </div>
-            }
-            @if (detailItem()!.sensors && detailItem()!.sensors!.length > 0) {
-              <div class="detail-row detail-row--full">
-                <span class="detail-label">{{ 'hist_detail_sensorsInstalled' | t }}</span>
-                <ul class="sensor-list">
-                  @for (s of detailItem()!.sensors!; track s.sensorId) {
-                    <li>{{ s.sensorId }} — {{ s.location }} ({{ s.status }})</li>
-                  }
-                </ul>
-              </div>
-            }
-          </div>
-        }
+  @if (detailLoading()) {
+    <div class="modal-overlay">
+      <div class="loading-state">
+        <i class="ph ph-circle-notch ph-spin"></i>
+        <span>Loading...</span>
       </div>
     </div>
-  </div>
+  } @else if (detailOrder()) {
+    <app-work-order-detail-modal [order]="detailOrder()!" (close)="closeDetail()" />
+  }
 }

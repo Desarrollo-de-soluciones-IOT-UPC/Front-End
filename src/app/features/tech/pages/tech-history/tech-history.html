@@ -42,12 +42,11 @@
     </div>
 
     <div class="select-group">
-      <label>{{ 'hist_technician' | t }}</label>
-      <select [ngModel]="techFilter()" (ngModelChange)="techFilter.set($event); applyFilters()">
-        <option value="all">{{ 'hist_allPersonnel' | t }}</option>
-        @for (tech of technicians(); track tech) {
-          <option [value]="tech">{{ tech }}</option>
-        }
+      <label>{{ 'th_status' | t }}</label>
+      <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event); applyFilters()">
+        <option value="all">{{ 'filter_all' | t }}</option>
+        <option value="completed">{{ 'status_completed' | t }}</option>
+        <option value="cancelled">{{ 'status_cancelled' | t }}</option>
       </select>
     </div>
 
@@ -97,8 +96,8 @@
               </span>
             </td>
             <td>
-              <button class="action-btn" type="button">
-                <i class="ph ph-dots-three-vertical" aria-hidden="true"></i>
+              <button class="action-btn" type="button" (click)="openDetail(item)" aria-label="View detail">
+                <i class="ph ph-eye" aria-hidden="true"></i>
               </button>
             </td>
           </tr>
@@ -115,7 +114,7 @@
     </table>
 
     <div class="table-footer">
-      <span class="showing">{{ currentPage() * pageSize + 1 }}-{{ min(currentPage() * pageSize + pageSize, totalElements()) }} of {{ totalElements() }}</span>
+      <span class="showing">Showing {{ totalElements() === 0 ? 0 : currentPage() * pageSize + 1 }}-{{ min(currentPage() * pageSize + pageSize, totalElements()) }} of {{ totalElements() }}</span>
       @if (totalPages() > 1) {
         <div class="pagination">
           <button class="page-btn" type="button" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">
@@ -135,3 +134,17 @@
   </div>
 
 </div>
+
+<!-- ── Detail Modal (shared full read-only detail, same as admin History) ───── -->
+@if (showDetailModal()) {
+  @if (detailLoading()) {
+    <div class="modal-overlay">
+      <div class="loading-state">
+        <i class="ph ph-circle-notch ph-spin"></i>
+        <span>Loading...</span>
+      </div>
+    </div>
+  } @else if (detailOrder()) {
+    <app-work-order-detail-modal [order]="detailOrder()!" (close)="closeDetail()" />
+  }
+}
