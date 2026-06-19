@@ -33,20 +33,10 @@
         <i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i>
         <span>{{ 'nav_history' | t }}</span>
       </a>
-
-      <a routerLink="/tech/profile" routerLinkActive="active">
-        <i class="ph ph-user-circle" aria-hidden="true"></i>
-        <span>{{ 'nav_profile' | t }}</span>
-      </a>
     </nav>
   </div>
 
   <div class="sidebar__bottom">
-    <a class="bottom-link" href="#" (click)="$event.preventDefault()">
-      <i class="ph ph-headset" aria-hidden="true"></i>
-      <span>{{ 'nav_support' | t }}</span>
-    </a>
-
     <a class="bottom-link bottom-link--danger" href="#" (click)="$event.preventDefault(); auth.logout()">
       <i class="ph ph-sign-out" aria-hidden="true"></i>
       <span>{{ 'nav_logout' | t }}</span>
