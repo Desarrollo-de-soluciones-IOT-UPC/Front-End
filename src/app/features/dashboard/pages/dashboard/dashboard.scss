@@ -97,10 +97,24 @@
   gap: 10px;
 }
 
+.metric-card--link {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 160ms ease, transform 160ms ease, border-color 160ms ease;
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba(17, 24, 39, 0.12);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+  }
+}
+
 .metric-card__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-height: 40px;
 }
 
 .metric-card__icon {
@@ -194,7 +208,8 @@
   display: grid;
   grid-template-columns: 1.4fr 1fr;
   gap: var(--space-3);
-  align-items: start;
+  /* stretch so 'Service History' matches 'Radiation Trends' height */
+  align-items: stretch;
 }
 
 .panel {
