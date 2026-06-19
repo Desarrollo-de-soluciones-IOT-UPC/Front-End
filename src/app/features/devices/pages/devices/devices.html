@@ -19,26 +19,26 @@
       />
     </div>
     <div class="toolbar__filters">
-      <select class="filter-select" [(ngModel)]="filterClient" (ngModelChange)="onFilterChange()">
-        <option value="all">{{ 'dev_filterByClient' | t }}</option>
-        @for (cl of uniqueClients(); track cl) {
-          <option [value]="cl">{{ cl }}</option>
-        }
-      </select>
-      <select class="filter-select" [(ngModel)]="filterType" (ngModelChange)="onFilterChange()">
-        <option value="all">{{ 'dev_filterByType' | t }}</option>
-        @for (ty of uniqueTypes(); track ty) {
-          <option [value]="ty">{{ ty }}</option>
-        }
-      </select>
-      <select class="filter-select" [(ngModel)]="filterStatus" (ngModelChange)="onFilterChange()">
-        <option value="all">{{ 'dev_filterByStatus' | t }}</option>
-        <option value="active">{{ 'dev_active' | t }}</option>
-        <option value="inactive">{{ 'dev_inactive' | t }}</option>
-        <option value="in-maintenance">{{ 'dev_inMaintenance' | t }}</option>
-        <option value="requires-maintenance">{{ 'dev_requiresMaintenance' | t }}</option>
-        <option value="collecting">{{ 'dev_collecting' | t }}</option>
-      </select>
+      <div class="filter-group">
+        <span class="filter-group__label">{{ 'dev_type' | t }}</span>
+        <select class="filter-select" [(ngModel)]="filterType" (ngModelChange)="onFilterChange()">
+          <option value="all">{{ 'filter_all' | t }}</option>
+          @for (ty of deviceTypes; track ty) {
+            <option [value]="ty">{{ ty }}</option>
+          }
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-group__label">{{ 'th_status' | t }}</span>
+        <select class="filter-select" [(ngModel)]="filterStatus" (ngModelChange)="onFilterChange()">
+          <option value="all">{{ 'filter_all' | t }}</option>
+          <option value="active">{{ 'dev_active' | t }}</option>
+          <option value="inactive">{{ 'dev_inactive' | t }}</option>
+          <option value="in-maintenance">{{ 'dev_inMaintenance' | t }}</option>
+          <option value="requires-maintenance">{{ 'dev_requiresMaintenance' | t }}</option>
+          <option value="collecting">{{ 'dev_collecting' | t }}</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -111,8 +111,8 @@
                         {{ 'dev_createWorkOrder' | t }}
                       </button>
                     }
-                    @if (device.client) {
-                      <button class="dropdown-item" type="button" routerLink="/admin/users">
+                    @if (device.clientId != null) {
+                      <button class="dropdown-item" type="button" (click)="viewClient(device)">
                         <i class="ph ph-user" aria-hidden="true"></i>
                         {{ 'dev_viewClient' | t }}
                       </button>
@@ -283,7 +283,7 @@
             </button>
             <button class="btn btn--primary" type="submit">
               <i class="ph ph-floppy-disk" aria-hidden="true"></i>
-              {{ 'btn_save' | t }}
+              {{ (editingDevice() ? 'btn_saveChanges' : 'dev_createDevice') | t }}
             </button>
           </div>
         </form>

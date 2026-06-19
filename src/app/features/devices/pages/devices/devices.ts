@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, OnInit, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { LowerCasePipe } from '@angular/common';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { DataService, Device, User } from '../../../../core/services/data.service';
@@ -11,7 +11,7 @@ type DeviceStatus = 'active' | 'inactive' | 'in-maintenance' | 'requires-mainten
 
 @Component({
   selector: 'app-devices',
-  imports: [TranslatePipe, FormsModule, RouterLink, LowerCasePipe],
+  imports: [TranslatePipe, FormsModule, LowerCasePipe],
   templateUrl: './devices.html',
   styleUrl: './devices.scss',
 })
@@ -19,6 +19,7 @@ export class Devices implements OnInit {
   private data     = inject(DataService);
   private toast    = inject(ToastService);
   private activity = inject(ActivityService);
+  private router   = inject(Router);
 
   devices       = signal<Device[]>([]);
   clients       = signal<User[]>([]);
@@ -43,6 +44,9 @@ export class Devices implements OnInit {
   readonly pageSize = 10;
   currentPage = signal(0);
 
+  // Canonical device types
+  readonly deviceTypes = ['Sensor', 'Gateway', 'Monitor', 'Controller', 'Plug', 'Actuator'];
+
   // Modal form fields
   formName        = '';
   formType        = 'Sensor';
@@ -55,15 +59,13 @@ export class Devices implements OnInit {
   // Computed filtered list
   filtered = computed(() => {
     const q   = this.searchQuery().toLowerCase();
-    const cl  = this.filterClient();
     const ty  = this.filterType();
     const st  = this.filterStatus();
     return this.devices().filter(d => {
       const matchQ  = !q || d.name.toLowerCase().includes(q) || (d.serialNumber ?? '').toLowerCase().includes(q);
-      const matchCl = cl === 'all' || (d.client ?? '') === cl;
       const matchTy = ty === 'all' || d.type === ty;
       const matchSt = st === 'all' || d.status === st;
-      return matchQ && matchCl && matchTy && matchSt;
+      return matchQ && matchTy && matchSt;
     });
   });
 
@@ -213,10 +215,28 @@ export class Devices implements OnInit {
     });
   }
 
+  viewClient(device: Device): void {
+    this.openMenuId.set(null);
+    if (device.clientId == null) {
+      this.toast.error('This device has no associated client');
+      return;
+    }
+    this.router.navigate(['/admin/users/view-client', device.clientId]);
+  }
+
   createWorkOrder(device: Device): void {
     this.openMenuId.set(null);
-    // Navigate to new work order with device pre-filled
-    this.toast.success('Redirecting to New Work Order...');
+    // Pre-fill a Maintenance work order for the device's associated client,
+    // using the client's registered site as the location.
+    const client = this.clients().find(c => c.id === device.clientId);
+    const location = client?.address ?? client?.location ?? device.location ?? '';
+    this.router.navigate(['/admin/work-orders/new'], {
+      queryParams: {
+        type: 'Maintenance',
+        clientId: device.clientId ?? '',
+        location,
+      },
+    });
   }
 
   statusClass(status: string): string {
