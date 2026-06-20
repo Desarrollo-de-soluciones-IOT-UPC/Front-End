@@ -111,6 +111,17 @@ export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
       attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
       maxZoom: 18,
     }).addTo(this.map);
+
+    // In production the stylesheet loads asynchronously, so the container can
+    // have size 0 when the map initializes → tiles render blank. Recompute the
+    // map size once layout/CSS has settled.
+    this.fixMapSize();
+  }
+
+  private fixMapSize(): void {
+    [0, 200, 500].forEach(delay =>
+      setTimeout(() => { if (this.map) this.map.invalidateSize(); }, delay)
+    );
   }
 
   private renderMarkers(pts: ClientRadiationPoint[]): void {

@@ -290,7 +290,7 @@
           <h3>{{ 'tech_detail_generalInfo' | t }}</h3>
           <span class="map-loc">{{ o.location }}</span>
         </div>
-        <div #woMapEl class="wo-map"></div>
+        <div #woMapEl class="wo-map" ngSkipHydration></div>
         <div class="info-row">
           <span class="info-label">{{ 'th_serviceType' | t }}</span>
           <span class="info-value">{{ o.type }}</span>
