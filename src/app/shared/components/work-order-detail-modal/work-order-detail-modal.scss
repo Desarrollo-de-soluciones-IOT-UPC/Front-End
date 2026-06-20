@@ -199,5 +199,20 @@
 }
 
 @media (max-width: 600px) {
+  .wod-overlay { padding: 12px; }
+
+  .wod-modal { max-height: 92vh; }
+
   .wod-grid { grid-template-columns: 1fr; }
+
+  .wod-header { flex-wrap: wrap; }
+
+  .wod-device-row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .wod-device-desc { text-align: left; }
+
+  .wod-evidence-img { width: 80px; height: 80px; }
 }

@@ -238,3 +238,22 @@
 @media (max-width: 900px) {
   .profile__grid { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 768px) {
+  .profile__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile__title { font-size: 24px; }
+}
+
+@media (max-width: 480px) {
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .form-actions .btn { width: 100%; justify-content: center; }
+}

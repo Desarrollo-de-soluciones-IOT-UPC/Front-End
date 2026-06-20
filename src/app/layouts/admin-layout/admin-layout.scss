@@ -42,17 +42,60 @@
   margin: 0 auto;
 }
 
+/* Overlay del drawer: oculto en desktop */
+.sidebar-overlay {
+  display: none;
+}
+
 @media (max-width: 1024px) {
   .admin-layout {
     grid-template-columns: 1fr;
   }
 
+  /* El sidebar se vuelve un drawer off-canvas */
   .sidebar-wrap {
-    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 260px;
+    height: 100vh;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.18);
+  }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .admin-layout.sidebar-open {
+    .sidebar-wrap {
+      transform: translateX(0);
+    }
+
+    .sidebar-overlay {
+      opacity: 1;
+      pointer-events: auto;
+    }
   }
 
   .page-content {
     padding: var(--space-3);
+  }
+}
+
+@media (max-width: 520px) {
+  .page-content {
+    padding: var(--space-2);
   }
 }
 

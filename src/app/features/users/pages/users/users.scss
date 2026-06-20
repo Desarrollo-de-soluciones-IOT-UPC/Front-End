@@ -416,6 +416,44 @@
   .users__stats { grid-template-columns: repeat(2, 1fr); }
 }
 
+@media (max-width: 1024px) {
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table { min-width: 760px; }
+}
+
+@media (max-width: 768px) {
+  .users__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .users__actions {
+    width: 100%;
+    .btn { flex: 1; }
+  }
+
+  .users__title { font-size: 24px; }
+
+  .users__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tabs { width: 100%; overflow-x: auto; }
+
+  .search-wrap { width: 100%; }
+
+  .search-input {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .users__stats { grid-template-columns: 1fr; }
+}
+
 /* ── Add User Modal ──────────────────────────────── */
 .modal-overlay {
   position: fixed;
