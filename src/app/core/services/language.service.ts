@@ -99,6 +99,11 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     tech_detail_evidence: 'Evidence',
     tech_detail_noDevices: 'No devices.',
     tech_detail_addDeviceHint: 'Click + to add an installed sensor.',
+    tech_detail_discoverTitle: 'Discover Sensors (Required)',
+    tech_detail_discoverHint: 'Power on the sensors on site — they appear here as they report. Pick the ones in front of you (the live reading reacts when you move the sensor), then name them.',
+    tech_detail_discoverEmpty: 'No sensors detected yet. Power on a sensor and wait for it to report.',
+    tech_detail_live: 'Live',
+    tech_detail_lastSeen: 'last seen',
     wod_title: 'Work Order',
 
     // ── Common buttons ──────────────────────────────────────
@@ -555,6 +560,11 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     tech_detail_evidence: 'Evidencia',
     tech_detail_noDevices: 'Sin dispositivos.',
     tech_detail_addDeviceHint: 'Haz clic en + para agregar un sensor instalado.',
+    tech_detail_discoverTitle: 'Descubrir Sensores (Requerido)',
+    tech_detail_discoverHint: 'Enciende los sensores en el sitio — aparecen aquí a medida que reportan. Elige los que tienes enfrente (la lectura en vivo reacciona al mover el sensor) y ponles nombre.',
+    tech_detail_discoverEmpty: 'Aún no se detectan sensores. Enciende un sensor y espera a que reporte.',
+    tech_detail_live: 'En vivo',
+    tech_detail_lastSeen: 'visto hace',
     wod_title: 'Orden de Trabajo',
 
     // ── Common buttons ──────────────────────────────────────
