@@ -444,3 +444,40 @@
   .two-panel { grid-template-columns: 1fr; }
   .side-panel { position: static; flex-direction: row; }
 }
+
+@media (max-width: 1024px) {
+  /* La tabla hace scroll horizontal en lugar de comprimirse */
+  .table-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .orders-table { min-width: 820px; }
+}
+
+@media (max-width: 768px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-wrap { min-width: 0; width: 100%; }
+
+  .right-tools {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group { justify-content: space-between; }
+
+  .filter-select,
+  .btn-export { width: 100%; justify-content: center; }
+
+  .tabs { overflow-x: auto; }
+
+  .side-panel { flex-direction: column; }
+
+  .table-footer {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .pagination { justify-content: center; }
+}

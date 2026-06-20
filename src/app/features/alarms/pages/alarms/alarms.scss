@@ -601,3 +601,37 @@
 
   i { font-size: 13px; }
 }
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .alarms__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .alarms__actions {
+    width: 100%;
+    .btn { flex: 1; justify-content: center; }
+  }
+
+  .alarms__title { font-size: 24px; }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tabs { width: 100%; overflow-x: auto; }
+
+  .client-filter-select { width: 100%; }
+
+  /* La tarjeta de alarma apila acciones debajo del cuerpo */
+  .alarm-card {
+    flex-wrap: wrap;
+  }
+
+  .alarm-card__actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

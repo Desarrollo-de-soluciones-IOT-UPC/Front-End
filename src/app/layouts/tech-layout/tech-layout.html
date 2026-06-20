@@ -1,7 +1,9 @@
-<div class="tech-layout">
+<div class="tech-layout" [class.sidebar-open]="layout.sidebarOpen()">
   <aside class="sidebar-wrap">
     <app-tech-sidebar />
   </aside>
+
+  <div class="sidebar-overlay" (click)="layout.close()" aria-hidden="true"></div>
 
   <div class="main-content" role="main">
     <header class="topbar-wrap">

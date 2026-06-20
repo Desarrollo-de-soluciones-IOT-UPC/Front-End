@@ -557,8 +557,29 @@
 }
 
 /* ── Responsive ──────────────────────────────────── */
+@media (max-width: 1024px) {
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table { min-width: 820px; }
+}
+
+@media (max-width: 768px) {
+  .devices__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .devices__actions {
+    width: 100%;
+    .btn { flex: 1; }
+  }
+
+  .devices__title { font-size: 24px; }
+}
+
 @media (max-width: 700px) {
   .form-row { grid-template-columns: 1fr; }
   .toolbar { flex-direction: column; align-items: stretch; }
   .toolbar__search { max-width: 100%; }
+  .toolbar__filters { flex-direction: column; align-items: stretch; }
+  .filter-group { justify-content: space-between; }
 }

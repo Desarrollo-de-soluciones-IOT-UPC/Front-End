@@ -643,4 +643,41 @@
   .work-orders__bottom {
     grid-template-columns: 1fr;
   }
+
+  /* Tabla con scroll horizontal en lugar de comprimirse */
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table {
+    min-width: 820px;
+  }
+}
+
+@media (max-width: 768px) {
+  .work-orders__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .work-orders__actions {
+    width: 100%;
+
+    .btn { flex: 1; }
+  }
+
+  .work-orders__title {
+    font-size: 24px;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group,
+  .field {
+    width: 100%;
+  }
 }

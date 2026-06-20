@@ -5,6 +5,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService, FontSize } from '../../../core/services/theme.service';
 import { ActivityService } from '../../../core/services/activity.service';
+import { LayoutService } from '../../../core/services/layout.service';
 
 @Component({
   selector: 'app-topbar',
@@ -17,6 +18,7 @@ export class Topbar {
   protected auth     = inject(AuthService);
   protected theme    = inject(ThemeService);
   protected activity = inject(ActivityService);
+  protected layout   = inject(LayoutService);
 
   showBellPanel    = signal(false);
   showProfileMenu  = signal(false);

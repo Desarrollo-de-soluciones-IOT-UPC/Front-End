@@ -557,3 +557,32 @@
   &--completed { background: rgba(22,163,74,0.12); color: #16a34a; }
   &--cancelled { background: rgba(220,38,38,0.12); color: #dc2626; }
 }
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 1024px) {
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table { min-width: 860px; }
+}
+
+@media (max-width: 768px) {
+  .history__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .history__title { font-size: 24px; }
+
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group,
+  .date-range-wrap,
+  .select-wrap,
+  .field-select { width: 100%; }
+
+  .date-input { min-width: 0; flex: 1; }
+
+  .detail-grid { grid-template-columns: 1fr; }
+}

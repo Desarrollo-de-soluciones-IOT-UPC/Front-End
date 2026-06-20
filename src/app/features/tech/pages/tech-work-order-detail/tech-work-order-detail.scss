@@ -857,3 +857,40 @@
 }
 
 label.upload-zone { cursor: pointer; display: block; }
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  /* .detail-grid se declara después del @media de arriba, por eso
+     hay que volver a colapsarlo aquí (al final, para ganar la cascada) */
+  .detail-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .detail-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .title-row h1 { font-size: 22px; }
+
+  .header-actions {
+    .btn-primary,
+    .btn-secondary { flex: 1; justify-content: center; }
+  }
+
+  .install-fields { grid-template-columns: 1fr; }
+
+  .wo-map { height: 220px; }
+}
+
+@media (max-width: 480px) {
+  .contact-btns { grid-template-columns: 1fr; }
+
+  .info-value { text-align: left; }
+
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+}
