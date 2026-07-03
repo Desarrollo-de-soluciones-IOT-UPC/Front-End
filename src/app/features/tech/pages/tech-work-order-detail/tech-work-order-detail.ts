@@ -8,11 +8,16 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
-import { DataService, TechWorkOrder, Device, PatchTechWorkOrderBody } from '../../../../core/services/data.service';
+import { DataService, TechWorkOrder, Device, PatchTechWorkOrderBody, Reading } from '../../../../core/services/data.service';
+import { RealtimeService } from '../../../../core/services/realtime.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { AddressLookupService } from '../../../../core/services/address-lookup.service';
 
-interface NewDeviceRow { name: string; type: string; serialNumber: string; }
+// A discovered sensor (unregistered, reporting live) the technician can claim.
+interface DiscoverRow {
+  deviceId: number; serialNumber: string; name: string; type: string;
+  fieldUT?: number; level?: string; lastSeen?: string; claimed: boolean;
+}
 interface DeviceCheckRow { deviceId: number; name: string; type: string; status: string; observation: string; }
 interface ActionRow { action: string; deviceId: number | null; description: string; }
 interface RemovalRow { deviceId: number; name: string; type: string; removed: boolean; observation: string; }
@@ -27,6 +32,7 @@ export class TechWorkOrderDetail implements OnDestroy {
   private route      = inject(ActivatedRoute);
   private router     = inject(Router);
   private data       = inject(DataService);
+  private realtime   = inject(RealtimeService);
   private toast      = inject(ToastService);
   private addrSvc    = inject(AddressLookupService);
   private platformId = inject(PLATFORM_ID);
@@ -47,8 +53,8 @@ export class TechWorkOrderDetail implements OnDestroy {
   protected order = signal<TechWorkOrder | null>(null);
 
   // ── Editing state (in-progress) ───────────────────────────────────────────
-  protected techNotes   = signal('');
-  protected newDevices   = signal<NewDeviceRow[]>([]);
+  protected techNotes    = signal('');
+  protected discoverable = signal<DiscoverRow[]>([]);
   protected deviceChecks = signal<DeviceCheckRow[]>([]);
   protected actions      = signal<ActionRow[]>([]);
   protected removals     = signal<RemovalRow[]>([]);
@@ -72,6 +78,9 @@ export class TechWorkOrderDetail implements OnDestroy {
       takeUntilDestroyed(),
     ).subscribe(o => this.order.set(o));
 
+    // Live discovery: sensors "appear"/update as they power on and report.
+    this.realtime.discovery().pipe(takeUntilDestroyed()).subscribe(r => this.onDiscovery(r));
+
     effect(() => {
       const o  = this.order();
       const el = this.mapEl();
@@ -91,7 +100,16 @@ export class TechWorkOrderDetail implements OnDestroy {
       this.initializedFor = key;
       this.techNotes.set(o.technicianNotes ?? '');
       if (o.status === 'in-progress') {
-        if (o.type === 'Maintenance') {
+        if (o.type === 'Installation') {
+          // Load sensors already discovered by the edge; live updates arrive via onDiscovery().
+          this.data.getDiscoverableDevices().subscribe(list => {
+            this.discoverable.set(list.map(d => ({
+              deviceId: d.deviceId, serialNumber: d.serialNumber,
+              name: this.cleanName(d.name), type: d.type || 'Sensor',
+              fieldUT: d.field_uT, level: d.level, lastSeen: d.lastSeen, claimed: false,
+            })));
+          });
+        } else if (o.type === 'Maintenance') {
           this.deviceChecks.set(this.requiresMaintenanceDevices().map(d => ({
             deviceId: d.id, name: d.name, type: d.type, status: d.status, observation: '',
           })));
@@ -108,12 +126,46 @@ export class TechWorkOrderDetail implements OnDestroy {
     this.destroyMap();
   }
 
-  // ── Installation editing ──────────────────────────────────────────────────
-  protected addDevice(): void {
-    this.newDevices.update(list => [...list, { name: '', type: 'Sensor', serialNumber: '' }]);
+  // ── Installation discovery ────────────────────────────────────────────────
+  /** Upsert a discovered sensor when a live reading arrives over WebSocket. */
+  private onDiscovery(r: Reading): void {
+    const o = this.order();
+    if (!o || o.status !== 'in-progress' || o.type !== 'Installation' || !r.serialNumber) return;
+    this.discoverable.update(rows => {
+      const idx = rows.findIndex(x => x.serialNumber === r.serialNumber);
+      if (idx >= 0) {
+        const copy = [...rows];
+        copy[idx] = {
+          ...copy[idx],
+          deviceId: r.deviceDbId ?? copy[idx].deviceId,
+          fieldUT: r.field_uT, level: r.level, lastSeen: r.recordedAt,
+        };
+        return copy;
+      }
+      return [...rows, {
+        deviceId: r.deviceDbId ?? 0, serialNumber: r.serialNumber,
+        name: '', type: 'Sensor',
+        fieldUT: r.field_uT, level: r.level, lastSeen: r.recordedAt, claimed: false,
+      }];
+    });
   }
-  protected removeDevice(i: number): void {
-    this.newDevices.update(list => list.filter((_, idx) => idx !== i));
+
+  /** Blank the edge's auto-generated "Unregistered sensor ..." name so the tech types a real one. */
+  private cleanName(name: string): string {
+    return !name || name.startsWith('Unregistered sensor') ? '' : name;
+  }
+
+  protected fmtReading(v?: number): string {
+    return v === undefined || v === null ? '—' : v.toFixed(2);
+  }
+
+  /** Compact "how long ago" the sensor last reported (s / m / h). */
+  protected lastSeenLabel(iso?: string): string {
+    if (!iso) return '—';
+    const secs = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+    if (secs < 60) return `${secs}s`;
+    const mins = Math.round(secs / 60);
+    return mins < 60 ? `${mins}m` : `${Math.round(mins / 60)}h`;
   }
 
   // ── Maintenance actions editing ───────────────────────────────────────────
@@ -150,8 +202,8 @@ export class TechWorkOrderDetail implements OnDestroy {
     const o = this.order();
     if (!o) return false;
     if (o.type === 'Installation') {
-      const devices = this.newDevices();
-      return devices.length >= 1 && devices.every(d => d.serialNumber.trim().length > 0);
+      const claimed = this.discoverable().filter(d => d.claimed);
+      return claimed.length >= 1 && claimed.every(d => d.name.trim().length > 0 && !!d.type);
     }
     if (o.type === 'Maintenance') {
       return this.deviceChecks().length >= 1;
@@ -196,18 +248,25 @@ export class TechWorkOrderDetail implements OnDestroy {
     };
 
     if (o.type === 'Installation') {
-      body.newDevices = this.newDevices()
-        .filter(d => d.serialNumber.trim())
-        .map(d => ({ name: d.name || 'Sensor', type: d.type || 'Sensor', serialNumber: d.serialNumber.trim() }));
+      // Claim discovered sensors: tech provides name + type; backend sets client + location.
+      body.claimedDevices = this.discoverable()
+        .filter(d => d.claimed)
+        .map(d => ({
+          deviceId: d.deviceId || undefined,
+          serialNumber: d.serialNumber,
+          name: d.name.trim(),
+          type: d.type || 'Sensor',
+        }));
     } else if (o.type === 'Maintenance') {
       body.deviceUpdates = this.deviceChecks().map(d => ({ deviceId: d.deviceId, status: d.status, observation: d.observation }));
       body.maintenanceActions = this.actions()
         .filter(a => a.action.trim())
         .map(a => ({ deviceId: a.deviceId, deviceName: this.deviceName(a.deviceId), action: a.action, description: a.description }));
     } else if (o.type === 'Collection') {
+      // Collected sensors return to the pool (unregistered) so they can be re-discovered.
       body.deviceUpdates = this.removals()
         .filter(r => r.removed)
-        .map(r => ({ deviceId: r.deviceId, status: 'inactive', observation: r.observation }));
+        .map(r => ({ deviceId: r.deviceId, status: 'unregistered', observation: r.observation }));
     }
 
     this.data.patchTechWorkOrder(o.id, body).subscribe(updated => {
