@@ -352,3 +352,39 @@
   &--active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
   &:disabled { opacity: 0.4; cursor: not-allowed; }
 }
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  /* La tabla hace scroll horizontal en lugar de comprimirse */
+  .table-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .hist-table { min-width: 880px; }
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-header h1 { font-size: 22px; }
+
+  .btn-export { justify-content: center; }
+
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .date-group,
+  .select-group { width: 100%; }
+
+  .select-group select { width: 100%; min-width: 0; }
+
+  .table-footer {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .pagination { justify-content: center; }
+}

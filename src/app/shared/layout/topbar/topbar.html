@@ -1,5 +1,8 @@
 <div class="topbar">
   <div class="topbar__brand">
+    <button class="hamburger" type="button" aria-label="Toggle menu" (click)="layout.toggle(); $event.stopPropagation()">
+      <i class="ph ph-list" aria-hidden="true"></i>
+    </button>
     <span class="brand-name">{{ 'topbar_brand' | t }}</span>
   </div>
 

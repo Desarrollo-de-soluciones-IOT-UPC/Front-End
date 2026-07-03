@@ -164,9 +164,41 @@ export interface PatchTechWorkOrderBody {
   sensors?: { sensorId: string; location: string; status: string }[];
   activityLogEntry?: { event: string; time: string };
   newDevices?: { name: string; type: string; serialNumber: string }[];
+  // Installation (discovery): claim sensors already reported by the edge.
+  // Client + location are set by the backend from the work order.
+  claimedDevices?: { deviceId?: number; serialNumber?: string; name: string; type: string }[];
   deviceUpdates?: { deviceId: number; status: string; observation?: string }[];
   maintenanceActions?: { deviceId?: number | null; deviceName?: string; action: string; description?: string }[];
   evidence?: string[];
+}
+
+// A live reading pushed over WebSocket (mirrors the backend ReadingDto).
+export interface Reading {
+  id?: number;
+  serialNumber: string;
+  deviceDbId?: number;
+  deviceName?: string;
+  field_uT?: number;
+  level?: string;
+  message?: string;
+  location?: string;
+  latitude?: number;
+  longitude?: number;
+  clientId?: number;
+  clientName?: string;
+  recordedAt?: string;
+}
+
+// A sensor discovered by the edge but not yet assigned to a client.
+export interface DiscoverableDevice {
+  deviceId: number;
+  serialNumber: string;
+  name: string;
+  type: string;
+  field_uT?: number;
+  level?: string;
+  lastSeen?: string;
+  readingCount: number;
 }
 
 export interface PageResponse<T> {
@@ -282,7 +314,7 @@ export interface Device {
   name: string;
   type: string;
   location: string;
-  status: 'active' | 'inactive' | 'in-maintenance' | 'requires-maintenance' | 'collecting';
+  status: 'active' | 'inactive' | 'in-maintenance' | 'requires-maintenance' | 'collecting' | 'unregistered';
   serialNumber: string;
   installDate: string;
   createdAt: string;
@@ -576,6 +608,11 @@ export class DataService {
       ? `${this.base}/devices?clientId=${clientId}`
       : `${this.base}/devices`;
     return unwrap(this.http.get<ApiResponse<Device[]>>(url), []);
+  }
+
+  /** Sensors discovered by the edge, not yet assigned — claimable during an installation. */
+  getDiscoverableDevices(): Observable<DiscoverableDevice[]> {
+    return unwrap(this.http.get<ApiResponse<DiscoverableDevice[]>>(`${this.base}/tech/devices/discoverable`), []);
   }
 
   createDevice(data: CreateDevicePayload): Observable<Device | null> {

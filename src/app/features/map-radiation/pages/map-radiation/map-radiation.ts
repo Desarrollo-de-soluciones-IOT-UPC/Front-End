@@ -4,8 +4,11 @@ import {
   ViewChild, ElementRef, PLATFORM_ID, effect
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { DataService, ClientRadiationPoint, ClientDeviceReading } from '../../../../core/services/data.service';
+import { RealtimeService } from '../../../../core/services/realtime.service';
 
 @Component({
   selector: 'app-map-radiation',
@@ -15,7 +18,9 @@ import { DataService, ClientRadiationPoint, ClientDeviceReading } from '../../..
 })
 export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
   private data       = inject(DataService);
+  private realtime   = inject(RealtimeService);
   private platformId = inject(PLATFORM_ID);
+  private rtSub?: Subscription;
 
   @ViewChild('mapContainer') mapContainer!: ElementRef<HTMLDivElement>;
 
@@ -82,6 +87,16 @@ export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
         this.renderMarkers(list);
       }
     });
+
+    // Live updates: re-fetch the aggregated map when new readings arrive (browser only).
+    if (isPlatformBrowser(this.platformId)) {
+      this.rtSub = this.realtime.readings().pipe(debounceTime(1500)).subscribe(() => {
+        this.data.getRadiationMapByClient().subscribe(list => {
+          this.clientPoints.set(list);
+          if (this.mapReady && this.L && list.length > 0) this.renderMarkers(list);
+        });
+      });
+    }
   }
 
   ngAfterViewInit(): void {
@@ -97,6 +112,7 @@ export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.rtSub?.unsubscribe();
     if (this.map) { this.map.remove(); this.map = null; }
   }
 
@@ -111,6 +127,17 @@ export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
       attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
       maxZoom: 18,
     }).addTo(this.map);
+
+    // In production the stylesheet loads asynchronously, so the container can
+    // have size 0 when the map initializes → tiles render blank. Recompute the
+    // map size once layout/CSS has settled.
+    this.fixMapSize();
+  }
+
+  private fixMapSize(): void {
+    [0, 200, 500].forEach(delay =>
+      setTimeout(() => { if (this.map) this.map.invalidateSize(); }, delay)
+    );
   }
 
   private renderMarkers(pts: ClientRadiationPoint[]): void {

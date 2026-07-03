@@ -618,3 +618,26 @@
   .calendar-grid   { grid-template-columns: repeat(4, 1fr); }
   .filter-panel    { right: auto; left: 0; }
 }
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-title h1 { font-size: 24px; }
+
+  .calendar-controls { justify-content: space-between; }
+
+  /* En semana se vuelve scroll horizontal para no comprimir los días */
+  .calendar-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .calendar-grid {
+    grid-template-columns: repeat(7, minmax(120px, 1fr));
+    min-width: 700px;
+  }
+}
+
+@media (max-width: 520px) {
+  .day-task-row { flex-wrap: wrap; }
+  .day-task-time { width: auto; text-align: left; }
+}

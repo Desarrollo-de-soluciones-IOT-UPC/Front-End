@@ -482,4 +482,32 @@
   .form-grid--2 { grid-template-columns: 1fr; }
   .form-row--2col { grid-template-columns: 1fr; }
   .edit-client { max-width: 100%; }
+
+  .edit-client__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-actions {
+    .btn { flex: 1; justify-content: center; }
+  }
+
+  .edit-client__title { font-size: 24px; }
+
+  .type-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .type-tabs .type-tab { flex: 1; justify-content: center; }
+}
+
+@media (max-width: 520px) {
+  .map-picker-map { height: 300px; }
+
+  .map-modal__footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

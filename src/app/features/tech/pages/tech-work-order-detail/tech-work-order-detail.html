@@ -69,25 +69,31 @@
           @if (o.type === 'Installation') {
             <div class="card">
               <div class="card-header">
-                <i class="ph ph-monitor" aria-hidden="true"></i>
-                <h3>{{ 'tech_detail_sensorInstall' | t }}</h3>
-                <button class="add-btn" type="button" (click)="addDevice()" aria-label="Add device">
-                  <i class="ph ph-plus" aria-hidden="true"></i>
-                </button>
+                <i class="ph ph-broadcast" aria-hidden="true"></i>
+                <h3>{{ 'tech_detail_discoverTitle' | t }}</h3>
+                <span class="live-chip"><span class="live-dot"></span>{{ 'tech_detail_live' | t }}</span>
               </div>
-              @for (d of newDevices(); track $index) {
-                <div class="device-edit-row">
-                  <input class="d-input" type="text" [placeholder]="'tech_detail_deviceName' | t" [(ngModel)]="d.name" />
-                  <select class="d-input" [(ngModel)]="d.type">
+              <p class="discover-hint">{{ 'tech_detail_discoverHint' | t }}</p>
+              @for (d of discoverable(); track d.serialNumber) {
+                <div class="discover-row" [class.discover-row--claimed]="d.claimed">
+                  <label class="claim-check">
+                    <input type="checkbox" [(ngModel)]="d.claimed" />
+                  </label>
+                  <div class="discover-id">
+                    <span class="discover-serial mono">{{ d.serialNumber }}</span>
+                    <span class="discover-reading mono">
+                      {{ fmtReading(d.fieldUT) }} µT
+                      @if (d.level) { <span class="discover-level">{{ d.level }}</span> }
+                    </span>
+                    <span class="discover-seen">{{ 'tech_detail_lastSeen' | t }}: {{ lastSeenLabel(d.lastSeen) }}</span>
+                  </div>
+                  <input class="d-input" type="text" [placeholder]="('tech_detail_deviceName' | t) + ' *'" [(ngModel)]="d.name" [disabled]="!d.claimed" />
+                  <select class="d-input" [(ngModel)]="d.type" [disabled]="!d.claimed">
                     @for (st of sensorTypes; track st) { <option [value]="st">{{ st }}</option> }
                   </select>
-                  <input class="d-input d-input--req" type="text" [placeholder]="('tech_detail_serial' | t) + ' *'" [(ngModel)]="d.serialNumber" />
-                  <button class="trash-btn" type="button" (click)="removeDevice($index)" aria-label="Remove">
-                    <i class="ph ph-trash" aria-hidden="true"></i>
-                  </button>
                 </div>
               } @empty {
-                <p class="no-devices">{{ 'tech_detail_addDeviceHint' | t }}</p>
+                <p class="no-devices">{{ 'tech_detail_discoverEmpty' | t }}</p>
               }
               <ng-container [ngTemplateOutlet]="uploadTpl"></ng-container>
             </div>
@@ -290,7 +296,7 @@
           <h3>{{ 'tech_detail_generalInfo' | t }}</h3>
           <span class="map-loc">{{ o.location }}</span>
         </div>
-        <div #woMapEl class="wo-map"></div>
+        <div #woMapEl class="wo-map" ngSkipHydration></div>
         <div class="info-row">
           <span class="info-label">{{ 'th_serviceType' | t }}</span>
           <span class="info-value">{{ o.type }}</span>

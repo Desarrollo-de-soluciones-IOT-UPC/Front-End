@@ -1,7 +1,9 @@
-<div class="admin-layout">
+<div class="admin-layout" [class.sidebar-open]="layout.sidebarOpen()">
   <aside class="sidebar-wrap">
     <app-sidebar />
   </aside>
+
+  <div class="sidebar-overlay" (click)="layout.close()" aria-hidden="true"></div>
 
   <div class="main-content" role="main">
     <header class="topbar-wrap">
