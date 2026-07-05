@@ -49,7 +49,7 @@ export class Dashboard implements OnInit {
   serviceHistoryLegend = { position: 'top', horizontalAlign: 'right', fontSize: '12px' } as const;
 
   // Radiation Trends chart — smooth area
-  radiationTrendsSeries: { name: string; data: number[] }[] = [{ name: 'μSv/h', data: [] }];
+  radiationTrendsSeries: { name: string; data: number[] }[] = [{ name: 'µT', data: [] }];
   radiationTrendsChart = {
     type: 'area',
     height: 260,
@@ -63,7 +63,7 @@ export class Dashboard implements OnInit {
   radiationTrendsYAxis = {
     labels: {
       style: { colors: '#6b7280', fontSize: '11px', fontFamily: "'IBM Plex Mono', monospace" },
-      formatter: (v: number) => v.toFixed(2),
+      formatter: (v: number) => v.toFixed(0),
     },
     tickAmount: 4,
   };
@@ -77,7 +77,7 @@ export class Dashboard implements OnInit {
   radiationTrendsDataLabels = { enabled: false };
   radiationTrendsTooltip = {
     theme: 'light',
-    y: { formatter: (v: number) => `${v.toFixed(3)} μSv/h` },
+    y: { formatter: (v: number) => `${v.toFixed(1)} µT` },
   };
   radiationTrendsMarkers = { size: 0 };
 
@@ -92,7 +92,7 @@ export class Dashboard implements OnInit {
         { name: 'Collection',   data: base.map(v => Math.round(v * 0.20)) },
       ];
       this.serviceHistoryXAxis = { ...this.serviceHistoryXAxis, categories: c.systemActivity.categories };
-      this.radiationTrendsSeries = [{ name: 'Avg radiation (μSv/h)', data: c.radiationTrends.series }];
+      this.radiationTrendsSeries = [{ name: 'Avg radiation (µT)', data: c.radiationTrends.series }];
       this.chartsReady.set(true);
     });
   }

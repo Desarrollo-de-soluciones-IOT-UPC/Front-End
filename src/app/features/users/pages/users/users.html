@@ -98,6 +98,7 @@
               <span class="status-dot status-dot--{{ user.status }}">
                 <span class="dot"></span>
                 @if (user.status === 'active') { {{ 'status_active' | t }} }
+                @else if (user.status === 'pending') { {{ 'status_pending' | t }} }
                 @else { {{ 'status_inactive' | t }} }
               </span>
             </td>
@@ -114,6 +115,16 @@
 
                 @if (openMenuId === user.id) {
                   <div class="dropdown">
+                    @if (user.status === 'pending') {
+                      <button
+                        class="dropdown-item"
+                        type="button"
+                        (click)="activateUser(user, $event)"
+                      >
+                        <i class="ph ph-check-circle" aria-hidden="true"></i>
+                        {{ 'users_activate' | t }}
+                      </button>
+                    }
                     @if (user.role === 'Client') {
                       <button
                         class="dropdown-item"

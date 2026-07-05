@@ -129,11 +129,11 @@
         <div class="radiation-stats">
           <div class="radiation-row">
             <span class="radiation-label">{{ 'dash_currentAvg' | t }}</span>
-            <span class="radiation-value radiation-value--safe">{{ stats()?.currentRadiationAvg ?? 0.12 }} μSv/h</span>
+            <span class="radiation-value radiation-value--safe">{{ stats()?.currentRadiationAvg ?? 110 }} µT</span>
           </div>
           <div class="radiation-row">
             <span class="radiation-label">{{ 'dash_safetyThreshold' | t }}</span>
-            <span class="radiation-value radiation-value--danger">{{ stats()?.safetyThreshold ?? 0.50 }} μSv/h</span>
+            <span class="radiation-value radiation-value--danger">{{ stats()?.safetyThreshold ?? 200 }} µT</span>
           </div>
           <div class="radiation-safe-badge">
             <i class="ph ph-check-circle" aria-hidden="true"></i>

@@ -39,12 +39,13 @@ export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
   cautionCount = computed(() => this.allDeviceReadings().filter(r => r.level === 'caution').length);
   dangerCount  = computed(() => this.allDeviceReadings().filter(r => r.level === 'danger').length);
 
-  // Flatten all device readings for table
+  // Flatten all device readings for table. The level comes from the backend
+  // (edge-computed, smart edge); levelForValue is only a fallback.
   allDeviceReadings = computed(() => {
-    const rows: Array<ClientDeviceReading & { clientName: string; level: string }> = [];
+    const rows: Array<ClientDeviceReading & { clientName: string }> = [];
     for (const cp of this.clientPoints()) {
       for (const d of cp.devices) {
-        rows.push({ ...d, clientName: cp.clientName, level: this.levelForValue(d.latestValue) });
+        rows.push({ ...d, clientName: cp.clientName, level: d.level ?? this.levelForValue(d.latestValue) });
       }
     }
     return rows.sort((a, b) => b.latestValue - a.latestValue);
@@ -167,12 +168,12 @@ export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
 
       const devRows = cp.devices
         .map(d => {
-          const c = this.colorForLevel(this.levelForValue(d.latestValue));
+          const c = this.colorForLevel(d.level ?? this.levelForValue(d.latestValue));
           return `
           <tr style="border-bottom:1px solid #f3f4f6;">
             <td style="padding:5px 8px;font-size:12px;color:#374151;">${d.deviceLocation}</td>
             <td style="padding:5px 8px;font-size:12px;font-family:monospace;font-weight:700;color:${c}">
-              ${d.latestValue.toFixed(3)} μSv/h
+              ${d.latestValue.toFixed(1)} µT
             </td>
           </tr>`;
         })
@@ -186,7 +187,7 @@ export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
           <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">${cp.location ?? ''}</div>
           <div style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;
                background:${color}22;color:${color};margin-bottom:10px;">
-            Pico: ${cp.maxValue.toFixed(3)} μSv/h
+            Pico: ${cp.maxValue.toFixed(1)} µT
           </div>
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;margin-bottom:6px;">
             Sensores instalados (${cp.devices.length})
@@ -211,9 +212,10 @@ export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
     this.map.fitBounds(bounds, { padding: [60, 60] });
   }
 
-  levelForValue(value: number): string {
-    if (value < 0.10) return 'safe';
-    if (value < 0.30) return 'caution';
+  // Fallback only — the edge is the source of truth for classification (µT: 100/200).
+  levelForValue(value: number): 'safe' | 'caution' | 'danger' {
+    if (value < 100) return 'safe';
+    if (value < 200) return 'caution';
     return 'danger';
   }
 
@@ -227,7 +229,7 @@ export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
     return `map_${level}`;
   }
 
-  formatValue(value: number): string { return value.toFixed(3); }
+  formatValue(value: number): string { return value.toFixed(1); }
 
   formatDate(dateStr: string): string {
     if (!dateStr) return '—';

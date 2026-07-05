@@ -141,6 +141,22 @@ export class Users implements OnInit {
     this.openMenuId = null;
   }
 
+  /** Approves a self-registered (pending) account so it can log in. */
+  activateUser(user: User, event: Event): void {
+    event.stopPropagation();
+    this.openMenuId = null;
+    this.data.updateUser(user.id, { status: 'active' }).subscribe(updated => {
+      if (!updated) {
+        this.toast.error('Could not activate the user');
+        return;
+      }
+      this._allUsers.update(list =>
+        list.map(u => (String(u.id) === String(user.id) ? { ...u, status: 'active' } : u))
+      );
+      this.toast.success('User activated');
+    });
+  }
+
   deleteUser(id: number | string, event: Event): void {
     event.stopPropagation();
     if (!this.confirm.confirm('Are you sure you want to delete this user?')) return;

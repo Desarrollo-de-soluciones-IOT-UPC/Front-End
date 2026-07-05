@@ -317,6 +317,7 @@
 
   &--active   { color: var(--color-text-primary); .dot { background: #16a34a; } }
   &--inactive { color: var(--color-text-secondary); .dot { background: #9ca3af; } }
+  &--pending  { color: var(--color-warning); .dot { background: #d97706; } }
 }
 
 /* ── Email ───────────────────────────────────────── */

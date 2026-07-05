@@ -82,7 +82,7 @@ export interface User {
   joinDate: string;
   role: 'Admin' | 'Technician' | 'Client';
   email: string;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'pending';
   phone?: string;
   location?: string;
   address?: string;
@@ -364,6 +364,7 @@ export interface RadiationPoint {
   location: string;
   sensorId: string;
   value: number;
+  level: 'safe' | 'caution' | 'danger';
   readingDate: string;
 }
 
@@ -375,6 +376,7 @@ export interface ClientDeviceReading {
   deviceLocation: string;
   deviceStatus: string;
   latestValue: number;
+  level: 'safe' | 'caution' | 'danger';
   readingDate: string;
 }
 

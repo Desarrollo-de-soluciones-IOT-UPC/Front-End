@@ -15,7 +15,7 @@
       <div class="stat-card__body">
         <div class="stat-card__value">{{ safeCount() }}</div>
         <div class="stat-card__label">{{ 'map_safe' | t }}</div>
-        <div class="stat-card__range">&lt; 0.10 μSv/h</div>
+        <div class="stat-card__range">&lt; 100 µT</div>
       </div>
     </div>
 
@@ -26,7 +26,7 @@
       <div class="stat-card__body">
         <div class="stat-card__value">{{ cautionCount() }}</div>
         <div class="stat-card__label">{{ 'map_caution' | t }}</div>
-        <div class="stat-card__range">0.10 – 0.30 μSv/h</div>
+        <div class="stat-card__range">100 – 200 µT</div>
       </div>
     </div>
 
@@ -37,7 +37,7 @@
       <div class="stat-card__body">
         <div class="stat-card__value">{{ dangerCount() }}</div>
         <div class="stat-card__label">{{ 'map_danger' | t }}</div>
-        <div class="stat-card__range">&ge; 0.30 μSv/h</div>
+        <div class="stat-card__range">&ge; 200 µT</div>
       </div>
     </div>
   </div>
@@ -94,14 +94,14 @@
             </td>
             <td class="text-sec">{{ row.deviceLocation }}</td>
             <td>
-              <span class="mono radiation-value radiation-value--{{ levelForValue(row.latestValue) }}">
-                {{ formatValue(row.latestValue) }} <span class="unit">μSv/h</span>
+              <span class="mono radiation-value radiation-value--{{ row.level }}">
+                {{ formatValue(row.latestValue) }} <span class="unit">µT</span>
               </span>
             </td>
             <td>
-              <span class="status-badge status-badge--{{ levelForValue(row.latestValue) }}">
+              <span class="status-badge status-badge--{{ row.level }}">
                 <span class="dot"></span>
-                {{ getStatusLabelKey(levelForValue(row.latestValue)) | t }}
+                {{ getStatusLabelKey(row.level) | t }}
               </span>
             </td>
             <td class="text-sec">{{ formatDate(row.readingDate) }}</td>
