@@ -102,7 +102,10 @@ export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    import('leaflet').then(L => {
+    import('leaflet').then(mod => {
+      // In the production bundle leaflet (CJS) arrives as { default: L };
+      // in the dev server it arrives as the namespace itself. Normalize both.
+      const L = (mod as unknown as { default?: typeof mod }).default ?? mod;
       this.L = L;
       this.initMap(L);
       this.mapReady = true;

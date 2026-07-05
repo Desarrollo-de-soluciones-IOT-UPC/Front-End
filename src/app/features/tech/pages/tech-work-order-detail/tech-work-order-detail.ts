@@ -332,7 +332,9 @@ export class TechWorkOrderDetail implements OnDestroy {
   }
 
   private buildMap(el: HTMLDivElement, location: string): void {
-    import('leaflet').then(L => {
+    import('leaflet').then(mod => {
+      // Prod bundle exposes leaflet as { default: L }; dev as the namespace.
+      const L = (mod as unknown as { default?: typeof mod }).default ?? mod;
       this.destroyMap();
       const limaCenter: [number, number] = [-12.0464, -77.0428];
       this.map = L.map(el, { center: limaCenter, zoom: 12, scrollWheelZoom: false });

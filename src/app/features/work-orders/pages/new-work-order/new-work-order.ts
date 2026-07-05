@@ -203,7 +203,9 @@ export class NewWorkOrder implements OnInit, OnDestroy {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private initPickerMap(): void {
     if (!this.mapPickerEl?.nativeElement) return;
-    import('leaflet').then(L => {
+    import('leaflet').then(mod => {
+      // Prod bundle exposes leaflet as { default: L }; dev as the namespace.
+      const L = (mod as unknown as { default?: typeof mod }).default ?? mod;
       this.pickerL = L;
 
       // Center on Lima, or on current location value if it has coords
