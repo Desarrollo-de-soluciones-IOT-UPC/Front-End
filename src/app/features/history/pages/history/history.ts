@@ -12,7 +12,9 @@ import { WorkOrderDetailModal } from '../../../../shared/components/work-order-d
 export class History implements OnInit {
   private data = inject(DataService);
 
-  items = signal<HistoryItem[]>([]);
+  // Full result set for the current status filter; type/tech/date + pagination
+  // are applied client-side so the counter/paginator match what is shown.
+  private allItems = signal<HistoryItem[]>([]);
   loading = signal(true);
 
   selectedType       = signal('all');
@@ -21,16 +23,35 @@ export class History implements OnInit {
   dateFrom           = signal('');
   dateTo             = signal('');
 
-  // Pagination signals
+  // Pagination
   currentPage   = signal(0);
-  totalPages    = signal(0);
-  totalElements = signal(0);
   readonly pageSize = 10;
 
-  // Technician list derived from loaded page (server-side filtering handles the rest)
-  technicians = computed(() => {
-    const names = [...new Set(this.items().map(i => i.technician))];
-    return names;
+  // Technician options from the whole (status-filtered) set.
+  technicians = computed(() => [...new Set(this.allItems().map(i => i.technician))]);
+
+  /** Rows after applying type/technician/date filters over the full set. */
+  filteredItems = computed(() => {
+    const type = this.selectedType();
+    const tech = this.selectedTechnician();
+    const from = this.dateFrom();
+    const to   = this.dateTo();
+    return this.allItems().filter(i => {
+      if (type !== 'all' && i.serviceType.toLowerCase() !== type.toLowerCase()) return false;
+      if (tech !== 'all' && i.technician !== tech) return false;
+      if (from && new Date(i.completionDate).getTime() < new Date(from).getTime()) return false;
+      if (to && new Date(i.completionDate).getTime() > new Date(to).getTime()) return false;
+      return true;
+    });
+  });
+
+  totalElements = computed(() => this.filteredItems().length);
+  totalPages    = computed(() => Math.max(1, Math.ceil(this.filteredItems().length / this.pageSize)));
+
+  // Current page slice (what the template renders).
+  items = computed(() => {
+    const start = this.currentPage() * this.pageSize;
+    return this.filteredItems().slice(start, start + this.pageSize);
   });
 
   dateRangeLabel = computed(() => {
@@ -50,32 +71,11 @@ export class History implements OnInit {
 
   loadItems(): void {
     this.loading.set(true);
-    const type   = this.selectedType()       !== 'all' ? this.selectedType()       : undefined;
-    const status = this.selectedStatus()     !== 'all' ? this.selectedStatus()     : undefined;
-    const tech   = this.selectedTechnician() !== 'all' ? this.selectedTechnician() : undefined;
-    // Status is filtered server-side; type/tech/date are refined on the loaded page.
-    this.data.getHistoryPaged(status, undefined, this.currentPage(), this.pageSize).subscribe(response => {
-      let content = response.content;
-      // Apply client-side filters on the current page
-      if (type !== undefined) {
-        content = content.filter(i => i.serviceType.toLowerCase() === type.toLowerCase());
-      }
-      if (tech !== undefined) {
-        content = content.filter(i => i.technician === tech);
-      }
-      const from = this.dateFrom();
-      const to   = this.dateTo();
-      if (from) {
-        const fromMs = new Date(from).getTime();
-        content = content.filter(i => new Date(i.completionDate).getTime() >= fromMs);
-      }
-      if (to) {
-        const toMs = new Date(to).getTime();
-        content = content.filter(i => new Date(i.completionDate).getTime() <= toMs);
-      }
-      this.items.set(content);
-      this.totalPages.set(response.totalPages);
-      this.totalElements.set(response.totalElements);
+    // Only status is filtered server-side; the full matching set is loaded so
+    // type/technician/date and pagination can be computed client-side honestly.
+    const status = this.selectedStatus() !== 'all' ? this.selectedStatus() : undefined;
+    this.data.getHistory(status).subscribe(rows => {
+      this.allItems.set(rows);
       this.loading.set(false);
     });
   }
@@ -86,9 +86,9 @@ export class History implements OnInit {
   }
 
   goToPage(page: number): void {
+    // Pure client-side paging over the filtered set — no server round-trip.
     if (page >= 0 && page < this.totalPages()) {
       this.currentPage.set(page);
-      this.loadItems();
     }
   }
 

@@ -36,7 +36,6 @@ export class Devices implements OnInit {
 
   // Filters
   searchQuery    = signal('');
-  filterClient   = signal('all');
   filterType     = signal('all');
   filterStatus   = signal('all');
 
@@ -75,8 +74,7 @@ export class Devices implements OnInit {
     return this.filtered().slice(start, start + this.pageSize);
   });
 
-  // Unique clients/types for filter dropdowns
-  uniqueClients = computed(() => [...new Set(this.devices().filter(d => d.client).map(d => d.client!))]);
+  // Unique types for the filter dropdown
   uniqueTypes   = computed(() => [...new Set(this.devices().map(d => d.type))]);
 
   pagesArray(): number[] {

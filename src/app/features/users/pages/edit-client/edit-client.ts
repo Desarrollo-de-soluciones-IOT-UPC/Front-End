@@ -49,6 +49,10 @@ export class EditClient implements OnInit, OnDestroy {
   mapPickedLat     = signal<number | null>(null);
   mapPickedLon     = signal<number | null>(null);
   mapPickerLoading = signal(false);
+  // Confirmed coordinates that survive closing the picker → sent on submit so the
+  // client's map marker / telemetry location actually updates.
+  private pickedLat = signal<number | null>(null);
+  private pickedLon = signal<number | null>(null);
   private pickerFormTarget: ClientType = 'company';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private pickerMap: any = null;
@@ -185,6 +189,9 @@ export class EditClient implements OnInit, OnDestroy {
     const short = addr.split(',').slice(0, 4).join(',').trim();
     (this.pickerFormTarget === 'company' ? this.companyForm : this.individualForm)
       .patchValue({ address: short });
+    // Persist the picked coordinates so submit() can send them.
+    this.pickedLat.set(this.mapPickedLat());
+    this.pickedLon.set(this.mapPickedLon());
     this.closeMapPicker();
   }
 
@@ -257,6 +264,8 @@ export class EditClient implements OnInit, OnDestroy {
         notes:        (v['notes'] as string) ?? '',
         address:      (v['address'] as string) ?? '',
         location:     (v['address'] as string) ?? '',
+        latitude:     this.pickedLat() ?? undefined,
+        longitude:    this.pickedLon() ?? undefined,
         country:      (v['country'] as string) ?? '',
         clientType:   type,
         taxId,

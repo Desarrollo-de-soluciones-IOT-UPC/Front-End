@@ -256,26 +256,6 @@ export interface WorkOrderDetail {
   cancellationReason?: string;
 }
 
-export interface HistoryDetail {
-  id: number;
-  orderId: string;
-  completionDate: string;
-  completionTime: string;
-  client: string;
-  site: string;
-  serviceType: string;
-  technician: string;
-  technicianInitials: string;
-  status: 'completed' | 'cancelled';
-  notes?: string;
-  priority?: string;
-  scheduledDate?: string;
-  location?: string;
-  technicianNotes?: string;
-  sensors?: { sensorId: string; location: string; status: string }[];
-  cancellationReason?: string;
-}
-
 export interface CreateUserPayload {
   name: string;
   initials?: string;
@@ -300,6 +280,8 @@ export interface UpdateUserPayload {
   status?: string;
   notes?: string;
   address?: string;
+  latitude?: number;
+  longitude?: number;
   clientType?: string;
   taxId?: string;
   industry?: string;
@@ -680,19 +662,6 @@ export class DataService {
 
   updateWorkOrder(id: number | string, data: UpdateWorkOrderPayload): Observable<WorkOrder | null> {
     return this.http.put<ApiResponse<WorkOrder>>(`${this.base}/work-orders/${id}`, data).pipe(
-      map(r => r.data),
-      catchError(() => of(null))
-    );
-  }
-
-  cancelWorkOrder(id: number | string, reason: string): Observable<void> {
-    return this.http.patch<void>(`${this.base}/work-orders/${id}/cancel`, { reason }).pipe(
-      catchError(() => of(undefined as void))
-    );
-  }
-
-  getHistoryById(id: number | string): Observable<HistoryDetail | null> {
-    return this.http.get<ApiResponse<HistoryDetail>>(`${this.base}/history/${id}`).pipe(
       map(r => r.data),
       catchError(() => of(null))
     );

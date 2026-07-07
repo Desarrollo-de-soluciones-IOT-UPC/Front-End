@@ -26,6 +26,10 @@
       <div class="stat-label">{{ 'users_inactiveClients' | t }}</div>
       <div class="stat-value">{{ inactiveClientCount() }}</div>
     </div>
+    <div class="stat-card">
+      <div class="stat-label">{{ 'users_pendingApproval' | t }}</div>
+      <div class="stat-value" [class.stat-value--amber]="pendingCount() > 0">{{ pendingCount() }}<span class="stat-sub">{{ 'users_pendingSub' | t }}</span></div>
+    </div>
   </div>
 
   <!-- Tabs + Search -->
