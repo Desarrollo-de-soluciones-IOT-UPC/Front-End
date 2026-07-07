@@ -5,6 +5,7 @@ import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { DataService, User } from '../../../../core/services/data.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { LanguageService } from '../../../../core/services/language.service';
 
 type RoleFilter = 'all' | 'Admin' | 'Technician' | 'Client';
 
@@ -19,6 +20,7 @@ export class Users implements OnInit {
   private router  = inject(Router);
   private confirm = inject(ConfirmService);
   private toast   = inject(ToastService);
+  private lang    = inject(LanguageService);
 
   private _allUsers = signal<User[]>([]);
   loading      = signal(true);
@@ -82,7 +84,7 @@ export class Users implements OnInit {
 
   totalUsers         = computed(() => this._allUsers().length);
   activeNow          = computed(() => this._allUsers().filter(u => u.status === 'active').length);
-  pendingCount       = computed(() => this._allUsers().filter(u => u.status === 'inactive').length);
+  pendingCount       = computed(() => this._allUsers().filter(u => u.status === 'pending').length);
   activeClientCount  = computed(() => this._allUsers().filter(u => u.role === 'Client' && u.status === 'active').length);
   inactiveClientCount = computed(() => this._allUsers().filter(u => u.role === 'Client' && u.status === 'inactive').length);
 
@@ -106,12 +108,13 @@ export class Users implements OnInit {
     this.showAddModal.set(false);
   }
 
-  addUser(type: 'Admin' | 'Technician' | 'Client'): void {
+  // Clients are not created from the web (they self-register from mobile and an
+  // admin activates them), so the Add modal only offers Admin/Technician.
+  addUser(type: 'Admin' | 'Technician'): void {
     this.showAddModal.set(false);
     const routes: Record<string, string> = {
       Admin:      '/admin/users/new-admin',
       Technician: '/admin/users/new-technician',
-      Client:     '/admin/users/edit-client/new',
     };
     this.router.navigate([routes[type]]);
   }
@@ -147,22 +150,22 @@ export class Users implements OnInit {
     this.openMenuId = null;
     this.data.updateUser(user.id, { status: 'active' }).subscribe(updated => {
       if (!updated) {
-        this.toast.error('Could not activate the user');
+        this.toast.error(this.lang.t('users_activateFail'));
         return;
       }
       this._allUsers.update(list =>
         list.map(u => (String(u.id) === String(user.id) ? { ...u, status: 'active' } : u))
       );
-      this.toast.success('User activated');
+      this.toast.success(this.lang.t('users_activated'));
     });
   }
 
   deleteUser(id: number | string, event: Event): void {
     event.stopPropagation();
-    if (!this.confirm.confirm('Are you sure you want to delete this user?')) return;
+    if (!this.confirm.confirm(this.lang.t('users_confirmDelete'))) return;
     this.data.deleteUser(id).subscribe(() => {
       this._allUsers.update(list => list.filter(u => String(u.id) !== String(id)));
-      this.toast.success('User deleted successfully');
+      this.toast.success(this.lang.t('users_deleted'));
     });
     this.openMenuId = null;
   }
