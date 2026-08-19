@@ -1,0 +1,35 @@
+# CI del frontend: compila la SPA de Angular.
+# El despliegue NO va aquí: la VM de Oracle construye la imagen por SSH
+# (ver Back-End/deploy/README.md). El workflow *.disabled es el antiguo de
+# Azure App Service, conservado como referencia histórica.
+
+name: CI — Front-End
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Compilar SPA
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Compilar (producción)
+        run: npm run build
+
+      - name: Verificar que la imagen Docker se construye
+        run: docker build -t emsafe-web:ci .
