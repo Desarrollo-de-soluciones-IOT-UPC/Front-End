@@ -9,9 +9,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const toast = inject(ToastService);
   const token = auth.getToken();
 
-  const authReq = token
-    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-    : req;
+  // `ngrok-skip-browser-warning` evita la página intermedia que ngrok (plan
+  // gratis) inyecta ante peticiones de navegador: sin este header, la API
+  // detrás del túnel devolvería HTML de aviso en vez del JSON esperado.
+  const headers: Record<string, string> = { 'ngrok-skip-browser-warning': 'true' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  const authReq = req.clone({ setHeaders: headers });
 
   return next(authReq).pipe(
     catchError((err: HttpErrorResponse) => {
