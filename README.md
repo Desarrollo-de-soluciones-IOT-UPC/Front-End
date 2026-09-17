@@ -1,59 +1,80 @@
-# EmsafeAdmin
+# EMSafe — Portal web (Angular 21)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.10.
+Portal de **administración** y **técnicos de campo** de EMSafe. Consume la API REST del
+backend Spring Boot y recibe telemetría en vivo por STOMP/WebSocket.
 
-## Development server
+> Arquitectura completa del sistema: [`../ARQUITECTURA-EMSAFE.md`](../ARQUITECTURA-EMSAFE.md)
 
-To start a local development server, run:
+## Estructura
 
-```bash
-ng serve
+```
+src/app/
+├── core/         http/api.client.ts · guards · interceptors · pipes
+│                 services transversales (auth, language, theme, toast, layout…)
+├── contexts/     ◄── espejo de los bounded contexts del backend
+│   ├── iam/            domain/{user.model,role,user-status} · application/users.facade · infrastructure/users.api
+│   ├── device/         domain/{device.model,device-status} · application/devices.facade · infrastructure/devices.api
+│   ├── monitoring/     domain/{reading.model,radiation-level} · infrastructure/readings.socket
+│   ├── alerting/       domain/alert.model · application/alarms.facade · infrastructure/alarms.api
+│   ├── workorder/      domain/{work-order.model,work-order-status} · application/work-orders.facade · infrastructure/work-orders.api
+│   ├── servicerecord/  domain/service-record.model · application/history.facade · infrastructure/history.api
+│   └── reporting/      domain/{stats,chart,radiation-point}.model · application/dashboard.facade · infrastructure/dashboard.api
+├── features/     las páginas (dashboard, devices, alarms, users, work-orders,
+│                 history, map-radiation, profile, tech, auth) — SÓLO presentación
+├── layouts/      admin-layout · tech-layout
+└── shared/       componentes, layout (sidebar, topbar, toast)
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+**Reglas de dependencia**
 
-## Code scaffolding
+- Las páginas de `features/` consumen **facades**, nunca HTTP. Los métodos de las facades
+  son del negocio (`workOrdersFacade.cancel()`, `usersFacade.activate()`), no verbos de
+  transporte.
+- Sólo `core/http/api.client.ts` conoce `HttpClient` y la URL base.
+- `core/` **no depende** de `contexts/`. Por eso `AuthService` (estado de sesión, lo usan
+  el guard y el interceptor) vive en `core/services/` y no en `contexts/iam`.
+- `contexts/monitoring/domain/radiation-level.ts` es la **misma regla de umbrales** que el
+  backend, el edge y la app móvil. Nadie más clasifica niveles a mano.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+## Desarrollo
 
 ```bash
-ng build
+npm ci
+npx ng serve          # http://localhost:4200
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+La URL del backend sale de `src/environments/`. Para trabajar contra el stack local
+completo (BD + backend + este front tras un proxy Caddy, todo en un puerto):
 
 ```bash
-ng test
+docker compose -f ../Back-End/deploy/docker-compose.local.yml up -d --build
+# → http://localhost:8090
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+## Build
 
 ```bash
-ng e2e
+npx ng build          # artefactos en dist/emsafe-admin
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Warnings esperados en un build limpio (ninguno es un error):
 
-## Additional Resources
+- presupuesto de `tech-work-order-detail.scss` excedido por ~3,4 kB
+- `leaflet` y `@stomp/stompjs` no son ESM
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.--
+## Verificación
+
+No hay tests unitarios. La red de seguridad es:
+
+1. `npx ng build` — compila **y** valida las plantillas contra los miembros de cada
+   componente (AOT). Ahí se cazan la mayoría de las regresiones de un refactor.
+2. Las 21 rutas que declaran las APIs de `contexts/*/infrastructure/` deben responder 200
+   contra el backend levantado.
+3. Los 15 flujos del portal, clicados a mano. Esto **no** lo cubre nada automático.
+
+## Credenciales de desarrollo
+
+| Email | Password | Portal |
+|---|---|---|
+| `admin@emsafe.com` | `admin123` | `/admin` |
+| `marcus@emsafe.com` | `tech123` | `/tech` |

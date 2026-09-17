@@ -1,0 +1,97 @@
+# E2E del portal web con Playwright, contra el STACK COMPLETO.
+#
+# Levanta la BD y el backend reales con docker compose y ejecuta la SPA contra
+# ellos: no hay mocks. Si el backend cambia la forma de un JSON, aquí se cae —
+# que es justo lo que un test con mocks no detecta.
+#
+# Va en un workflow aparte del `ci.yml` porque tarda bastante más (arranca
+# contenedores) y no debe bloquear el ciclo rápido de compilación.
+
+name: E2E — Portal web
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    name: Flujos del portal
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      # El compose y el Dockerfile del backend viven en el repo Back-End.
+      - name: Clonar el front
+        uses: actions/checkout@v4
+        with:
+          path: Front-End
+
+      - name: Clonar el backend
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/EMSafe-Back-End
+          path: Back-End
+        continue-on-error: true
+        id: backend
+
+      - name: Sin el repo del backend no hay stack contra el que probar
+        if: steps.backend.outcome != 'success'
+        run: |
+          echo "::warning::No se pudo clonar el backend; se omiten los E2E."
+          echo "skip=true" >> "$GITHUB_ENV"
+
+      - name: Levantar el stack (BD + backend + web)
+        if: env.skip != 'true'
+        run: |
+          docker compose -f Back-End/deploy/docker-compose.local.yml up -d --build
+          # El backend siembra la BD al arrancar con la base vacía; hasta que no
+          # esté healthy, los tests verían tablas a medio llenar.
+          for i in $(seq 1 60); do
+            estado=$(docker inspect -f '{{.State.Health.Status}}' emsafe-backend-local 2>/dev/null || echo starting)
+            [ "$estado" = "healthy" ] && break
+            sleep 5
+          done
+          docker inspect -f '{{.State.Health.Status}}' emsafe-backend-local
+          curl -fsS -o /dev/null http://localhost:8090/login
+
+      - name: Configurar Node 22
+        if: env.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: npm
+          cache-dependency-path: Front-End/package-lock.json
+
+      - name: Instalar dependencias
+        if: env.skip != 'true'
+        working-directory: Front-End
+        run: npm ci
+
+      - name: Instalar Chromium
+        if: env.skip != 'true'
+        working-directory: Front-End
+        run: npx playwright install --with-deps chromium
+
+      - name: Ejecutar los E2E
+        if: env.skip != 'true'
+        working-directory: Front-End
+        run: npm run e2e
+
+      # Traza, vídeo y capturas de cada fallo: sin esto, depurar un E2E rojo en
+      # CI es adivinar.
+      - name: Publicar el informe
+        if: always() && env.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            Front-End/playwright-report/
+            Front-End/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Logs del backend si algo falló
+        if: failure() && env.skip != 'true'
+        run: docker logs emsafe-backend-local --tail 200

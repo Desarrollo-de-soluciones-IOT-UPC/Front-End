@@ -1,7 +1,10 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
-import { DataService, HistoryItem, TechWorkOrder } from '../../../../core/services/data.service';
+import { HistoryFacade } from '../../../../contexts/servicerecord/application/history.facade';
+import { ServiceRecord } from '../../../../contexts/servicerecord/domain/service-record.model';
+import { WorkOrdersFacade } from '../../../../contexts/workorder/application/work-orders.facade';
+import { TechWorkOrder } from '../../../../contexts/workorder/domain/work-order.model';
 import { WorkOrderDetailModal } from '../../../../shared/components/work-order-detail-modal/work-order-detail-modal';
 
 @Component({
@@ -11,9 +14,9 @@ import { WorkOrderDetailModal } from '../../../../shared/components/work-order-d
   styleUrl: './tech-history.scss',
 })
 export class TechHistory implements OnInit {
-  private data = inject(DataService);
-
-  protected items      = signal<HistoryItem[]>([]);
+  private historyFacade = inject(HistoryFacade);
+  private workOrdersFacade = inject(WorkOrdersFacade);
+  protected items      = signal<ServiceRecord[]>([]);
   protected loading    = signal(true);
 
   protected dateFrom     = signal('');
@@ -37,7 +40,7 @@ export class TechHistory implements OnInit {
   private loadItems(): void {
     this.loading.set(true);
     const status = this.statusFilter() !== 'all' ? this.statusFilter() : undefined;
-    this.data.getTechHistoryPaged(status, undefined, this.currentPage(), this.pageSize).subscribe(response => {
+    this.historyFacade.forTechnicianPaged(status, undefined, this.currentPage(), this.pageSize).subscribe(response => {
       let content = response.content;
       const type = this.typeFilter();
       const from = this.dateFrom();
@@ -85,12 +88,12 @@ export class TechHistory implements OnInit {
   protected detailOrder     = signal<TechWorkOrder | null>(null);
   protected detailLoading   = signal(false);
 
-  protected openDetail(item: HistoryItem): void {
+  protected openDetail(item: ServiceRecord): void {
     this.detailOrder.set(null);
     this.showDetailModal.set(true);
     if (item.workOrderId) {
       this.detailLoading.set(true);
-      this.data.getTechWorkOrderById(item.workOrderId).subscribe(order => {
+      this.workOrdersFacade.mineById(item.workOrderId).subscribe(order => {
         this.detailOrder.set(order ?? this.fallbackOrder(item));
         this.detailLoading.set(false);
       });
@@ -106,7 +109,7 @@ export class TechHistory implements OnInit {
   }
 
   /** Minimal detail built from a history snapshot (for rows without a live order). */
-  private fallbackOrder(item: HistoryItem): TechWorkOrder {
+  private fallbackOrder(item: ServiceRecord): TechWorkOrder {
     return {
       id: item.workOrderId ?? item.id,
       orderId: item.orderId,

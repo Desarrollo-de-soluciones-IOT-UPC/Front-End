@@ -3,7 +3,8 @@ import { NgApexchartsModule } from 'ng-apexcharts';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { LanguageService } from '../../../../core/services/language.service';
-import { DataService, WorkOrder } from '../../../../core/services/data.service';
+import { WorkOrdersFacade } from '../../../../contexts/workorder/application/work-orders.facade';
+import { WorkOrder } from '../../../../contexts/workorder/domain/work-order.model';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ActivityService } from '../../../../core/services/activity.service';
 import { FormsModule } from '@angular/forms';
@@ -16,7 +17,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class WorkOrders implements OnInit {
   protected lang    = inject(LanguageService);
-  private data      = inject(DataService);
+  private workOrdersFacade = inject(WorkOrdersFacade);
   private toast     = inject(ToastService);
   private activity  = inject(ActivityService);
   private router    = inject(Router);
@@ -54,7 +55,7 @@ export class WorkOrders implements OnInit {
     const status = this.selectedStatus() !== 'all' ? this.selectedStatus() : undefined;
     const type   = this.selectedType()   !== 'all' ? this.selectedType()   : undefined;
     const search = this.searchQuery().trim() || undefined;
-    this.data.getWorkOrdersPaged(status, type, search, this.currentPage(), this.pageSize, this.sortBy()).subscribe(response => {
+    this.workOrdersFacade.paged(status, type, search, this.currentPage(), this.pageSize, this.sortBy()).subscribe(response => {
       this.orders.set(response.content);
       this.totalPages.set(response.totalPages);
       this.totalElements.set(response.totalElements);
@@ -114,7 +115,7 @@ export class WorkOrders implements OnInit {
   confirmDelete(): void {
     if (!this.deleteOrderId || !this.deleteReason) return;
     const reason = this.deleteReason;
-    this.data.deleteWorkOrder(this.deleteOrderId, reason).subscribe(() => {
+    this.workOrdersFacade.cancel(this.deleteOrderId, reason).subscribe(() => {
       this.activity.log('Work order deleted', `Reason: ${reason}`);
       this.toast.success('Work order deleted successfully');
       this.closeDeleteModal();

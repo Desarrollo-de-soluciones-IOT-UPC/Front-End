@@ -1,7 +1,10 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
-import { DataService, AlarmItem, User } from '../../../../core/services/data.service';
+import { AlarmsFacade } from '../../../../contexts/alerting/application/alarms.facade';
+import { AlarmItem } from '../../../../contexts/alerting/domain/alert.model';
+import { UsersFacade } from '../../../../contexts/iam/application/users.facade';
+import { User } from '../../../../contexts/iam/domain/user.model';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ActivityService } from '../../../../core/services/activity.service';
 
@@ -15,7 +18,8 @@ type ClientFilter = string; // empty = all
   styleUrl: './alarms.scss',
 })
 export class Alarms implements OnInit {
-  private data     = inject(DataService);
+  private alarmsFacade = inject(AlarmsFacade);
+  private usersFacade = inject(UsersFacade);
   private toast    = inject(ToastService);
   private activity = inject(ActivityService);
 
@@ -54,7 +58,7 @@ export class Alarms implements OnInit {
 
   ngOnInit(): void {
     this.loadAlarms();
-    this.data.getUsers().subscribe(users => {
+    this.usersFacade.all().subscribe(users => {
       this.clients.set(users.filter(u => u.role === 'Client'));
     });
   }
@@ -65,7 +69,7 @@ export class Alarms implements OnInit {
 
   private loadAlarms(): void {
     this.loading.set(true);
-    this.data.getAlarmsCrud().subscribe(list => {
+    this.alarmsFacade.all().subscribe(list => {
       this.alarms.set(list);
       this.loading.set(false);
     });
@@ -95,7 +99,7 @@ export class Alarms implements OnInit {
       return;
     }
     const specific = this.formRecipients === 'specific';
-    this.data.createAlarm({
+    this.alarmsFacade.create({
       type:          this.formType,
       title:         this.formTitle,
       description:   this.formDescription,
@@ -125,7 +129,7 @@ export class Alarms implements OnInit {
   }
 
   resolveAlarm(id: number | string): void {
-    this.data.resolveAlarm(id).subscribe(updated => {
+    this.alarmsFacade.resolve(id).subscribe(updated => {
       if (updated) {
         this.activity.log('Alarm resolved');
         this.toast.success('Alarm resolved');
@@ -139,7 +143,7 @@ export class Alarms implements OnInit {
 
   deleteAlarm(id: number | string, event?: Event): void {
     if (event) event.stopPropagation();
-    this.data.deleteAlarm(id).subscribe(() => {
+    this.alarmsFacade.remove(id).subscribe(() => {
       this.activity.log('Alarm deleted');
       this.toast.success('Alarm deleted');
       this.showDetail.set(false);

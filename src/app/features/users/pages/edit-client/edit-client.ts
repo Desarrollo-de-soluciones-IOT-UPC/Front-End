@@ -8,7 +8,7 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
-import { DataService } from '../../../../core/services/data.service';
+import { UsersFacade } from '../../../../contexts/iam/application/users.facade';
 import { ToastService } from '../../../../core/services/toast.service';
 import { AddressLookupService, AddressSuggestion } from '../../../../core/services/address-lookup.service';
 
@@ -24,7 +24,7 @@ export class EditClient implements OnInit, OnDestroy {
   private fb      = inject(FormBuilder);
   private router  = inject(Router);
   private route   = inject(ActivatedRoute);
-  private data    = inject(DataService);
+  private usersFacade = inject(UsersFacade);
   private toast   = inject(ToastService);
   private addrSvc = inject(AddressLookupService);
   private platformId = inject(PLATFORM_ID);
@@ -95,7 +95,7 @@ export class EditClient implements OnInit, OnDestroy {
     }
     if (id && id !== 'new') {
       this.userId = id;
-      this.data.getUserById(id).subscribe(user => {
+      this.usersFacade.byId(id).subscribe(user => {
         if (!user) return;
         const addr = user.address ?? user.location ?? '';
         const active = user.status === 'active';
@@ -257,7 +257,7 @@ export class EditClient implements OnInit, OnDestroy {
     const taxId  = (type === 'company' ? (v['taxId'] as string) : (v['docId'] as string)) ?? '';
 
     if (this.userId) {
-      this.data.updateUser(this.userId, {
+      this.usersFacade.update(this.userId, {
         name,
         phone:        (v['contactPhone'] as string) ?? '',
         status,

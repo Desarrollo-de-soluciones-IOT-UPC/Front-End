@@ -45,3 +45,7 @@ Thumbs.db
 
 # Claude Code
 .claude/
+/playwright-report/
+/test-results/
+/blob-report/
+/playwright/.cache/

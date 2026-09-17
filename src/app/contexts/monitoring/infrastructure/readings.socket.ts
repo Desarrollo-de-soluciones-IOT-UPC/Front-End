@@ -2,21 +2,24 @@ import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Observable, Subject } from 'rxjs';
 import { Client, IMessage } from '@stomp/stompjs';
-import { environment } from '../../../environments/environment';
-import { Reading } from './data.service';
+import { environment } from '../../../../environments/environment';
+import { Reading } from '../domain/reading.model';
 
 /**
- * Real-time telemetry over STOMP/WebSocket (backend SimpleBroker).
+ * Telemetría en tiempo real sobre STOMP/WebSocket (SimpleBroker del backend).
  *
- * The edge keeps POSTing readings over HTTP; the backend broadcasts each saved
- * reading to `/topic/readings` (all readings) and `/topic/discovery` (sensors
- * still "unregistered"). Same contract is consumed by web and mobile.
+ * El edge sigue enviando las lecturas por HTTP; el backend difunde cada lectura
+ * guardada a `/topic/readings` (todas) y `/topic/discovery` (sensores todavía sin
+ * registrar). Web y móvil consumen el mismo contrato.
  *
- * SSR-safe: the connection is opened lazily and only in the browser
- * (`isPlatformBrowser`), like Leaflet/localStorage elsewhere in the app.
+ * Es infraestructura de Monitoring, no un servicio transversal: los nombres de los
+ * topics viven aquí y sólo aquí, igual que en el adaptador `StompReadingBroadcaster`
+ * del backend.
+ *
+ * Seguro para SSR: la conexión se abre de forma perezosa y sólo en el navegador.
  */
 @Injectable({ providedIn: 'root' })
-export class RealtimeService {
+export class ReadingsSocket {
   private platformId = inject(PLATFORM_ID);
   private client: Client | null = null;
   private connected = false;
@@ -24,13 +27,13 @@ export class RealtimeService {
   private readingsSubject  = new Subject<Reading>();
   private discoverySubject = new Subject<Reading>();
 
-  /** Every new reading (radiation map, dashboard). */
+  /** Cada lectura nueva (mapa de radiación, panel). */
   readings(): Observable<Reading> {
     this.ensureConnected();
     return this.readingsSubject.asObservable();
   }
 
-  /** Updates of sensors not yet assigned to a client (installation discovery). */
+  /** Sensores aún sin cliente asignado (descubrimiento durante una instalación). */
   discovery(): Observable<Reading> {
     this.ensureConnected();
     return this.discoverySubject.asObservable();

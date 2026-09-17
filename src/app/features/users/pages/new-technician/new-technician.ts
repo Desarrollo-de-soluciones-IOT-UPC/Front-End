@@ -3,7 +3,7 @@ import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl } from '@
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
-import { DataService } from '../../../../core/services/data.service';
+import { UsersFacade } from '../../../../contexts/iam/application/users.facade';
 import { ToastService } from '../../../../core/services/toast.service';
 
 function passwordsMatch(group: AbstractControl) {
@@ -22,7 +22,7 @@ export class NewTechnician implements OnInit {
   private fb     = inject(FormBuilder);
   private router = inject(Router);
   private route  = inject(ActivatedRoute);
-  private data   = inject(DataService);
+  private usersFacade = inject(UsersFacade);
   private toast  = inject(ToastService);
 
   private userId: string | null = null;
@@ -54,7 +54,7 @@ export class NewTechnician implements OnInit {
       this.form.get('password')?.updateValueAndValidity();
       this.form.get('confirmPassword')?.clearValidators();
       this.form.get('confirmPassword')?.updateValueAndValidity();
-      this.data.getUserById(id).subscribe(user => {
+      this.usersFacade.byId(id).subscribe(user => {
         if (!user) return;
         this.form.patchValue({
           fullName: user.name,
@@ -84,7 +84,7 @@ export class NewTechnician implements OnInit {
     this.saving.set(true);
 
     if (this.userId) {
-      this.data.updateUser(this.userId, {
+      this.usersFacade.update(this.userId, {
         name,
         email:  v.email ?? '',
         phone:  v.phone ?? '',
@@ -102,7 +102,7 @@ export class NewTechnician implements OnInit {
         },
       });
     } else {
-      this.data.createUser({
+      this.usersFacade.create({
         name,
         initials: name.split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2),
         email:    v.email    ?? '',

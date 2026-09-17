@@ -1,6 +1,9 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
-import { DataService, HistoryItem, TechWorkOrder } from '../../../../core/services/data.service';
+import { HistoryFacade } from '../../../../contexts/servicerecord/application/history.facade';
+import { ServiceRecord } from '../../../../contexts/servicerecord/domain/service-record.model';
+import { WorkOrdersFacade } from '../../../../contexts/workorder/application/work-orders.facade';
+import { TechWorkOrder } from '../../../../contexts/workorder/domain/work-order.model';
 import { WorkOrderDetailModal } from '../../../../shared/components/work-order-detail-modal/work-order-detail-modal';
 
 @Component({
@@ -10,11 +13,11 @@ import { WorkOrderDetailModal } from '../../../../shared/components/work-order-d
   styleUrl: './history.scss',
 })
 export class History implements OnInit {
-  private data = inject(DataService);
-
+  private historyFacade = inject(HistoryFacade);
+  private workOrdersFacade = inject(WorkOrdersFacade);
   // Full result set for the current status filter; type/tech/date + pagination
   // are applied client-side so the counter/paginator match what is shown.
-  private allItems = signal<HistoryItem[]>([]);
+  private allItems = signal<ServiceRecord[]>([]);
   loading = signal(true);
 
   selectedType       = signal('all');
@@ -74,7 +77,7 @@ export class History implements OnInit {
     // Only status is filtered server-side; the full matching set is loaded so
     // type/technician/date and pagination can be computed client-side honestly.
     const status = this.selectedStatus() !== 'all' ? this.selectedStatus() : undefined;
-    this.data.getHistory(status).subscribe(rows => {
+    this.historyFacade.forAdmin(status).subscribe(rows => {
       this.allItems.set(rows);
       this.loading.set(false);
     });
@@ -111,12 +114,12 @@ export class History implements OnInit {
   detailOrder = signal<TechWorkOrder | null>(null);
   detailLoading = signal(false);
 
-  openDetail(item: HistoryItem): void {
+  openDetail(item: ServiceRecord): void {
     this.detailOrder.set(null);
     this.showDetailModal.set(true);
     if (item.workOrderId) {
       this.detailLoading.set(true);
-      this.data.getWorkOrderDetail(item.workOrderId).subscribe(order => {
+      this.workOrdersFacade.detail(item.workOrderId).subscribe(order => {
         this.detailOrder.set(order ?? this.fallbackOrder(item));
         this.detailLoading.set(false);
       });
@@ -128,7 +131,7 @@ export class History implements OnInit {
   }
 
   /** Minimal detail built from a history snapshot (for rows without a live order). */
-  private fallbackOrder(item: HistoryItem): TechWorkOrder {
+  private fallbackOrder(item: ServiceRecord): TechWorkOrder {
     return {
       id: item.workOrderId ?? item.id,
       orderId: item.orderId,

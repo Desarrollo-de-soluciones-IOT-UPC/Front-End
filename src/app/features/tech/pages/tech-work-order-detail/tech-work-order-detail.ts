@@ -8,8 +8,13 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
-import { DataService, TechWorkOrder, Device, PatchTechWorkOrderBody, Reading } from '../../../../core/services/data.service';
-import { RealtimeService } from '../../../../core/services/realtime.service';
+import { DevicesFacade } from '../../../../contexts/device/application/devices.facade';
+import { Device } from '../../../../contexts/device/domain/device.model';
+import { Reading } from '../../../../contexts/monitoring/domain/reading.model';
+import { ReadingsSocket } from '../../../../contexts/monitoring/infrastructure/readings.socket';
+import { WorkOrdersFacade } from '../../../../contexts/workorder/application/work-orders.facade';
+import { PatchTechWorkOrderBody, TechWorkOrder } from '../../../../contexts/workorder/domain/work-order.model';
+
 import { ToastService } from '../../../../core/services/toast.service';
 import { AddressLookupService } from '../../../../core/services/address-lookup.service';
 
@@ -31,8 +36,10 @@ interface RemovalRow { deviceId: number; name: string; type: string; removed: bo
 export class TechWorkOrderDetail implements OnDestroy {
   private route      = inject(ActivatedRoute);
   private router     = inject(Router);
-  private data       = inject(DataService);
-  private realtime   = inject(RealtimeService);
+  private devicesFacade = inject(DevicesFacade);
+  private readingsSocket = inject(ReadingsSocket);
+  private workOrdersFacade = inject(WorkOrdersFacade);
+
   private toast      = inject(ToastService);
   private addrSvc    = inject(AddressLookupService);
   private platformId = inject(PLATFORM_ID);
@@ -74,12 +81,12 @@ export class TechWorkOrderDetail implements OnDestroy {
   constructor() {
     // Load the order on param change; writable signal lets actions update it live.
     this.route.paramMap.pipe(
-      switchMap(p => this.data.getTechWorkOrderById(p.get('id')!)),
+      switchMap(p => this.workOrdersFacade.mineById(p.get('id')!)),
       takeUntilDestroyed(),
     ).subscribe(o => this.order.set(o));
 
     // Live discovery: sensors "appear"/update as they power on and report.
-    this.realtime.discovery().pipe(takeUntilDestroyed()).subscribe(r => this.onDiscovery(r));
+    this.readingsSocket.discovery().pipe(takeUntilDestroyed()).subscribe(r => this.onDiscovery(r));
 
     effect(() => {
       const o  = this.order();
@@ -102,7 +109,7 @@ export class TechWorkOrderDetail implements OnDestroy {
       if (o.status === 'in-progress') {
         if (o.type === 'Installation') {
           // Load sensors already discovered by the edge; live updates arrive via onDiscovery().
-          this.data.getDiscoverableDevices().subscribe(list => {
+          this.devicesFacade.discoverable().subscribe(list => {
             this.discoverable.set(list.map(d => ({
               deviceId: d.deviceId, serialNumber: d.serialNumber,
               name: this.cleanName(d.name), type: d.type || 'Sensor',
@@ -220,7 +227,7 @@ export class TechWorkOrderDetail implements OnDestroy {
     const o = this.order();
     if (!o) return;
     this.saving.set(true);
-    this.data.patchTechWorkOrder(o.id, {
+    this.workOrdersFacade.applyFieldReport(o.id, {
       status: 'in-progress',
       technicianNotes: this.techNotes(),
       activityLogEntry: { event: 'Job started', time: this.now() },
@@ -269,7 +276,7 @@ export class TechWorkOrderDetail implements OnDestroy {
         .map(r => ({ deviceId: r.deviceId, status: 'unregistered', observation: r.observation }));
     }
 
-    this.data.patchTechWorkOrder(o.id, body).subscribe(updated => {
+    this.workOrdersFacade.applyFieldReport(o.id, body).subscribe(updated => {
       this.saving.set(false);
       if (updated) {
         this.toast.success('Work order completed');

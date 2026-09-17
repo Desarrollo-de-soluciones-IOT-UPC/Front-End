@@ -4,7 +4,9 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { DataService } from '../../../../core/services/data.service';
+import { AlarmsFacade } from '../../../../contexts/alerting/application/alarms.facade';
+import { DashboardFacade } from '../../../../contexts/reporting/application/dashboard.facade';
+import { HistoryFacade } from '../../../../contexts/servicerecord/application/history.facade';
 import { LanguageService } from '../../../../core/services/language.service';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 
@@ -16,12 +18,14 @@ import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 })
 export class Dashboard implements OnInit {
   protected lang = inject(LanguageService);
-  private data = inject(DataService);
+  private alarmsFacade = inject(AlarmsFacade);
+  private dashboardFacade = inject(DashboardFacade);
+  private historyFacade = inject(HistoryFacade);
   private platformId = inject(PLATFORM_ID);
 
-  stats = toSignal(this.data.getStats());
-  latestOrders = toSignal(this.data.getLatestWorkOrders());
-  alerts = toSignal(this.data.getAlerts());
+  stats = toSignal(this.dashboardFacade.stats());
+  latestOrders = toSignal(this.dashboardFacade.latestWorkOrders());
+  alerts = toSignal(this.alarmsFacade.feed());
 
   // Charts only render once data has loaded — fixes blank charts when
   // navigating back to the dashboard (the chart mounts with data present).
@@ -82,7 +86,7 @@ export class Dashboard implements OnInit {
   radiationTrendsMarkers = { size: 0 };
 
   ngOnInit(): void {
-    this.data.getChartData().subscribe(c => {
+    this.dashboardFacade.charts().subscribe(c => {
       if (!c) return;
       // Split single series into 3 proportionally: 45% install, 35% maint, 20% collect
       const base = c.systemActivity.series;
@@ -100,7 +104,7 @@ export class Dashboard implements OnInit {
   // Exports the Work Orders History (the 'History' section), not the live orders.
   exportReport(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    this.data.getHistory().subscribe(records => {
+    this.historyFacade.forAdmin().subscribe(records => {
       if (!records.length) return;
       const headers = ['Order ID', 'Completion Date', 'Completion Time', 'Client', 'Site', 'Service Type', 'Technician', 'Status'];
       const csv = [

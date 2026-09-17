@@ -5,11 +5,11 @@
 
 name: CI — Front-End
 
+# En cualquier rama: un gate que solo mira main avisa cuando ya es tarde.
 on:
   push:
-    branches: [main, develop]
+    branches: ['**']
   pull_request:
-    branches: [main, develop]
   workflow_dispatch:
 
 jobs:
@@ -28,6 +28,9 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      # `ng build` no solo transpila: la compilación AOT valida las PLANTILLAS
+      # contra los miembros de cada componente. En la fase 10 fue lo que cazó
+      # que los campos de las facades chocaban con signals ya existentes.
       - name: Compilar (producción)
         run: npm run build
 

@@ -9,7 +9,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
-import { DataService, CreateWorkOrderPayload, UpdateWorkOrderPayload, User } from '../../../../core/services/data.service';
+import { UsersFacade } from '../../../../contexts/iam/application/users.facade';
+import { User } from '../../../../contexts/iam/domain/user.model';
+import { WorkOrdersFacade } from '../../../../contexts/workorder/application/work-orders.facade';
+import { CreateWorkOrderPayload, UpdateWorkOrderPayload } from '../../../../contexts/workorder/domain/work-order.model';
 import { AddressLookupService, AddressSuggestion } from '../../../../core/services/address-lookup.service';
 import { ActivityService } from '../../../../core/services/activity.service';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -24,7 +27,8 @@ export class NewWorkOrder implements OnInit, OnDestroy {
   private fb         = inject(FormBuilder);
   private router     = inject(Router);
   private route      = inject(ActivatedRoute);
-  private data       = inject(DataService);
+  private usersFacade = inject(UsersFacade);
+  private workOrdersFacade = inject(WorkOrdersFacade);
   private addrSvc    = inject(AddressLookupService);
   private activity   = inject(ActivityService);
   private toast      = inject(ToastService);
@@ -86,7 +90,7 @@ export class NewWorkOrder implements OnInit, OnDestroy {
     const qpClientId = qp.get('clientId');
     const qpLocation = qp.get('location');
 
-    this.data.getUsers().subscribe(users => {
+    this.usersFacade.all().subscribe(users => {
       this.technicians.set(users.filter(u => u.role === 'Technician'));
       this.clients.set(users.filter(u => u.role === 'Client'));
       // Resolve location for a pre-filled client once the client list is loaded.
@@ -110,7 +114,7 @@ export class NewWorkOrder implements OnInit, OnDestroy {
     if (id) {
       this.isEditMode.set(true);
       this.editId = id;
-      this.data.getWorkOrderById(id).subscribe(wo => {
+      this.workOrdersFacade.byId(id).subscribe(wo => {
         if (!wo) return;
         const clientId = wo.clientId ?? this.clients().find(c => c.name === wo.client)?.id ?? null;
         this.form.patchValue({
@@ -273,7 +277,7 @@ export class NewWorkOrder implements OnInit, OnDestroy {
         priority:      v.priority ?? 'Standard',
         notes:         v.notes || undefined,
       };
-      this.data.updateWorkOrder(this.editId, payload).subscribe({
+      this.workOrdersFacade.update(this.editId, payload).subscribe({
         next: () => {
           this.activity.log('Work order updated', clientObj?.name);
           this.toast.success('Work order updated successfully');
@@ -293,7 +297,7 @@ export class NewWorkOrder implements OnInit, OnDestroy {
         priority:      v.priority ?? 'Standard',
         notes:         v.notes || undefined,
       };
-      this.data.createWorkOrder(payload).subscribe({
+      this.workOrdersFacade.create(payload).subscribe({
         next: () => {
           this.activity.log('Work order created', clientObj?.name);
           this.toast.success('Work order created successfully');

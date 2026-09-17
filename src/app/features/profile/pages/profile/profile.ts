@@ -2,7 +2,8 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
-import { DataService, UserProfile } from '../../../../core/services/data.service';
+import { UsersFacade } from '../../../../contexts/iam/application/users.facade';
+import { UserProfile } from '../../../../contexts/iam/domain/user.model';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ToastService } from '../../../../core/services/toast.service';
 
@@ -13,7 +14,7 @@ import { ToastService } from '../../../../core/services/toast.service';
   styleUrl: './profile.scss',
 })
 export class Profile implements OnInit {
-  private data    = inject(DataService);
+  private usersFacade = inject(UsersFacade);
   private auth    = inject(AuthService);
   private toast   = inject(ToastService);
 
@@ -38,7 +39,7 @@ export class Profile implements OnInit {
   showConfirmPw = false;
 
   ngOnInit(): void {
-    this.data.getUserProfile().subscribe(p => {
+    this.usersFacade.myProfile().subscribe(p => {
       this.profile.set(p);
       if (p) {
         this.editName     = p.name     ?? '';
@@ -53,7 +54,7 @@ export class Profile implements OnInit {
     const p = this.profile();
     if (!p) return;
     this.saving.set(true);
-    this.data.updateUser(p.id, {
+    this.usersFacade.update(p.id, {
       name:     this.editName,
       phone:    this.editPhone,
       location: this.editLocation,
@@ -83,7 +84,7 @@ export class Profile implements OnInit {
     const p = this.profile();
     if (!p) return;
     this.changingPw.set(true);
-    this.data.changePassword(p.id, this.currentPassword, this.newPassword).subscribe(ok => {
+    this.usersFacade.changePassword(p.id, this.currentPassword, this.newPassword).subscribe(ok => {
       this.changingPw.set(false);
       if (ok) {
         this.currentPassword    = '';

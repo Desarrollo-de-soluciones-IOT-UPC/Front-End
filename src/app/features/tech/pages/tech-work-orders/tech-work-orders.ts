@@ -5,8 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { LanguageService } from '../../../../core/services/language.service';
-import { DataService, TechWorkOrder } from '../../../../core/services/data.service';
-
+import { WorkOrdersFacade } from '../../../../contexts/workorder/application/work-orders.facade';
+import { TechWorkOrder } from '../../../../contexts/workorder/domain/work-order.model';
 @Component({
   selector: 'app-tech-work-orders',
   imports: [RouterLink, FormsModule, TranslatePipe],
@@ -14,12 +14,12 @@ import { DataService, TechWorkOrder } from '../../../../core/services/data.servi
   styleUrl: './tech-work-orders.scss',
 })
 export class TechWorkOrders {
-  private data       = inject(DataService);
+  private workOrdersFacade = inject(WorkOrdersFacade);
   private platformId = inject(PLATFORM_ID);
   protected lang     = inject(LanguageService);
 
   // Backend already filters by the logged-in technician's JWT token
-  private allOrders = toSignal(this.data.getTechWorkOrders(), { initialValue: [] as TechWorkOrder[] });
+  private allOrders = toSignal(this.workOrdersFacade.mine(), { initialValue: [] as TechWorkOrder[] });
 
   protected search        = signal('');
   protected statusFilter  = signal('all');

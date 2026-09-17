@@ -1,7 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
-import { TechWorkOrder } from '../../../core/services/data.service';
-
+import { TechWorkOrder } from '../../../contexts/workorder/domain/work-order.model';
 /**
  * Read-only work-order detail rendered as a centered modal.
  * Shared by the Admin and Technician History detail views.

@@ -7,8 +7,10 @@ import { isPlatformBrowser } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
-import { DataService, ClientRadiationPoint, ClientDeviceReading } from '../../../../core/services/data.service';
-import { RealtimeService } from '../../../../core/services/realtime.service';
+import { ReadingsSocket } from '../../../../contexts/monitoring/infrastructure/readings.socket';
+import { DashboardFacade } from '../../../../contexts/reporting/application/dashboard.facade';
+import { ClientDeviceReading, ClientRadiationPoint } from '../../../../contexts/reporting/domain/radiation-point.model';
+import { levelOf } from '../../../../contexts/monitoring/domain/radiation-level';
 
 @Component({
   selector: 'app-map-radiation',
@@ -17,8 +19,9 @@ import { RealtimeService } from '../../../../core/services/realtime.service';
   styleUrl: './map-radiation.scss',
 })
 export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
-  private data       = inject(DataService);
-  private realtime   = inject(RealtimeService);
+  private dashboardFacade = inject(DashboardFacade);
+  private readingsSocket = inject(ReadingsSocket);
+
   private platformId = inject(PLATFORM_ID);
   private rtSub?: Subscription;
 
@@ -39,13 +42,13 @@ export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
   cautionCount = computed(() => this.allDeviceReadings().filter(r => r.level === 'caution').length);
   dangerCount  = computed(() => this.allDeviceReadings().filter(r => r.level === 'danger').length);
 
-  // Flatten all device readings for table. The level comes from the backend
-  // (edge-computed, smart edge); levelForValue is only a fallback.
+  // Aplana las lecturas de todos los sensores para la tabla. El nivel lo decide el
+  // edge; `levelOf` sólo clasifica por valor si la lectura llega sin nivel.
   allDeviceReadings = computed(() => {
     const rows: Array<ClientDeviceReading & { clientName: string }> = [];
     for (const cp of this.clientPoints()) {
       for (const d of cp.devices) {
-        rows.push({ ...d, clientName: cp.clientName, level: d.level ?? this.levelForValue(d.latestValue) });
+        rows.push({ ...d, clientName: cp.clientName, level: levelOf(d.level, d.latestValue) });
       }
     }
     return rows.sort((a, b) => b.latestValue - a.latestValue);
@@ -80,7 +83,7 @@ export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.data.getRadiationMapByClient().subscribe(list => {
+    this.dashboardFacade.radiationByClient().subscribe(list => {
       this.clientPoints.set(list);
       this.loading.set(false);
       this.dataLoaded = true;
@@ -91,8 +94,8 @@ export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
 
     // Live updates: re-fetch the aggregated map when new readings arrive (browser only).
     if (isPlatformBrowser(this.platformId)) {
-      this.rtSub = this.realtime.readings().pipe(debounceTime(1500)).subscribe(() => {
-        this.data.getRadiationMapByClient().subscribe(list => {
+      this.rtSub = this.readingsSocket.readings().pipe(debounceTime(1500)).subscribe(() => {
+        this.dashboardFacade.radiationByClient().subscribe(list => {
           this.clientPoints.set(list);
           if (this.mapReady && this.L && list.length > 0) this.renderMarkers(list);
         });
@@ -171,7 +174,7 @@ export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
 
       const devRows = cp.devices
         .map(d => {
-          const c = this.colorForLevel(d.level ?? this.levelForValue(d.latestValue));
+          const c = this.colorForLevel(levelOf(d.level, d.latestValue));
           return `
           <tr style="border-bottom:1px solid #f3f4f6;">
             <td style="padding:5px 8px;font-size:12px;color:#374151;">${d.deviceLocation}</td>
@@ -213,13 +216,6 @@ export class MapRadiation implements OnInit, AfterViewInit, OnDestroy {
 
     const bounds = this.L.latLngBounds(validPts.map(p => [p.latitude, p.longitude]));
     this.map.fitBounds(bounds, { padding: [60, 60] });
-  }
-
-  // Fallback only — the edge is the source of truth for classification (µT: 100/200).
-  levelForValue(value: number): 'safe' | 'caution' | 'danger' {
-    if (value < 100) return 'safe';
-    if (value < 200) return 'caution';
-    return 'danger';
   }
 
   private colorForLevel(level: string): string {
